@@ -1,0 +1,451 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import CategoryStories from '../components/CategoryStories';
+import Hero from '../components/Hero';
+import FlashSaleTimer from '../components/FlashSaleTimer';
+import ReelsShowcase from '../components/ReelsShowcase';
+import TalbinaSpotlight from '../components/TalbinaSpotlight';
+import ReviewsSection from '../components/ReviewsSection';
+import ProductCard from '../components/ProductCard';
+import { useStore } from '../context/StoreContext';
+import { getGeneralSupportWhatsAppUrl } from '../utils/whatsapp';
+import { 
+  ArrowRight, 
+  Sparkles, 
+  ShieldCheck, 
+  Award, 
+  PackageCheck, 
+  HeartHandshake,
+  CheckCircle2,
+  ExternalLink,
+  MapPin,
+  PhoneCall,
+  Flame,
+  TrendingUp,
+  Gift
+} from 'lucide-react';
+
+export default function HomePage() {
+  const { products, categories, settings } = useStore();
+  const [activeCatalogTab, setActiveCatalogTab] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(8);
+
+  const handleTabChange = (tabId) => {
+    setActiveCatalogTab(tabId);
+    setVisibleCount(8);
+  };
+
+  // Filter products by selected tab with controlled visible count (Prevents infinite scrolling)
+  // In 'all' category tab, feature royal Thobes first, followed by all other collections (Talbina, Oud, Decor, Wedding)
+  const currentTabProducts = activeCatalogTab === 'all' 
+    ? [...products.filter(p => p.category === 'wearing'), ...products.filter(p => p.category !== 'wearing')]
+    : products.filter(p => p.category === activeCatalogTab);
+
+  const displayedProducts = currentTabProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < currentTabProducts.length;
+
+  return (
+    <div className="bg-[#faf8f5] text-slate-800 animate-fadeIn pb-20 space-y-12 sm:space-y-16">
+      
+      {/* 1. Circular Category Stories / Quick Avatars */}
+      <CategoryStories />
+
+      {/* 2. Luminous Luxury Editorial Hero */}
+      <Hero />
+
+      {/* 3. Real-Time Flash Deal Countdown Timer (Ends at Midnight) */}
+      <FlashSaleTimer />
+
+      {/* 4. Instagram Reels & Video Shopping Showcase (2.8M & 1.1M Views Spotlight) */}
+      <ReelsShowcase />
+
+      {/* 5. Curated Sacred Collections (Eliminates Mobile Scroll Fatigue & Talbina Redundancy) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10 space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span>Curated Collections</span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-4xl font-extrabold text-[#032219]">
+            Sacred Sunnah Collections
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto">
+            Tailored Saudi attire, aged Cambodian oud, heirloom Nikah keepsakes, and 3D calligraphy art.
+          </p>
+        </div>
+
+        {/* 4 Distinct Collections Grid (2 cols on mobile, 4 cols on desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          
+          {/* 1. Men's Royal Attire */}
+          <Link 
+            to="/shop?category=wearing"
+            className="group relative bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-amber-900/15 shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          >
+            <div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-500/15 border border-amber-500/25 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                  👑 Royal Attire
+                </span>
+              </div>
+              <h3 className="font-serif text-xs sm:text-base font-black text-[#032219] group-hover:text-amber-700 transition leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+                Saudi & Emirati Thobes
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
+                Standing collars & snaps
+              </p>
+            </div>
+
+            <div className="my-2.5 relative aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 shadow-md group-hover:scale-[1.02] transition-transform duration-500">
+              <img
+                src="/assets/studio/thobe_story_916.jpg"
+                alt="Men's Saudi Thobe"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800 group-hover:text-amber-600 transition">
+              <div className="flex flex-col">
+                <span className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">Starting</span>
+                <span className="font-mono font-black text-xs sm:text-sm text-amber-900">₹1,499</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold">
+                <span>Explore</span>
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          {/* 2. Dehnul Oud & Attar */}
+          <Link 
+            to="/shop?category=fragrance"
+            className="group relative bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-amber-900/15 shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          >
+            <div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-900 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                  🌿 Alcohol-Free
+                </span>
+              </div>
+              <h3 className="font-serif text-xs sm:text-base font-black text-[#032219] group-hover:text-amber-700 transition leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+                Aged Dehnul Oud & Attar
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
+                Wild Cambodian agarwood
+              </p>
+            </div>
+
+            <div className="my-2.5 relative aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 shadow-md group-hover:scale-[1.02] transition-transform duration-500">
+              <img
+                src="/assets/studio/oud_story_916.jpg"
+                alt="Dehnul Oud"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800 group-hover:text-amber-600 transition">
+              <div className="flex flex-col">
+                <span className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">Starting</span>
+                <span className="font-mono font-black text-xs sm:text-sm text-amber-900">₹649</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold">
+                <span>Explore</span>
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          {/* 3. Islamic Home Decor */}
+          <Link 
+            to="/shop?category=decor"
+            className="group relative bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-amber-900/15 shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          >
+            <div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-indigo-900 bg-indigo-500/15 border border-indigo-500/25 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                  🕌 Sacred Art
+                </span>
+              </div>
+              <h3 className="font-serif text-xs sm:text-base font-black text-[#032219] group-hover:text-amber-700 transition leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+                3D Ayat-ul-Kursi Frames
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
+                Mirror acrylic calligraphy
+              </p>
+            </div>
+
+            <div className="my-2.5 relative aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 shadow-md group-hover:scale-[1.02] transition-transform duration-500">
+              <img
+                src="/assets/studio/decor_story_916.jpg"
+                alt="Ayat-ul-Kursi Tugra"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800 group-hover:text-amber-600 transition">
+              <div className="flex flex-col">
+                <span className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">Starting</span>
+                <span className="font-mono font-black text-xs sm:text-sm text-amber-900">₹899</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold">
+                <span>Explore</span>
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          {/* 4. Sacred Nikah Keepsakes */}
+          <Link 
+            to="/shop?category=wedding"
+            className="group relative bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-amber-900/15 shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          >
+            <div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-rose-900 bg-rose-500/15 border border-rose-500/25 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                  💍 Sacred Nikah
+                </span>
+              </div>
+              <h3 className="font-serif text-xs sm:text-base font-black text-[#032219] group-hover:text-amber-700 transition leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+                Velvet Gold Nikah Nama
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
+                Marriage booklets & pens
+              </p>
+            </div>
+
+            <div className="my-2.5 relative aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 shadow-md group-hover:scale-[1.02] transition-transform duration-500">
+              <img
+                src="/assets/studio/nikah_story_916.jpg"
+                alt="Nikah Nama Booklet"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800 group-hover:text-amber-600 transition">
+              <div className="flex flex-col">
+                <span className="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">Starting</span>
+                <span className="font-mono font-black text-xs sm:text-sm text-amber-900">₹899</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold">
+                <span>Explore</span>
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+        </div>
+      </section>
+
+      {/* 7. Bespoke Nikah & Gift Hamper Studio Showcase */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-gradient-to-r from-[#032219] via-[#053a2b] to-[#032219] border border-amber-500/40 p-6 sm:p-10 shadow-xl text-white flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+          <div className="space-y-3 text-center md:text-left max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold">
+              <Gift className="w-3.5 h-3.5 text-amber-400" />
+              <span>Bespoke Gifting Studio • 15% Combo Savings</span>
+            </div>
+            <h3 className="font-serif text-2xl sm:text-3xl font-black text-white leading-tight">
+              Curate a Royal Nikah & Sunnah Gift Hamper
+            </h3>
+            <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed">
+              Personalize a handcrafted velvet trunk with tailored Saudi thobes, aged Cambodian oud, and heirloom Nikah Nama with custom calligraphy card.
+            </p>
+            
+            {/* 4-step Visual Pills */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-[10px] sm:text-[11px] text-amber-200">
+              <span className="bg-white/10 px-2 py-0.5 rounded-md">1. Pick Velvet Trunk</span>
+              <span>➔</span>
+              <span className="bg-white/10 px-2 py-0.5 rounded-md">2. Select Thobe</span>
+              <span>➔</span>
+              <span className="bg-white/10 px-2 py-0.5 rounded-md">3. Add Pure Oud</span>
+              <span>➔</span>
+              <span className="bg-white/10 px-2 py-0.5 rounded-md">4. Gold Card</span>
+            </div>
+          </div>
+
+          <Link
+            to="/hamper"
+            className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs sm:text-sm hover:from-amber-400 hover:to-amber-500 transition shadow-gold flex items-center gap-2 shrink-0 active:scale-95"
+          >
+            <Gift className="w-4 h-4 text-slate-950" />
+            <span>Open Hamper Studio →</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* 9. Flagship Product Spotlight: Arabian's Talbeena */}
+      <TalbinaSpotlight />
+
+      {/* 10. Live Interactive Catalog Grid with Category Tabs */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">
+              <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
+              <span>Direct Store Catalog</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-black text-[#032219]">
+              Trending Customer Favorites
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600">
+              Dispatched with tamper-proof seal and Pan-India Cash on Delivery.
+            </p>
+          </div>
+
+          <Link
+            to="/shop"
+            className="px-5 py-2.5 rounded-xl bg-[#032219] text-amber-300 hover:bg-[#063e2e] font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow whitespace-nowrap active:scale-95"
+          >
+            <span>View All {products.length} Products</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => handleTabChange('all')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+              activeCatalogTab === 'all'
+                ? 'bg-[#032219] text-amber-300 shadow'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            All Products ({products.length})
+          </button>
+
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => handleTabChange(c.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                activeCatalogTab === c.id
+                  ? 'bg-[#032219] text-amber-300 shadow'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          {displayedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+
+        {/* Dynamic Pagination & Catalog Navigator (Prevents Infinite Scrolling) */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200/80">
+          <div className="text-xs text-slate-500 font-medium text-center sm:text-left">
+            Showing <span className="font-bold text-slate-900">{displayedProducts.length}</span> of <span className="font-bold text-slate-900">{currentTabProducts.length}</span> items
+            <div className="w-48 h-1.5 bg-slate-200 rounded-full mt-1.5 overflow-hidden mx-auto sm:mx-0">
+              <div 
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(100, (displayedProducts.length / Math.max(1, currentTabProducts.length)) * 100)}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {hasMore && (
+              <button
+                type="button"
+                onClick={() => setVisibleCount(prev => prev + 8)}
+                className="px-5 py-2.5 rounded-xl bg-white border border-slate-300 hover:border-slate-400 text-slate-800 font-bold text-xs hover:bg-slate-50 transition shadow-sm active:scale-95"
+              >
+                Load More (+8 Products)
+              </button>
+            )}
+
+            <Link
+              to={activeCatalogTab === 'all' ? '/shop' : `/shop?category=${activeCatalogTab}`}
+              className="px-5 py-2.5 rounded-xl bg-[#032219] text-amber-300 font-bold text-xs hover:bg-[#063e2e] transition shadow flex items-center gap-1.5 active:scale-95"
+            >
+              <span>Explore Full Store Catalog ({currentTabProducts.length}) →</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 11. Brand Heritage & Sunnah Guarantees (Clean Ivory Cards) */}
+      <section className="bg-white py-14 sm:py-20 border-y border-amber-900/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold text-amber-800 uppercase tracking-widest bg-amber-100 px-3 py-1 rounded-full border border-amber-200">
+              Our Sunnah Commitment
+            </span>
+            <h2 className="font-serif text-2xl sm:text-4xl font-extrabold text-[#032219]">
+              Why Indian Muslims Choose Arabians Shopping Zone
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600">
+              We stand apart from regular drop-shippers. We operate our own physical Islamic store with direct laboratory certification.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div className="bg-[#fcfbf9] p-6 sm:p-8 rounded-3xl border border-amber-900/10 space-y-3 shadow-sm hover:shadow-md transition">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-serif text-xl font-bold">
+                🥣
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Sprouted Barley Nutrition</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Our Talbina uses real whole-grain barley mentioned in Sahih Bukhari (Hadith 5417) to soothe grieving hearts and boost vitality — 100% natural with roasted dry fruits and zero artificial chemicals.
+              </p>
+            </div>
+
+            <div className="bg-[#fcfbf9] p-6 sm:p-8 rounded-3xl border border-amber-900/10 space-y-3 shadow-sm hover:shadow-md transition">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-serif text-xl font-bold">
+                👑
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Authentic Men's Tailoring</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Traditional Saudi stiff standing collars, concealed snap plackets, and Kashmiri Amama shareef. Every thobe has calibrated length and chest sizing with <strong>100% Free Size Exchange</strong> if it does not fit perfectly.
+              </p>
+            </div>
+
+            <div className="bg-[#fcfbf9] p-6 sm:p-8 rounded-3xl border border-amber-900/10 space-y-3 shadow-sm hover:shadow-md transition">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-serif text-xl font-bold">
+                📍
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Real Physical Store</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Unlike faceless websites, our store is verified on Google Maps with hundreds of in-person shoppers. You can visit us in market or order online with guaranteed Pan-India Cash on Delivery.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Direct WhatsApp Callout Banner */}
+          <div className="bg-gradient-to-r from-emerald-900 to-[#032219] text-white rounded-2xl p-5 sm:p-6 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+              <h4 className="font-serif text-base sm:text-lg font-bold">Need Custom Thobe Sizing or Talbina Dosage Guidance?</h4>
+              <p className="text-xs text-emerald-200">Our in-store specialists are available on WhatsApp 6 days a week.</p>
+            </div>
+            <a
+              href={getGeneralSupportWhatsAppUrl('Thobe Sizing & Talbina Advice', settings.whatsapp)}
+              target="_blank"
+              rel="noreferrer"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs hover:from-amber-400 hover:to-amber-500 transition flex items-center gap-2 whitespace-nowrap shadow"
+            >
+              <PhoneCall className="w-4 h-4" />
+              <span>Chat on WhatsApp</span>
+            </a>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 12. Verified Customer Reviews */}
+      <ReviewsSection />
+
+    </div>
+  );
+}

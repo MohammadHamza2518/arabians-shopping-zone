@@ -1,0 +1,63 @@
+src\components\AdminDashboard.jsx:525: badge: 'New Arrival',
+src\components\AdminDashboard.jsx:663: {c.discountPercent ? `${c.discountPercent}% Off` : `₹${c.flatDiscount} Off`}
+src\components\AdminDashboard.jsx:742: <label className="block font-semibold text-slate-700 mb-1">Badge Tag:</label>
+src\components\AdminDashboard.jsx:746: value={editingProduct.badge || ''}
+src\components\AdminDashboard.jsx:747: onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
+src\components\Footer.jsx:338: {/* 3. UNIQUE PAYMENT & TRUST BADGES BAR */}
+src\components\Hero.jsx:19: badge: '👑 Royal Wardrobe Collection',
+src\components\Hero.jsx:31: badge: '🥣 Prophetic Sunnah Superfood',
+src\components\Hero.jsx:43: badge: '✨ Pure Alcohol-Free Perfumery',
+src\components\Hero.jsx:55: badge: '💍 Sacred Nikah Traditions',
+src\components\Hero.jsx:98: {/* Badge */}
+src\components\Hero.jsx:101: <span>{slide.badge}</span>
+src\components\ProductCard.jsx:10: const discountPercent = product.mrp > product.price
+src\components\ProductCard.jsx:17: {/* Clickable Image & Badges */}
+src\components\ProductCard.jsx:20: {/* Discount Badge */}
+src\components\ProductCard.jsx:21: {discountPercent > 0 && (
+src\components\ProductCard.jsx:23: {discountPercent}% OFF
+src\components\ProductCard.jsx:27: {/* Brand / Special Badge */}
+src\components\ProductCard.jsx:28: {product.badge && (
+src\components\ProductCard.jsx:30: {product.badge}
+src\components\ProductModal.jsx:44: const discountPercent = selectedProduct.mrp > selectedProduct.price
+src\components\ProductModal.jsx:94: {discountPercent > 0 && (
+src\components\ProductModal.jsx:96: {discountPercent}% OFF
+src\components\ProductModal.jsx:171: {discountPercent > 0 && (
+src\components\ReelsShowcase.jsx:102: {/* Top Floating Badges */}
+src\components\ReviewsSection.jsx:130: {/* Header: Name, Location & Verified Badge */}
+src\components\TalbinaSpotlight.jsx:94: <span>{activeProduct.badge || "100% Pure"}</span>
+src\context\StoreContext.jsx:161: if (appliedCoupon.discountPercent) {
+src\context\StoreContext.jsx:162: couponDiscount = Math.round((cartSubtotal * appliedCoupon.discountPercent) / 100);
+src\pages\AdminPage.jsx:289: discountPercent: newCouponData.discountType === 'percentage' ? Number(newCouponData.discountValue) : 0,
+src\pages\AdminPage.jsx:670: badge: 'New Arrival',
+src\pages\AdminPage.jsx:804: badge: 'New Arrival',
+src\pages\AdminPage.jsx:1122: {p.badge && (
+src\pages\AdminPage.jsx:1124: {p.badge}
+src\pages\AdminPage.jsx:1271: {c.discountPercent ? `${c.discountPercent}% OFF Entire Order` : `Flat ₹${c.flatDiscount} OFF`}
+src\pages\AdminPage.jsx:1453: <label className="block font-bold text-slate-300 mb-1">Special Badge</label>
+src\pages\AdminPage.jsx:1457: value={editingProduct.badge || ''}
+src\pages\AdminPage.jsx:1458: onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
+src\pages\CheckoutPage.jsx:562: <span className="text-emerald-700 font-semibold">({c.discountPercent ? `${c.discountPercent}%` : `₹${c.flatDiscount}`})</span>
+src\pages\HamperBuilderPage.jsx:42: badgeBg: "bg-emerald-800 text-amber-300"
+src\pages\HamperBuilderPage.jsx:51: badgeBg: "bg-slate-800 text-amber-300"
+src\pages\HamperBuilderPage.jsx:60: badgeBg: "bg-rose-950 text-amber-300"
+src\pages\HamperBuilderPage.jsx:158: const bundleDiscountPercent = 15;
+src\pages\HamperBuilderPage.jsx:159: const bundleDiscount = Math.round((itemsSubtotal * bundleDiscountPercent) / 100);
+src\pages\HamperBuilderPage.jsx:172: return thobeOptions.filter(t => t.name.toLowerCase().includes(q) || (t.badge || '').toLowerCase().includes(q));
+src\pages\HamperBuilderPage.jsx:178: return fragranceOptions.filter(f => f.name.toLowerCase().includes(q) || (f.badge || '').toLowerCase().includes(q));
+src\pages\HamperBuilderPage.jsx:188: list = list.filter(k => k.name.toLowerCase().includes(q) || (k.badge || '').toLowerCase().includes(q));
+src\pages\HamperBuilderPage.jsx:205: badge: "15% Combo Savings",
+src\pages\HamperBuilderPage.jsx:501: {t.badge && (
+src\pages\HamperBuilderPage.jsx:503: {t.badge}
+src\pages\HamperBuilderPage.jsx:598: {f.badge && (
+src\pages\HamperBuilderPage.jsx:600: {f.badge}
+src\pages\HamperBuilderPage.jsx:720: {k.badge && (
+src\pages\HamperBuilderPage.jsx:722: {k.badge}
+src\pages\HamperBuilderPage.jsx:1003: {/* Direct Gift Dispatch Badge */}
+src\pages\ProductDetailPage.jsx:59: const discountPercent = product.mrp
+src\pages\ProductDetailPage.jsx:117: {discountPercent > 0 && (
+src\pages\ProductDetailPage.jsx:119: {discountPercent}% OFF
+src\pages\ProductDetailPage.jsx:151: {/* Header & Badges */}
+src\pages\ProductDetailPage.jsx:157: {product.badge && (
+src\pages\ProductDetailPage.jsx:159: {product.badge}
+src\pages\ProductDetailPage.jsx:190: {discountPercent > 0 && (
+src\pages\ProductDetailPage.jsx:192: Save ₹{product.mrp - product.price} ({discountPercent}% OFF)

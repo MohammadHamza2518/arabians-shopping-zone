@@ -1,0 +1,25 @@
+from playwright.sync_api import sync_playwright
+import time
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    
+    # Mobile
+    mob_page = browser.new_page(viewport={"width": 390, "height": 844})
+    mob_page.goto("http://localhost:3000/#/", timeout=20000, wait_until="domcontentloaded")
+    time.sleep(2)
+    mob_page.locator("text=Sacred Sunnah Collections").scroll_into_view_if_needed()
+    time.sleep(1)
+    mob_page.screenshot(path="C:/Users/moham/.gemini/antigravity/brain/39f53ab6-18ce-4096-8de7-56ea97e98c3b/collections_mobile_fixed.png")
+    print("Saved collections_mobile_fixed.png")
+
+    # Desktop
+    desk_page = browser.new_page(viewport={"width": 1280, "height": 900})
+    desk_page.goto("http://localhost:3000/#/", timeout=20000, wait_until="domcontentloaded")
+    time.sleep(2)
+    desk_page.locator("text=Sacred Sunnah Collections").scroll_into_view_if_needed()
+    time.sleep(1)
+    desk_page.screenshot(path="C:/Users/moham/.gemini/antigravity/brain/39f53ab6-18ce-4096-8de7-56ea97e98c3b/collections_desktop_fixed.png")
+    print("Saved collections_desktop_fixed.png")
+
+    browser.close()
