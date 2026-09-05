@@ -700,7 +700,7 @@ Allow: /
 User-agent: Applebot
 Allow: /
 
-Sitemap: https://arabiansshoppingzone.com/sitemap.xml
+Sitemap: https://arabiansshoppingzone.shop/sitemap.xml
 `);
 });
 
@@ -708,7 +708,7 @@ app.get('/sitemap.xml', (req, res) => {
   const store = getStore();
   const products = store.products || [];
   const categories = store.categories || [];
-  const baseUrl = 'https://arabiansshoppingzone.com';
+  const baseUrl = 'https://arabiansshoppingzone.shop';
   const today = new Date().toISOString().split('T')[0];
 
   const staticUrls = [
