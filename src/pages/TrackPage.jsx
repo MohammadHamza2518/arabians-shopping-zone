@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import SEO from '../components/SEO';
 import { 
   Search, 
   Truck, 
@@ -110,6 +111,12 @@ export default function TrackPage() {
 
   return (
     <div className="min-h-[85vh] bg-[#faf8f5] py-8 sm:py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-start">
+      <SEO 
+        title="Live Order Tracking & Express Logistics | Arabians Shopping Zone"
+        description="Track your Arabians Shopping Zone order in real time. Enter your Order ID or phone number to check BlueDart, Delhivery, and DTDC courier status and estimated dispatch time."
+        keywords="track order arabians shopping zone, shipment status, bluedart live tracking, courier tracking islamic store"
+        canonical="https://arabiansshoppingzone.com/track"
+      />
       <div className="max-w-3xl mx-auto w-full space-y-8 animate-fadeIn">
         
         {/* Navigation Breadcrumb */}

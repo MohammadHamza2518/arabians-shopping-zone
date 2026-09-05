@@ -136,13 +136,13 @@ export default function CartDrawer() {
                 >
                   {/* Thumbnail */}
                   <div 
-                    className="w-20 h-20 bg-white rounded-xl overflow-hidden border border-slate-200 shrink-0 p-1 cursor-pointer flex items-center justify-center"
+                    className="w-20 h-20 bg-white rounded-xl overflow-hidden border border-slate-200 shrink-0 cursor-pointer flex items-center justify-center"
                     onClick={() => { setIsCartOpen(false); setSelectedProduct(item.product); }}
                   >
                     <img 
                       src={item.product.image} 
                       alt={item.product.name}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover object-center"
                     />
                   </div>
 
@@ -157,7 +157,7 @@ export default function CartDrawer() {
                           {item.product.name}
                         </h4>
                         <button
-                          onClick={() => removeFromCart(item.product.id, item.variant)}
+                          onClick={() => removeFromCart(item.product.id, item.variant, item.customization)}
                           className="text-slate-400 hover:text-rose-600 transition p-0.5"
                           title="Remove item"
                         >
@@ -170,12 +170,40 @@ export default function CartDrawer() {
                           Variant: {item.variant}
                         </span>
                       )}
+
+                      {/* Customization Details Badge */}
+                      {item.customization && (
+                        <div className="mt-1 p-1.5 rounded-lg bg-amber-50/90 border border-amber-300/80 text-[10px] text-amber-950 space-y-0.5 shadow-xs">
+                          <div className="font-bold text-amber-900 flex items-center gap-1">
+                            <span>👑 Personalized Keepsake:</span>
+                          </div>
+                          {item.customization.shareLaterOnWhatsApp ? (
+                            <div className="text-emerald-800 font-semibold">
+                              💬 Details will be sent on WhatsApp
+                            </div>
+                          ) : item.customization.isWedding ? (
+                            <div className="text-slate-800 font-medium">
+                              <span className="font-bold text-emerald-900">{item.customization.groomName || 'Dulha'}</span> ❤️ <span className="font-bold text-emerald-900">{item.customization.brideName || 'Dulhan'}</span>
+                              {item.customization.eventDate && <span className="text-slate-500 block">📅 {item.customization.eventDate}</span>}
+                            </div>
+                          ) : (
+                            <div className="font-medium text-emerald-900">
+                              ✍️ {item.customization.customText}
+                            </div>
+                          )}
+                          {item.customization.specialNotes && (
+                            <div className="text-slate-500 italic text-[9px]">
+                              Note: {item.customization.specialNotes}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-center border border-slate-300 rounded-lg bg-white p-0.5">
                         <button
-                          onClick={() => updateCartQuantity(item.product.id, item.variant, -1)}
+                          onClick={() => updateCartQuantity(item.product.id, item.variant, -1, item.customization)}
                           className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 text-xs font-bold"
                         >
                           <Minus className="w-3 h-3" />
@@ -184,7 +212,7 @@ export default function CartDrawer() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateCartQuantity(item.product.id, item.variant, 1)}
+                          onClick={() => updateCartQuantity(item.product.id, item.variant, 1, item.customization)}
                           className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 text-xs font-bold"
                         >
                           <Plus className="w-3 h-3" />

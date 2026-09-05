@@ -15,18 +15,35 @@ export function createWhatsAppUrl(message, phone = STORE_WHATSAPP_PHONE) {
 /**
  * 1. Pre-filled WhatsApp message for a single product order or inquiry
  */
-export function getProductOrderWhatsAppUrl(product, quantity = 1, size = null, phone = STORE_WHATSAPP_PHONE) {
+export function getProductOrderWhatsAppUrl(product, quantity = 1, size = null, phone = STORE_WHATSAPP_PHONE, customization = null) {
   const price = product?.price || 0;
   const total = price * quantity;
+  
+  let customSection = '';
+  if (customization) {
+    if (customization.shareLaterOnWhatsApp) {
+      customSection = `\n✍️ *Custom Personalization:* Will share Urdu/custom names & date directly in this chat\n`;
+    } else if (customization.isWedding) {
+      customSection = 
+`\n👑 *Nikah Personalization Details:*
+• Groom (Dulha): ${customization.groomName || 'N/A'}
+• Bride (Dulhan): ${customization.brideName || 'N/A'}${customization.eventDate ? `\n• Nikah Date: ${customization.eventDate}` : ''}${customization.cityVenue ? `\n• City / Venue: ${customization.cityVenue}` : ''}${customization.specialNotes ? `\n• Special Calligraphy Notes: ${customization.specialNotes}` : ''}\n`;
+    } else if (customization.customText) {
+      customSection = 
+`\n✍️ *Custom Laser Engraving Details:*
+• Inscription: ${customization.customText}${customization.specialNotes ? `\n• Special Notes: ${customization.specialNotes}` : ''}\n`;
+    }
+  }
+
   const msg = 
 `Assalam o Alaikum Arabians Shopping Zone! 🌙
 
 I would like to order:
 📦 *Product:* ${product?.name || 'Product'}
-${size ? `📏 *Size / Variant:* ${size}\n` : ''}🔢 *Quantity:* ${quantity}
+${size ? `📏 *Size / Variant:* ${size}\n` : ''}🔢 *Quantity:* ${quantity}${customSection}
 💰 *Total Price:* ₹${total}
 
-Please confirm availability and share dispatch details for my pincode.`;
+Please confirm availability, share design preview, and provide dispatch details for my pincode.`;
 
   return createWhatsAppUrl(msg, phone);
 }
@@ -37,10 +54,21 @@ Please confirm availability and share dispatch details for my pincode.`;
 export function getCartOrderWhatsAppUrl({ orderId, customer, items, total, paymentMethod }, phone = STORE_WHATSAPP_PHONE) {
   const itemsList = (items || []).map(i => {
     const pName = i.name || i.product?.name || 'Item';
-    const pSize = i.selectedSize || i.size ? ` (${i.selectedSize || i.size})` : '';
+    const pSize = i.selectedSize || i.size || i.variant ? ` (${i.selectedSize || i.size || i.variant})` : '';
     const pQty = i.quantity || 1;
     const pPrice = (i.price || i.product?.price || 0) * pQty;
-    return `• ${pName}${pSize} x ${pQty} = ₹${pPrice}`;
+    let custDetails = '';
+    const c = i.customization;
+    if (c) {
+      if (c.shareLaterOnWhatsApp) {
+        custDetails = `\n    └ ✍️ *Custom Names:* Will send photos/names on WhatsApp`;
+      } else if (c.isWedding) {
+        custDetails = `\n    └ 👑 *Dulha & Dulhan:* ${c.groomName || '-'} ❤️ ${c.brideName || '-'}${c.eventDate ? ` | 📅 ${c.eventDate}` : ''}${c.specialNotes ? ` | 📝 ${c.specialNotes}` : ''}`;
+      } else if (c.customText) {
+        custDetails = `\n    └ ✍️ *Custom Text:* ${c.customText}${c.specialNotes ? ` | 📝 ${c.specialNotes}` : ''}`;
+      }
+    }
+    return `• ${pName}${pSize} x ${pQty} = ₹${pPrice}${custDetails}`;
   }).join('\n');
 
   const customerName = customer?.name || customer?.customerName || 'Valued Customer';
@@ -63,7 +91,7 @@ ${itemsList || '• Order Items'}
 💰 *Grand Total:* ₹${total}
 💳 *Payment Preference:* ${paymentMethod || 'WhatsApp Order / COD'}
 
-Please confirm my order and share courier dispatch details!`;
+Please confirm my order and share custom embossing preview & dispatch details!`;
 
   return createWhatsAppUrl(msg, phone);
 }
@@ -192,7 +220,18 @@ export function getOrderConfirmationWhatsAppUrl(order, phone = STORE_WHATSAPP_PH
 
   const itemsList = (order.items || []).map(i => {
     const size = i.selectedSize ? ` (${i.selectedSize})` : '';
-    return `• ${i.name || 'Item'}${size} x ${i.quantity || 1} = ₹${(i.price || 0) * (i.quantity || 1)}`;
+    let custInfo = '';
+    const c = i.customization;
+    if (c) {
+      if (c.shareLaterOnWhatsApp) {
+        custInfo = `\n    └ ✍️ *Custom Names:* Will send on WhatsApp`;
+      } else if (c.isWedding) {
+        custInfo = `\n    └ 👑 *Dulha & Dulhan:* ${c.groomName || '-'} ❤️ ${c.brideName || '-'}${c.eventDate ? ` | 📅 ${c.eventDate}` : ''}`;
+      } else if (c.customText) {
+        custInfo = `\n    └ ✍️ *Engraving:* ${c.customText}`;
+      }
+    }
+    return `• ${i.name || 'Item'}${size} x ${i.quantity || 1} = ₹${(i.price || 0) * (i.quantity || 1)}${custInfo}`;
   }).join('\n');
 
   const msg = 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 import { useStore } from '../context/StoreContext';
 import { getHamperOrderWhatsAppUrl } from '../utils/whatsapp';
 import { 
@@ -270,6 +271,12 @@ export default function HamperBuilderPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
+      <SEO 
+        title="Bespoke Royal Islamic Gift Hamper Builder | Arabians Shopping Zone"
+        description="Custom curate imperial velvet gift hampers for Groom Nikah, Eid, and spiritual celebrations. Choose premium Saudi thobes, pure Dehnul Oud attars, Islamic keepsakes, and personalized calligraphy cards."
+        keywords="islamic gift hamper builder, nikah gift hamper groom, luxury islamic hampers india, wedding hampers hyderabad, custom sunnah gift box, eid gift basket online"
+        canonical="https://arabiansshoppingzone.com/hamper-builder"
+      />
       
       {/* Studio Header */}
       <div className="text-center max-w-3xl mx-auto space-y-2">

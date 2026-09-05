@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 
 const StoreContext = createContext();
@@ -90,9 +90,9 @@ export function StoreProvider({ children }) {
   }, [wishlist]);
 
   // Load initial store data
-  const refreshAll = async () => {
+  const refreshAll = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const [prodRes, catRes, revRes, reelRes, setRes] = await Promise.all([
         fetch('/api/products').then(r => r.json()),
         fetch('/api/categories').then(r => r.json()),
@@ -108,36 +108,113 @@ export function StoreProvider({ children }) {
     } catch (err) {
       console.error("Failed to fetch store data:", err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    refreshAll();
+    refreshAll(true);
   }, []);
 
+  // Real dynamic reviews analytics hub (auto-calculates when reviews change)
+  const reviewStats = useMemo(() => {
+    const list = Array.isArray(reviews) ? reviews : [];
+    const total = list.length;
+    if (total === 0) {
+      return {
+        total: 0,
+        average: '4.9',
+        recommendRate: '99.2',
+        counts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+        distribution: [
+          { star: '5 ★', count: 0, pct: '89%', width: '89%', color: 'bg-amber-400' },
+          { star: '4 ★', count: 0, pct: '9%', width: '9%', color: 'bg-amber-400/80' },
+          { star: '3 ★', count: 0, pct: '2%', width: '2%', color: 'bg-amber-400/60' },
+          { star: '2 ★', count: 0, pct: '0%', width: '0%', color: 'bg-amber-400/40' },
+          { star: '1 ★', count: 0, pct: '0%', width: '0%', color: 'bg-amber-400/30' },
+        ]
+      };
+    }
+
+    let sum = 0;
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    list.forEach(r => {
+      const rating = Number(r.rating) || 5;
+      sum += rating;
+      const star = Math.min(5, Math.max(1, Math.round(rating)));
+      counts[star] = (counts[star] || 0) + 1;
+    });
+
+    const average = (sum / total).toFixed(1);
+    const positiveReviews = (counts[5] || 0) + (counts[4] || 0);
+    const recommendRate = ((positiveReviews / total) * 100).toFixed(1);
+
+    const distribution = [
+      { star: '5 ★', count: counts[5] || 0, pct: `${Math.round(((counts[5] || 0) / total) * 100)}%`, width: `${Math.round(((counts[5] || 0) / total) * 100)}%`, color: 'bg-amber-400' },
+      { star: '4 ★', count: counts[4] || 0, pct: `${Math.round(((counts[4] || 0) / total) * 100)}%`, width: `${Math.round(((counts[4] || 0) / total) * 100)}%`, color: 'bg-amber-400/80' },
+      { star: '3 ★', count: counts[3] || 0, pct: `${Math.round(((counts[3] || 0) / total) * 100)}%`, width: `${Math.round(((counts[3] || 0) / total) * 100)}%`, color: 'bg-amber-400/60' },
+      { star: '2 ★', count: counts[2] || 0, pct: `${Math.round(((counts[2] || 0) / total) * 100)}%`, width: `${Math.round(((counts[2] || 0) / total) * 100)}%`, color: 'bg-amber-400/40' },
+      { star: '1 ★', count: counts[1] || 0, pct: `${Math.round(((counts[1] || 0) / total) * 100)}%`, width: `${Math.round(((counts[1] || 0) / total) * 100)}%`, color: 'bg-amber-400/30' },
+    ];
+
+    return {
+      total,
+      average,
+      recommendRate,
+      counts,
+      distribution
+    };
+  }, [reviews]);
+
+  // Submit new review helper
+  const addReview = async (reviewPayload) => {
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reviewPayload)
+      });
+      if (!res.ok) throw new Error("Failed to post review");
+      const savedReview = await res.json();
+      setReviews(prev => [savedReview, ...(prev || [])]);
+      refreshAll(false);
+      return { success: true, review: savedReview };
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      return { success: false, error: err.message };
+    }
+  };
+
   // Cart management
-  const addToCart = (product, quantity = 1, selectedVariant = null) => {
+  const addToCart = (product, quantity = 1, selectedVariant = null, customization = null) => {
     setCart(prev => {
       const variantKey = selectedVariant || 'standard';
-      const existingIdx = prev.findIndex(item => item.product.id === product.id && item.variant === variantKey);
+      const custKey = customization ? JSON.stringify(customization) : '';
+      const existingIdx = prev.findIndex(item => {
+        const itemCustKey = item.customization ? JSON.stringify(item.customization) : '';
+        return item.product.id === product.id && item.variant === variantKey && itemCustKey === custKey;
+      });
 
       if (existingIdx > -1) {
         const next = [...prev];
         next[existingIdx].quantity += quantity;
         return next;
       } else {
-        return [...prev, { product, quantity, variant: variantKey }];
+        return [...prev, { product, quantity, variant: variantKey, customization: customization || null }];
       }
     });
 
-    showToast(`Added "${product.name.slice(0, 28)}..." to cart!`);
+    const customSuffix = customization ? ' (with Custom Personalization)' : '';
+    showToast(`Added "${product.name.slice(0, 26)}..."${customSuffix} to cart!`);
   };
 
-  const updateCartQuantity = (productId, variant, delta) => {
+  const updateCartQuantity = (productId, variant, delta, customization = undefined) => {
     setCart(prev => {
+      const targetCustKey = customization !== undefined ? (customization ? JSON.stringify(customization) : '') : null;
       return prev.map(item => {
-        if (item.product.id === productId && item.variant === variant) {
+        const itemCustKey = item.customization ? JSON.stringify(item.customization) : '';
+        const isCustMatch = targetCustKey === null || itemCustKey === targetCustKey;
+        if (item.product.id === productId && item.variant === variant && isCustMatch) {
           const newQty = item.quantity + delta;
           return newQty > 0 ? { ...item, quantity: newQty } : null;
         }
@@ -146,8 +223,13 @@ export function StoreProvider({ children }) {
     });
   };
 
-  const removeFromCart = (productId, variant) => {
-    setCart(prev => prev.filter(item => !(item.product.id === productId && item.variant === variant)));
+  const removeFromCart = (productId, variant, customization = undefined) => {
+    const targetCustKey = customization !== undefined ? (customization ? JSON.stringify(customization) : '') : null;
+    setCart(prev => prev.filter(item => {
+      const itemCustKey = item.customization ? JSON.stringify(item.customization) : '';
+      const isCustMatch = targetCustKey === null || itemCustKey === targetCustKey;
+      return !(item.product.id === productId && item.variant === variant && isCustMatch);
+    }));
     showToast("Item removed from cart", "info");
   };
 
@@ -223,21 +305,70 @@ export function StoreProvider({ children }) {
   // Place Order
   const createOrder = async (customerDetails, paymentMethod) => {
     try {
-      const orderPayload = {
-        customer: customerDetails,
-        items: cart.map(i => ({
-          id: i.product.id,
-          name: i.product.name + (i.variant !== 'standard' ? ` (${i.variant})` : ''),
-          price: i.product.price,
+      const isFullPayload = customerDetails && (customerDetails.customer || customerDetails.items || customerDetails.customerName);
+      
+      const custObj = (customerDetails && customerDetails.customer) 
+        ? customerDetails.customer 
+        : {
+            name: customerDetails?.customerName || customerDetails?.name || '',
+            phone: customerDetails?.phone || '',
+            email: customerDetails?.email || '',
+            address: customerDetails?.address || '',
+            city: customerDetails?.city || '',
+            state: customerDetails?.state || '',
+            pincode: customerDetails?.pincode || ''
+          };
+
+      const custName = custObj.name || customerDetails?.customerName || customerDetails?.name || 'Customer';
+      const custPhone = custObj.phone || customerDetails?.phone || '';
+      const custEmail = custObj.email || customerDetails?.email || '';
+      const custAddress = customerDetails?.address || custObj.address || '';
+
+      const orderPayload = isFullPayload ? {
+        ...customerDetails,
+        customer: custObj,
+        customerName: custName,
+        phone: custPhone,
+        email: custEmail,
+        address: custAddress,
+        items: customerDetails.items || cart.map(i => ({
+          id: i.product?.id || i.id,
+          name: (i.product?.name || i.name) + (i.variant && i.variant !== 'standard' ? ` (${i.variant})` : ''),
+          price: i.product?.price || i.price,
           quantity: i.quantity,
-          image: i.product.image
+          image: i.product?.image || i.image,
+          selectedSize: i.variant !== 'standard' ? i.variant : null,
+          customization: i.customization || null
+        })),
+        subtotal: customerDetails.subtotal ?? cartSubtotal,
+        discount: customerDetails.discount ?? couponDiscount,
+        couponCode: customerDetails.couponCode ?? (appliedCoupon ? appliedCoupon.code : ''),
+        deliveryFee: customerDetails.shippingCharges ?? customerDetails.deliveryFee ?? deliveryFee,
+        total: customerDetails.total ?? cartTotal,
+        paymentMethod: customerDetails.paymentMode || customerDetails.paymentMethod || paymentMethod || 'COD',
+        paymentMode: customerDetails.paymentMode || customerDetails.paymentMethod || paymentMethod || 'COD'
+      } : {
+        customer: custObj,
+        customerName: custName,
+        phone: custPhone,
+        email: custEmail,
+        address: custAddress,
+        items: cart.map(i => ({
+          id: i.product?.id || i.id,
+          name: (i.product?.name || i.name) + (i.variant !== 'standard' ? ` (${i.variant})` : ''),
+          price: i.product?.price || i.price,
+          quantity: i.quantity,
+          image: i.product?.image || i.image,
+          selectedSize: i.variant !== 'standard' ? i.variant : null,
+          customization: i.customization || null
         })),
         subtotal: cartSubtotal,
         discount: couponDiscount,
         couponCode: appliedCoupon ? appliedCoupon.code : '',
         deliveryFee,
         total: cartTotal,
-        paymentMethod
+        paymentMethod: paymentMethod || 'COD',
+        paymentMode: paymentMethod || 'COD'
       };
 
       const res = await fetch('/api/orders', {
@@ -276,6 +407,9 @@ export function StoreProvider({ children }) {
       products,
       categories,
       reviews,
+      setReviews,
+      reviewStats,
+      addReview,
       reels,
       settings,
       loading,

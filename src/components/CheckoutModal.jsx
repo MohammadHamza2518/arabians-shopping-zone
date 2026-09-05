@@ -69,7 +69,8 @@ export default function CheckoutModal() {
             name: i.product.name, 
             price: i.product.price, 
             quantity: i.quantity, 
-            selectedSize: i.selectedSize 
+            selectedSize: i.selectedSize || i.variant,
+            customization: i.customization || null
           })),
           total: cartTotal,
           paymentMethod: 'WhatsApp Direct Order'
@@ -326,13 +327,20 @@ export default function CheckoutModal() {
                 {/* Items preview */}
                 <div className="max-h-48 overflow-y-auto space-y-2.5 py-3 no-scrollbar">
                   {cart.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2 truncate">
-                        <img src={item.product.image} alt="" className="w-8 h-8 object-contain rounded bg-white p-0.5 border" />
-                        <span className="truncate font-medium text-slate-800">
-                          {item.product.name}
-                        </span>
-                        <span className="text-slate-500 shrink-0">x{item.quantity}</span>
+                    <div key={i} className="flex items-start justify-between gap-2 text-xs">
+                      <div className="flex items-start gap-2 truncate">
+                        <img src={item.product.image} alt="" className="w-8 h-8 object-cover rounded bg-white border shrink-0 mt-0.5" />
+                        <div className="truncate">
+                          <span className="truncate font-medium text-slate-800 block">
+                            {item.product.name}
+                          </span>
+                          {item.customization && (
+                            <span className="text-[10px] text-amber-800 font-semibold block truncate">
+                              👑 {item.customization.shareLaterOnWhatsApp ? 'Personalization: On WhatsApp' : item.customization.summary}
+                            </span>
+                          )}
+                          <span className="text-slate-500 text-[11px]">x{item.quantity}</span>
+                        </div>
                       </div>
                       <span className="font-bold text-slate-900 shrink-0">
                         ₹{item.product.price * item.quantity}

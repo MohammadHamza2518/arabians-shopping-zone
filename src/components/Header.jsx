@@ -26,7 +26,8 @@ export default function Header() {
     settings, 
     cartCount, 
     categories,
-    products 
+    products,
+    reviewStats 
   } = useStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -90,6 +91,13 @@ export default function Header() {
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
               <span>Physical Store</span>
             </a>
+            <Link
+              to="/store"
+              className="flex items-center gap-1 hover:text-amber-300 transition-colors"
+            >
+              <span>Visit Our Shop</span>
+            </Link>
+
             <a 
               href={settings.instagramUrl} 
               target="_blank" 
@@ -126,7 +134,15 @@ export default function Header() {
         <div className="flex items-center justify-between gap-4 md:gap-8">
           
           {/* Brand Logo & Royal Identity */}
-          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0">
+          <Link 
+            to="/" 
+            onClick={() => {
+              if (isHomePage) {
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+              }
+            }}
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
+          >
             <div className="relative w-11 h-11 sm:w-13 sm:h-13 rounded-full p-0.5 bg-[#021812] border-2 border-amber-400 shadow-md shrink-0 flex items-center justify-center ring-1 ring-amber-400/60 overflow-hidden">
               <img 
                 src="/assets/logo/logo_main.png" 
@@ -230,11 +246,11 @@ export default function Header() {
                   ? 'bg-amber-100/90 text-amber-950 border-amber-400 font-bold shadow-sm'
                   : 'text-slate-700 hover:text-[#032219] hover:bg-slate-100 border-slate-200'
               }`}
-              title="328+ Verified Customer Reviews"
+              title={`${reviewStats?.total || 328}+ Verified Customer Reviews`}
             >
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
               <span>Reviews</span>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded-full">4.9★</span>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded-full">{reviewStats?.average || '4.9'}★</span>
             </Link>
 
             {/* Custom Hamper Studio */}
@@ -256,14 +272,18 @@ export default function Header() {
               <span>Dealership Program</span>
             </Link>
 
-            {/* Track Order */}
+            {/* Store Location Button */}
             <Link
-              to="/track"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-700 hover:text-[#032219] hover:bg-slate-100 transition text-xs font-semibold border border-slate-200"
-              title="Track Your Order"
+              to="/store"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 ${
+                location.pathname === '/store' || location.pathname === '/visit'
+                  ? 'bg-amber-100/90 text-amber-950 border-amber-400 font-bold shadow-sm'
+                  : 'text-slate-700 hover:text-[#032219] hover:bg-slate-100 border-slate-200'
+              }`}
+              title="Visit Our Physical Store (Jaipur)"
             >
-              <Truck className="w-4 h-4 text-amber-600" />
-              <span className="hidden sm:inline">Track Order</span>
+              <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="hidden sm:inline">Visit Store</span>
             </Link>
 
             {/* Cart & Checkout */}
@@ -372,7 +392,7 @@ export default function Header() {
                 <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
                 <span>⭐ Verified Customer Reviews</span>
               </span>
-              <span className="text-[10px] bg-[#032219] text-amber-300 px-2 py-0.5 rounded-full font-bold">4.9 ★ (328+)</span>
+              <span className="text-[10px] bg-[#032219] text-amber-300 px-2 py-0.5 rounded-full font-bold">{reviewStats?.average || '4.9'} ★ ({reviewStats?.total || 328}+)</span>
             </Link>
 
             <Link
@@ -393,12 +413,25 @@ export default function Header() {
             </Link>
 
             <Link
+              to="/store"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#032219] to-[#053527] text-amber-300 font-bold border border-amber-500/30 shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-amber-400" />
+                <span>Visit Our Shop</span>
+              </span>
+              <span className="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">Google Maps</span>
+            </Link>
+
+            <Link
               to="/contact"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 text-slate-800 font-medium"
             >
               <span>📞 Contact & Helpline</span>
             </Link>
+
 
             <Link
               to="/shipping-policy"

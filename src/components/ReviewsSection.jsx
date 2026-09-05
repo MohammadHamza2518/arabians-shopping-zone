@@ -24,7 +24,7 @@ import { useStore } from '../context/StoreContext';
 
 export default function ReviewsSection() {
   const navigate = useNavigate();
-  const { reviews, products, refreshAll, showToast } = useStore();
+  const { reviews, products, refreshAll, showToast, reviewStats } = useStore();
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -175,7 +175,7 @@ export default function ReviewsSection() {
   };
 
   return (
-    <section id="reviews-section" className="py-12 sm:py-16 bg-[#faf8f5] border-b border-amber-900/10">
+    <section id="reviews-section" className="pt-10 sm:pt-14 pb-8 sm:pb-10 bg-[#faf8f5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
@@ -209,7 +209,7 @@ export default function ReviewsSection() {
           {/* Col 1: Big Rating Score & Stars */}
           <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left md:border-r border-slate-200/80 md:pr-6">
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl sm:text-6xl font-serif font-black text-[#032219]">4.9</span>
+              <span className="text-5xl sm:text-6xl font-serif font-black text-[#032219]">{reviewStats?.average || '4.9'}</span>
               <span className="text-slate-400 font-bold text-lg">/ 5</span>
             </div>
             <div className="flex items-center gap-1 text-amber-400 my-1.5">
@@ -218,51 +218,31 @@ export default function ReviewsSection() {
               ))}
             </div>
             <p className="text-xs font-semibold text-slate-700 mt-0.5">
-              Based on <span className="font-bold text-slate-900">{reviews.length}+ Verified Reviews</span>
+              Based on <span className="font-bold text-slate-900">{(reviewStats?.total || reviews.length)}+ Verified Reviews</span>
             </p>
             <div className="inline-flex items-center gap-1 mt-2.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>99.2% Recommend Rate</span>
+              <span>{reviewStats?.recommendRate || '99.2'}% Recommend Rate</span>
             </div>
           </div>
 
           {/* Col 2: Star Distribution Bars */}
           <div className="md:col-span-4 space-y-1.5 text-xs text-slate-600 px-1 md:px-4 md:border-r border-slate-200/80">
-            <div className="flex items-center gap-2">
-              <span className="w-10 text-right font-bold text-slate-700">5 ★</span>
-              <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-amber-400 rounded-full" style={{ width: '89%' }}></div>
+            {(reviewStats?.distribution || [
+              { star: '5 ★', pct: '89%', width: '89%', color: 'bg-amber-400' },
+              { star: '4 ★', pct: '9%', width: '9%', color: 'bg-amber-400/80' },
+              { star: '3 ★', pct: '2%', width: '2%', color: 'bg-amber-400/60' },
+              { star: '2 ★', pct: '0%', width: '0%', color: 'bg-amber-400/40' },
+              { star: '1 ★', pct: '0%', width: '0%', color: 'bg-amber-400/30' },
+            ]).map(b => (
+              <div key={b.star} className="flex items-center gap-2">
+                <span className="w-10 text-right font-bold text-slate-700">{b.star}</span>
+                <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                  <div className={`h-full ${b.color} rounded-full transition-all duration-500`} style={{ width: b.width }}></div>
+                </div>
+                <span className="w-9 text-right font-medium text-slate-500">{b.pct}</span>
               </div>
-              <span className="w-9 text-right font-medium text-slate-500">89%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-10 text-right font-bold text-slate-700">4 ★</span>
-              <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-amber-400/80 rounded-full" style={{ width: '9%' }}></div>
-              </div>
-              <span className="w-9 text-right font-medium text-slate-500">9%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-10 text-right font-bold text-slate-700">3 ★</span>
-              <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-amber-400/60 rounded-full" style={{ width: '2%' }}></div>
-              </div>
-              <span className="w-9 text-right font-medium text-slate-500">2%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-10 text-right font-medium text-slate-400">2 ★</span>
-              <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-amber-400/40 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-              <span className="w-9 text-right font-medium text-slate-400">0%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-10 text-right font-medium text-slate-400">1 ★</span>
-              <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-amber-400/30 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-              <span className="w-9 text-right font-medium text-slate-400">0%</span>
-            </div>
+            ))}
           </div>
 
           {/* Col 3: Trust Badges */}

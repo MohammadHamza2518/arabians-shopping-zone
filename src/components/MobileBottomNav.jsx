@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingBag, Truck, Sparkles, UserCheck } from 'lucide-react';
+import { Home, ShoppingBag, Truck, LayoutGrid, UserCheck } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
 export default function MobileBottomNav() {
@@ -9,6 +9,12 @@ export default function MobileBottomNav() {
 
   const currentPath = location.pathname;
 
+  const handleNavClick = (targetPath) => {
+    if (currentPath === targetPath || (targetPath !== '/' && currentPath.startsWith(targetPath))) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#032219]/95 backdrop-blur-lg border-t border-amber-500/30 px-3 py-2 shadow-2xl">
       <div className="flex items-center justify-around text-slate-300">
@@ -16,6 +22,7 @@ export default function MobileBottomNav() {
         {/* Home */}
         <Link 
           to="/"
+          onClick={() => handleNavClick('/')}
           className={`flex flex-col items-center gap-1 p-1 active:scale-95 transition ${
             currentPath === '/' ? 'text-amber-400 font-bold' : 'hover:text-amber-300'
           }`}
@@ -24,20 +31,22 @@ export default function MobileBottomNav() {
           <span className="text-[10px]">Home</span>
         </Link>
 
-        {/* Shop */}
+        {/* Shop / Catalog */}
         <Link 
           to="/shop"
+          onClick={() => handleNavClick('/shop')}
           className={`flex flex-col items-center gap-1 p-1 active:scale-95 transition ${
             currentPath.startsWith('/shop') ? 'text-amber-400 font-bold' : 'hover:text-amber-300'
           }`}
         >
-          <Sparkles className="w-5 h-5" />
+          <LayoutGrid className="w-5 h-5" />
           <span className="text-[10px]">Catalog</span>
         </Link>
 
         {/* Track Order */}
         <Link 
           to="/track"
+          onClick={() => handleNavClick('/track')}
           className={`flex flex-col items-center gap-1 p-1 active:scale-95 transition ${
             currentPath.startsWith('/track') ? 'text-amber-400 font-bold' : 'hover:text-amber-300'
           }`}
@@ -49,6 +58,7 @@ export default function MobileBottomNav() {
         {/* Wholesale Dealer */}
         <Link 
           to="/distributor"
+          onClick={() => handleNavClick('/distributor')}
           className={`flex flex-col items-center gap-1 p-1 active:scale-95 transition ${
             currentPath.startsWith('/distributor') ? 'text-amber-400 font-bold' : 'hover:text-amber-300'
           }`}
@@ -60,6 +70,7 @@ export default function MobileBottomNav() {
         {/* Cart / Checkout */}
         <Link 
           to="/checkout"
+          onClick={() => handleNavClick('/checkout')}
           className={`relative flex flex-col items-center gap-1 p-1 active:scale-95 transition ${
             currentPath.startsWith('/checkout') ? 'text-amber-400 font-bold' : 'hover:text-amber-300'
           }`}

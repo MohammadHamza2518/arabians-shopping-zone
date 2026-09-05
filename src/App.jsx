@@ -18,6 +18,8 @@ import PolicyPage from './pages/PolicyPage';
 import AdminPage from './pages/AdminPage';
 import HamperBuilderPage from './pages/HamperBuilderPage';
 import ReviewsPage from './pages/ReviewsPage';
+import StoreLocatorPage from './pages/StoreLocatorPage';
+
 
 import { useStore } from './context/StoreContext';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
@@ -79,6 +81,7 @@ function AppContent() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/track" element={<TrackPage />} />
           <Route path="/distributor" element={<DistributorPage />} />
+          <Route path="/dealership" element={<DistributorPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/shipping-policy" element={<PolicyPage />} />
           <Route path="/return-policy" element={<PolicyPage />} />
@@ -87,7 +90,11 @@ function AppContent() {
           <Route path="/about" element={<PolicyPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/hamper" element={<HamperBuilderPage />} />
+          <Route path="/hamper-builder" element={<HamperBuilderPage />} />
           <Route path="/gift-builder" element={<HamperBuilderPage />} />
+          <Route path="/store" element={<StoreLocatorPage />} />
+          <Route path="/visit" element={<StoreLocatorPage />} />
+
         </Routes>
       </main>
 

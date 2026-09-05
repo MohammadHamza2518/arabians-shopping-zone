@@ -1,15 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingBag, Heart, Eye } from 'lucide-react';
+import { Star, ShoppingBag, Heart, Eye, Sparkles, ImageOff } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { isProductCustomizable } from './PersonalizationStudio';
 
 export default function ProductCard({ product }) {
   const { addToCart, toggleWishlist, wishlist } = useStore();
   const isWishlisted = wishlist.includes(product.id);
 
+  // Determine initial fit: support explicit product.imageFit === 'contain', otherwise full-bleed cover
+  const initialFit = product.imageFit === 'contain'
+    ? 'object-contain p-2'
+    : (product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+
+  const [imgClass, setImgClass] = useState(initialFit);
+  const [hasImgError, setHasImgError] = useState(false);
+
+  // React immediately when admin updates or uploads a new image/fit
+  useEffect(() => {
+    setHasImgError(false);
+    if (product.imageFit === 'contain') {
+      setImgClass('object-contain p-2');
+    } else if (product.imageFit === 'cover') {
+      setImgClass(product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+    } else {
+      setImgClass(product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+    }
+  }, [product.image, product.imageFit, product.category]);
+
   const discountPercent = product.mrp && product.price && Number(product.mrp) > Number(product.price)
     ? Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100) 
     : 0;
+
+  // Smart aspect-ratio detector: automatically fits ANY uploaded image into the 1:1 luxury frame
+  const handleImageLoad = (e) => {
+    if (product.imageFit && product.imageFit !== 'auto') {
+      if (product.imageFit === 'contain') setImgClass('object-contain p-2');
+      return;
+    }
+    const { naturalWidth, naturalHeight } = e.target;
+    if (naturalWidth && naturalHeight) {
+      const ratio = naturalWidth / naturalHeight;
+      // If tall portrait (ratio < 0.85, like thobe models), align top so head & chest stay centered
+      // If square or wide (ratio >= 0.85), align center to showcase full product edge-to-edge
+      if (ratio < 0.85) {
+        setImgClass('object-cover object-top');
+      } else {
+        setImgClass('object-cover object-center');
+      }
+    }
+  };
 
   return (
     <div 
@@ -19,12 +59,15 @@ export default function ProductCard({ product }) {
       className="group bg-white rounded-2xl overflow-hidden border border-amber-900/10 hover:border-amber-500/40 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
     >
       
-      {/* Clickable Image & Badges - Full Bleed Edge to Edge */}
-      <Link to={`/product/${product.id}`} className="relative aspect-square bg-slate-100 overflow-hidden block cursor-pointer">
+      {/* Clickable Image & Badges - Uniform 1:1 Luxury Studio Square Frame */}
+      <Link 
+        to={`/product/${product.id}`} 
+        className="relative aspect-square bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] overflow-hidden block cursor-pointer select-none"
+      >
         
         {/* Discount Badge */}
         {discountPercent > 0 && (
-          <div className="absolute top-2.5 left-2.5 bg-rose-600 text-white font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow-md z-10 whitespace-nowrap">
+          <div className="absolute top-2.5 left-2.5 bg-rose-600 text-white font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow-md z-10 max-w-[calc(100%-3.5rem)] truncate">
             {discountPercent}% OFF
           </div>
         )}
@@ -39,13 +82,29 @@ export default function ProductCard({ product }) {
           <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
         </button>
 
-        {/* Product Image - Full Bleed Edge-to-Edge */}
-        <img 
-          src={product.image} 
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
+        {/* Product Image with Smart Aspect-Aware Fit & Error Fallback */}
+        {hasImgError ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-emerald-950 via-slate-900 to-amber-950 text-amber-200">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center mb-2">
+              <Sparkles className="w-6 h-6 text-amber-400" />
+            </div>
+            <span className="text-[11px] font-serif font-bold text-amber-100 line-clamp-2 px-2">
+              {product.name}
+            </span>
+            <span className="text-[9px] text-amber-400/80 uppercase font-mono mt-1">
+              Arabians Authentic
+            </span>
+          </div>
+        ) : (
+          <img 
+            src={product.image} 
+            alt={product.name}
+            onLoad={handleImageLoad}
+            onError={() => setHasImgError(true)}
+            className={`w-full h-full ${imgClass} group-hover:scale-105 transition-transform duration-500`}
+            loading="lazy"
+          />
+        )}
 
         {/* Quick View overlay on desktop */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
@@ -66,9 +125,19 @@ export default function ProductCard({ product }) {
               <span className="uppercase tracking-wider font-bold text-emerald-800 text-[10px]">
                 {product.category}
               </span>
+              {product.subcategory && (
+                <span className="text-[10px] text-slate-400 font-medium capitalize truncate max-w-[85px] hidden xs:inline">
+                  • {product.subcategory.replace(/-/g, ' ')}
+                </span>
+              )}
               {product.badge && product.badge.trim() !== '' && (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300/60 leading-none truncate max-w-[110px]">
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300/60 leading-none truncate max-w-[100px]">
                   {product.badge.trim()}
+                </span>
+              )}
+              {isProductCustomizable(product) && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-300/80 leading-none truncate flex items-center gap-0.5">
+                  👑 Custom Names
                 </span>
               )}
             </div>

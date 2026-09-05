@@ -19,28 +19,38 @@ export default function ProductGrid() {
   const filteredProducts = useMemo(() => {
     let list = [...products];
 
-    // Category filter
+    // Category filter (case-insensitive & trimmed)
     if (selectedCategory !== 'all') {
-      list = list.filter(p => p.category === selectedCategory);
+      const selCat = (selectedCategory || '').toLowerCase().trim();
+      list = list.filter(p => (p.category || '').toLowerCase().trim() === selCat);
     }
 
-    // Search query filter
+    // Search query filter (name, description, tags, category, subcategory)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter(p => 
-        p.name.toLowerCase().includes(q) || 
-        (p.description && p.description.toLowerCase().includes(q)) ||
-        (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
-      );
+      list = list.filter(p => {
+        const tagsStr = Array.isArray(p.tags) 
+          ? p.tags.join(' ').toLowerCase() 
+          : (typeof p.tags === 'string' ? p.tags.toLowerCase() : '');
+        const pSub = (p.subcategory || p.subCategory || '').toLowerCase();
+        
+        return (
+          (p.name && p.name.toLowerCase().includes(q)) || 
+          (p.description && p.description.toLowerCase().includes(q)) ||
+          (p.category && p.category.toLowerCase().includes(q)) ||
+          pSub.includes(q) ||
+          tagsStr.includes(q)
+        );
+      });
     }
 
-    // Sorting
+    // Sorting (with number fallbacks to prevent NaN)
     if (sortBy === 'price-low') {
-      list.sort((a, b) => a.price - b.price);
+      list.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
     } else if (sortBy === 'price-high') {
-      list.sort((a, b) => b.price - a.price);
+      list.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
     } else if (sortBy === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
+      list.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
     }
 
     return list;

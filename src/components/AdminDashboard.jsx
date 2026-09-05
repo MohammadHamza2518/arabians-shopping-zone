@@ -20,9 +20,42 @@ import {
   Search,
   Tag,
   Eye,
-  Sliders
+  Sliders,
+  Layers,
+  FolderPlus,
+  Sparkles,
+  Shirt,
+  HeartPulse,
+  Clock,
+  BookOpen,
+  Gift,
+  Droplets,
+  Flame,
+  Scroll,
+  Gem,
+  Compass
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+
+const ICON_OPTIONS = [
+  { id: 'Sparkles', name: 'Sparkles (Royal Star / Curated)', Component: Sparkles },
+  { id: 'Shirt', name: 'Shirt (Thobes, Jubba & Clothing)', Component: Shirt },
+  { id: 'HeartPulse', name: 'HeartPulse (Health, Talbina & Honey)', Component: HeartPulse },
+  { id: 'Droplets', name: 'Droplets (Dehnul Oud & Attar)', Component: Droplets },
+  { id: 'Flame', name: 'Flame (Bakhoor & Mabkhara)', Component: Flame },
+  { id: 'BookOpen', name: 'BookOpen (Quran & Double Rehal)', Component: BookOpen },
+  { id: 'Gift', name: 'Gift (Nikah Hampers & Trunks)', Component: Gift },
+  { id: 'Gem', name: 'Gem (Rings, Stones & Solitaires)', Component: Gem },
+  { id: 'Clock', name: 'Clock (Azan & Namaz Times)', Component: Clock },
+  { id: 'Compass', name: 'Compass (Qibla Direction & Heritage)', Component: Compass },
+  { id: 'Scroll', name: 'Scroll (Nikah Nama Booklets)', Component: Scroll },
+  { id: 'Package', name: 'Package (General Inventory)', Component: Package }
+];
+
+const CATEGORY_ICON_MAP = ICON_OPTIONS.reduce((acc, curr) => {
+  acc[curr.id] = curr.Component;
+  return acc;
+}, {});
 
 export default function AdminDashboard() {
   const { 
@@ -58,6 +91,13 @@ export default function AdminDashboard() {
   const [imageFile, setImageFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // Category Edit / Add Modal
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [isCatAddMode, setIsCatAddMode] = useState(false);
+  const [catImageFile, setCatImageFile] = useState(null);
+  const [uploadingCatImage, setUploadingCatImage] = useState(false);
+  const [newSubcatInput, setNewSubcatInput] = useState('');
+
   // Load Admin Data once authenticated
   const fetchAdminData = async () => {
     try {
@@ -92,7 +132,7 @@ export default function AdminDashboard() {
       setAuthenticated(true);
       setPinError('');
     } else {
-      setPinError('Invalid Admin Passcode. Try arabians786');
+      setPinError('Invalid Admin Passcode. Access denied.');
     }
   };
 
@@ -137,10 +177,13 @@ export default function AdminDashboard() {
         setUploadingImage(false);
       }
 
+      const subcatValue = (editingProduct.subcategory || editingProduct.subCategory || '').trim();
       const payload = {
         ...editingProduct,
         image: finalImageUrl,
-        gallery: [finalImageUrl]
+        gallery: [finalImageUrl],
+        subcategory: subcatValue,
+        subCategory: subcatValue
       };
 
       const url = isAddMode ? '/api/products' : `/api/products/${editingProduct.id}`;
@@ -176,6 +219,122 @@ export default function AdminDashboard() {
     } catch {
       showToast("Failed to delete product", "error");
     }
+  };
+
+  // Category Save (Create or Update)
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory.name || !editingCategory.name.trim()) {
+      showToast("Category title is required", "error");
+      return;
+    }
+    try {
+      let finalImageUrl = editingCategory.image || '/assets/logo/logo_main.png';
+
+      // If user uploaded a new image file, upload it first
+      if (catImageFile) {
+        setUploadingCatImage(true);
+        const formData = new FormData();
+        formData.append('image', catImageFile);
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadData.success) {
+          finalImageUrl = uploadData.url;
+        }
+        setUploadingCatImage(false);
+      }
+
+      // Auto-generate or sanitize slug ID
+      const rawSlug = isCatAddMode
+        ? (editingCategory.id && editingCategory.id.trim()
+            ? editingCategory.id.trim()
+            : editingCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+        : editingCategory.id;
+
+      const slugId = rawSlug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+
+      const payload = {
+        id: slugId,
+        name: editingCategory.name.trim(),
+        subtitle: (editingCategory.subtitle || '').trim(),
+        icon: editingCategory.icon || 'Sparkles',
+        badge: (editingCategory.badge || '').trim(),
+        image: finalImageUrl,
+        subcategories: editingCategory.subcategories || []
+      };
+
+      const url = isCatAddMode ? '/api/categories' : `/api/categories/${editingCategory.id}`;
+      const method = isCatAddMode ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        showToast(isCatAddMode ? "Category added successfully!" : "Category updated successfully!");
+        setEditingCategory(null);
+        setCatImageFile(null);
+        setNewSubcatInput('');
+        refreshAll();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || "Failed to save category", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving category", "error");
+    }
+  };
+
+  // Delete Category
+  const handleDeleteCategory = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete category "${name}"? Products in this category will remain in the database.`)) return;
+    try {
+      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast(`Category "${name}" deleted!`);
+        refreshAll();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || "Failed to delete category", "error");
+      }
+    } catch {
+      showToast("Failed to delete category", "error");
+    }
+  };
+
+  // Add Subcategory Tag
+  const handleAddSubcatToCategory = () => {
+    if (!newSubcatInput.trim()) return;
+    const subName = newSubcatInput.trim();
+    const subId = subName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const currentSubs = editingCategory.subcategories || [];
+    if (currentSubs.some(s => s.id === subId)) {
+      showToast("Subcategory already exists", "error");
+      return;
+    }
+    setEditingCategory({
+      ...editingCategory,
+      subcategories: [
+        ...currentSubs, 
+        { id: subId, name: subName, image: editingCategory.image || '/assets/logo/logo_main.png' }
+      ]
+    });
+    setNewSubcatInput('');
+  };
+
+  // Remove Subcategory Tag
+  const handleRemoveSubcatFromCategory = (subId) => {
+    setEditingCategory({
+      ...editingCategory,
+      subcategories: (editingCategory.subcategories || []).filter(s => s.id !== subId)
+    });
   };
 
   // Total Revenue calculation
@@ -247,9 +406,6 @@ export default function AdminDashboard() {
                 >
                   Unlock Admin Dashboard
                 </button>
-                <div className="text-[11px] text-slate-400">
-                  Default PIN: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-bold">arabians786</code>
-                </div>
               </form>
             </div>
           </div>
@@ -292,6 +448,16 @@ export default function AdminDashboard() {
               >
                 <Package className="w-3.5 h-3.5" />
                 <span>Products CRUD ({products.length})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('categories')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTab === 'categories' ? 'bg-[#032219] text-amber-400' : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Categories & Catalogs ({categories.length})</span>
               </button>
 
               <button
@@ -586,6 +752,153 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              {/* TAB: CATEGORIES & CATALOGS CRUD */}
+              {activeTab === 'categories' && (
+                <div className="space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-serif font-bold text-lg text-slate-900">Categories & Catalog Architecture</h3>
+                        <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {categories.length} Active Collections
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Add new categories, create subcategories, set custom badges & icons. Updates the Homepage & Shop live!
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsCatAddMode(true);
+                        setEditingCategory({
+                          id: '',
+                          name: '',
+                          subtitle: '',
+                          icon: 'Sparkles',
+                          badge: 'New Collection',
+                          image: '/assets/logo/logo_main.png',
+                          subcategories: []
+                        });
+                        setCatImageFile(null);
+                        setNewSubcatInput('');
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-[#032219] text-amber-300 font-bold text-xs hover:bg-[#063e2e] transition flex items-center gap-1.5 shadow-md shrink-0"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add New Category</span>
+                    </button>
+                  </div>
+
+                  {/* Categories Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categories.map((cat) => {
+                      const catProductsCount = products.filter(p => p.category === cat.id).length;
+                      const IconComponent = CATEGORY_ICON_MAP[cat.icon] || Sparkles;
+
+                      return (
+                        <div 
+                          key={cat.id} 
+                          className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-400/60 transition group"
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-start gap-3">
+                              <div className="w-16 h-16 rounded-xl bg-slate-50 border p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                                <img 
+                                  src={cat.image || '/assets/logo/logo_main.png'} 
+                                  alt={cat.name} 
+                                  className="w-full h-full object-contain rounded-lg group-hover:scale-105 transition-transform" 
+                                />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <div className="w-5 h-5 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                                    <IconComponent className="w-3.5 h-3.5" />
+                                  </div>
+                                  <h4 className="font-serif font-bold text-sm text-slate-900 truncate">
+                                    {cat.name}
+                                  </h4>
+                                </div>
+
+                                {cat.badge && (
+                                  <span className="inline-block mt-1 text-[9px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300/40">
+                                    {cat.badge}
+                                  </span>
+                                )}
+
+                                <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-snug">
+                                  {cat.subtitle || 'Custom curated category in Arabians Shopping Zone.'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Meta pill info */}
+                            <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[11px]">
+                              <span className="text-slate-500 font-mono">
+                                ID: <strong className="text-slate-700">{cat.id}</strong>
+                              </span>
+                              <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                {catProductsCount} Products
+                              </span>
+                            </div>
+
+                            {/* Subcategories list */}
+                            <div>
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center justify-between">
+                                <span>Subcategories ({cat.subcategories?.length || 0})</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                                {cat.subcategories && cat.subcategories.length > 0 ? (
+                                  cat.subcategories.map((sub) => {
+                                    const subCount = products.filter(p => p.category === cat.id && (p.subcategory === sub.id || p.subCategory === sub.id)).length;
+                                    return (
+                                      <span 
+                                        key={sub.id} 
+                                        className="inline-flex items-center gap-1 text-[10px] bg-slate-100 text-slate-700 font-medium px-2 py-0.8 rounded-md border border-slate-200"
+                                      >
+                                        <span>{sub.name}</span>
+                                        {subCount > 0 && <span className="text-emerald-700 font-bold">({subCount})</span>}
+                                      </span>
+                                    );
+                                  })
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 italic">No subcategories added yet</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <button
+                              onClick={() => {
+                                setIsCatAddMode(false);
+                                setEditingCategory(JSON.parse(JSON.stringify(cat)));
+                                setCatImageFile(null);
+                                setNewSubcatInput('');
+                              }}
+                              className="flex-1 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition flex items-center justify-center gap-1"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Edit Category</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                              className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition"
+                              title="Delete Category"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* TAB 4: DISTRIBUTOR LEADS */}
               {activeTab === 'distributors' && (
                 <div className="space-y-4">
@@ -724,12 +1037,20 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Category *</label>
                     <select
                       value={editingProduct.category}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                      onChange={(e) => {
+                        const newCat = e.target.value;
+                        setEditingProduct({ 
+                          ...editingProduct, 
+                          category: newCat,
+                          subcategory: '',
+                          subCategory: ''
+                        });
+                      }}
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                     >
                       {categories.map((c) => (
@@ -739,10 +1060,28 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Badge Tag:</label>
+                    <label className="block font-semibold text-slate-700 mb-1">Subcategory</label>
+                    <select
+                      value={editingProduct.subcategory || editingProduct.subCategory || ''}
+                      onChange={(e) => setEditingProduct({ 
+                        ...editingProduct, 
+                        subcategory: e.target.value,
+                        subCategory: e.target.value 
+                      })}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    >
+                      <option value="">-- General / None --</option>
+                      {(categories.find(c => c.id === editingProduct.category)?.subcategories || []).map((sub) => (
+                        <option key={sub.id} value={sub.id}>{sub.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Badge Tag</label>
                     <input
                       type="text"
-                      placeholder="e.g. Bestseller, Sunnah Special"
+                      placeholder="e.g. Bestseller, Special"
                       value={editingProduct.badge || ''}
                       onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
@@ -783,39 +1122,109 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Direct Image Upload */}
-                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
-                  <label className="block font-semibold text-slate-800">
-                    Product Image (Upload from phone/PC or use existing URL):
-                  </label>
+                {/* Direct Image Upload & Smart Fit Settings */}
+                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-slate-900 text-xs sm:text-sm">
+                      Product Photo & Display Framing
+                    </label>
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300/60">
+                      Supports JPG, PNG, WebP
+                    </span>
+                  </div>
                   
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl border bg-white p-1 shrink-0 overflow-hidden flex items-center justify-center">
-                      <img 
-                        src={imageFile ? URL.createObjectURL(imageFile) : editingProduct.image} 
-                        alt="" 
-                        className="w-full h-full object-contain" 
-                      />
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-start">
+                    {/* Left: Upload and Controls (7 cols) */}
+                    <div className="sm:col-span-7 space-y-2.5">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-700">1. Upload Image from Mobile/PC</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setImageFile(e.target.files[0]);
+                            }
+                          }}
+                          className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#032219] file:text-amber-300 hover:file:bg-[#063e2e] file:cursor-pointer"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-700">2. Or Paste Image URL</label>
+                        <input
+                          type="text"
+                          placeholder="https://... or /assets/products/..."
+                          value={editingProduct.image || ''}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        />
+                      </div>
+
+                      {/* Image Framing / Fit Selector */}
+                      <div className="pt-1">
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          3. Frame Fit Mode (Prevents Awkward Cropping)
+                        </label>
+                        <select
+                          value={editingProduct.imageFit || 'auto'}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, imageFit: e.target.value })}
+                          className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        >
+                          <option value="auto">✨ Smart Auto-Fit (Preserves clothing & square bottles)</option>
+                          <option value="contain">📦 Fit Full Product (100% visible, zero cropping)</option>
+                          <option value="cover">👑 Fill Frame (Portrait fashion mode)</option>
+                        </select>
+                        <p className="text-[10px] text-slate-500 mt-1 leading-tight">
+                          • <b>Smart Auto</b>: automatically detects whether image is portrait or square.<br />
+                          • <b>Fit Full</b>: ensures 100% of wide/square items are shown with zero edges cut.
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex-1 space-y-1.5">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setImageFile(e.target.files[0]);
-                          }
-                        }}
-                        className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#032219] file:text-amber-300 hover:file:bg-[#063e2e]"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Or paste direct image URL"
-                        value={editingProduct.image || ''}
-                        onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300"
-                      />
+                    {/* Right: Live Storefront Card Preview (5 cols) */}
+                    <div className="sm:col-span-5 bg-white rounded-2xl p-2.5 border border-amber-300/80 shadow-sm flex flex-col items-center">
+                      <div className="w-full flex items-center justify-between mb-1.5 px-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-900">
+                          Live Storefront Preview
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400">
+                          1:1 Square Frame
+                        </span>
+                      </div>
+
+                      {/* Mini Card Viewport */}
+                      <div className="w-full max-w-[170px] aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] border border-slate-200 relative flex items-center justify-center shadow-inner">
+                        {editingProduct.mrp > editingProduct.price && (
+                          <div className="absolute top-1.5 left-1.5 bg-rose-600 text-white font-black text-[8px] px-1.5 py-0.5 rounded-full z-10">
+                            {Math.round(((editingProduct.mrp - editingProduct.price) / editingProduct.mrp) * 100)}% OFF
+                          </div>
+                        )}
+                        <img 
+                          key={imageFile ? imageFile.name : editingProduct.image}
+                          src={imageFile ? URL.createObjectURL(imageFile) : (editingProduct.image || '/assets/logo/logo_main.png')} 
+                          alt="" 
+                          onLoad={(e) => {
+                            if (editingProduct.imageFit === 'contain') return;
+                            const { naturalWidth, naturalHeight } = e.target;
+                            if (naturalWidth && naturalHeight) {
+                              const ratio = naturalWidth / naturalHeight;
+                              e.target.className = `w-full h-full object-cover ${ratio < 0.85 ? 'object-top' : 'object-center'}`;
+                            }
+                          }}
+                          className={`w-full h-full ${
+                            editingProduct.imageFit === 'contain' 
+                              ? 'object-contain p-2' 
+                              : (editingProduct.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center')
+                          }`}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-700 mt-1.5 text-center truncate max-w-[170px]">
+                        {editingProduct.name || 'Product Title'}
+                      </span>
+                      <span className="text-[10px] font-mono font-black text-amber-900">
+                        ₹{editingProduct.price || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -845,6 +1254,215 @@ export default function AdminDashboard() {
                     className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-gold hover:from-amber-400 hover:to-amber-500"
                   >
                     {uploadingImage ? 'Uploading image...' : isAddMode ? 'Create Product' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit / Add Category Modal */}
+        {editingCategory && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+            <div className="relative w-full max-w-2xl bg-white rounded-3xl p-5 sm:p-8 shadow-2xl border border-amber-500/40 max-h-[90vh] overflow-y-auto space-y-4">
+              <button
+                onClick={() => { setEditingCategory(null); setCatImageFile(null); }}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-slate-900">
+                    {isCatAddMode ? 'Add New Store Category' : `Edit Category: ${editingCategory.name}`}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Controls homepage story avatars, catalog tabs, and shop filters.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveCategory} className="space-y-4 text-xs sm:text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Category Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Prayer Mats & Janamaz"
+                      value={editingCategory.name}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Category Slug ID {isCatAddMode ? '(auto-generated if empty)' : '(Read-only)'}
+                    </label>
+                    <input
+                      type="text"
+                      disabled={!isCatAddMode}
+                      placeholder="e.g. prayer-mats"
+                      value={editingCategory.id || ''}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, id: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono disabled:bg-slate-100 disabled:text-slate-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Subtitle / Tagline</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Premium Madinah & Turkish foam prayer rugs"
+                    value={editingCategory.subtitle || ''}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, subtitle: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Badge Tag</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. New Arrival, Sunnah, Luxury"
+                      value={editingCategory.badge || ''}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, badge: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Category Icon</label>
+                    <select
+                      value={editingCategory.icon || 'Sparkles'}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    >
+                      {ICON_OPTIONS.map((opt) => (
+                        <option key={opt.id} value={opt.id}>{opt.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Category Cover Image Upload */}
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
+                  <label className="block font-semibold text-slate-800">
+                    Category Cover Image (Displays in Homepage Circular Stories & Catalog):
+                  </label>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-xl border bg-white p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                      <img 
+                        src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain" 
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setCatImageFile(e.target.files[0]);
+                          }
+                        }}
+                        className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#032219] file:text-amber-300 hover:file:bg-[#063e2e]"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Or direct image URL (e.g. /assets/...)"
+                        value={editingCategory.image || ''}
+                        onChange={(e) => setEditingCategory({ ...editingCategory, image: e.target.value })}
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subcategories Tags Manager */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-slate-800">
+                      Subcategories ({editingCategory.subcategories?.length || 0})
+                    </label>
+                    <span className="text-[11px] text-slate-500">Sub-pills on Shop Page</span>
+                  </div>
+
+                  {/* Existing subcategories chips */}
+                  <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-white rounded-xl border border-slate-200">
+                    {editingCategory.subcategories && editingCategory.subcategories.length > 0 ? (
+                      editingCategory.subcategories.map((sub) => (
+                        <span
+                          key={sub.id}
+                          className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                        >
+                          <span>{sub.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSubcatFromCategory(sub.id)}
+                            className="text-emerald-700 hover:text-rose-600 ml-0.5"
+                            title="Remove subcategory"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">No subcategories yet. Add below:</span>
+                    )}
+                  </div>
+
+                  {/* Add Subcategory input */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add subcategory name (e.g. 'Velvet Rugs')"
+                      value={newSubcatInput}
+                      onChange={(e) => setNewSubcatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddSubcatToCategory();
+                        }
+                      }}
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddSubcatToCategory}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 text-white font-bold text-xs hover:bg-slate-900 transition flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Subcategory</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setEditingCategory(null); setCatImageFile(null); }}
+                    className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={uploadingCatImage}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-gold hover:from-amber-400 hover:to-amber-500"
+                  >
+                    {uploadingCatImage ? 'Uploading image...' : isCatAddMode ? 'Create Category' : 'Save Changes'}
                   </button>
                 </div>
               </form>

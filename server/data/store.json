@@ -7,7 +7,7 @@
     "whatsapp": "917233862626",
     "whatsappDisplay": "+91 72338 62626",
     "email": "arabiansshoppingzone@gmail.com",
-    "googleMapsUrl": "https://share.google/8L9V2vJ0LTXI3DQD8",
+    "googleMapsUrl": "https://share.google/PEgVk9ck06u9M8PA9",
     "instagramUrl": "https://www.instagram.com/arabians_shopping_zone",
     "instagramHandle": "@arabians_shopping_zone",
     "announcement": "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
@@ -33,44 +33,191 @@
   },
   "categories": [
     {
-      "id": "health",
-      "name": "Health & Sunnah Foods",
-      "subtitle": "Nutritional Talbina, Pure Sidr Honey & Dry Fruit Superfoods",
-      "icon": "HeartPulse",
-      "badge": "Flagship Brand",
-      "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-    },
-    {
       "id": "wearing",
-      "name": "Wearing & Royal Attire (Men)",
-      "subtitle": "Saudi & Emirati Thobes, Amama, Rumal, Caps & Bisht",
+      "name": "Men's Wear & Royal Attire",
+      "subtitle": "Saudi & Emirati Thobes, Amama, Rumal, Caps, Bisht & Groom Turbans",
       "icon": "Shirt",
       "badge": "Royal Collection",
-      "image": "/assets/studio/mens_white_thobe.jpg"
+      "image": "/assets/studio/mens_white_thobe.jpg",
+      "subcategories": [
+        {
+          "id": "thobes",
+          "name": "Thobes / Jubba"
+        },
+        {
+          "id": "amama",
+          "name": "Amama Shareef"
+        },
+        {
+          "id": "rumal",
+          "name": "Arabians Rumal / Shemagh"
+        },
+        {
+          "id": "caps",
+          "name": "Islamic Cap Collection"
+        },
+        {
+          "id": "bisht",
+          "name": "Arabic Bisht / Qubba"
+        },
+        {
+          "id": "turban",
+          "name": "Wedding Turban / Pagdi"
+        }
+      ],
+      "shortName": "Men's Wear"
+    },
+    {
+      "id": "health",
+      "name": "Healthy & Sunnah Foods",
+      "subtitle": "Arabians Talbina, Royal Honey Dryfruit Mix & 100% Pure Raw Sidr Honey",
+      "icon": "HeartPulse",
+      "badge": "Sunnah Wellness",
+      "image": "/assets/products/honey_dryfruits_premium.jpg",
+      "subcategories": [
+        {
+          "id": "talbina",
+          "name": "Arabians Talbina"
+        },
+        {
+          "id": "honey-mix",
+          "name": "Honey Mix Dry Fruits"
+        },
+        {
+          "id": "pure-honey",
+          "name": "Real Pure Honey"
+        }
+      ],
+      "shortName": "Healthy"
     },
     {
       "id": "fragrance",
-      "name": "Attar, Oud & Bakhoor",
-      "subtitle": "Pure Dehnul Oud, Non-Alcoholic Attars & Luxury Bakhoor",
+      "name": "Fragrance, Oud & Attar",
+      "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
       "icon": "Sparkles",
       "badge": "Pure Alcohol-Free",
-      "image": "/assets/studio/dehnul_oud_pure.jpg"
+      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
+      "subcategories": [
+        {
+          "id": "perfume",
+          "name": "Arabians Perfume"
+        },
+        {
+          "id": "attar",
+          "name": "Pure Attars"
+        },
+        {
+          "id": "bakhoor",
+          "name": "Arabians Bakhoor"
+        },
+        {
+          "id": "burner",
+          "name": "Bakhoor Burners"
+        },
+        {
+          "id": "roomspray",
+          "name": "Room Spray"
+        },
+        {
+          "id": "bodyspray",
+          "name": "Body Spray"
+        },
+        {
+          "id": "essential-oil",
+          "name": "Essential Oils"
+        },
+        {
+          "id": "oudwood",
+          "name": "Real Oud Wood"
+        },
+        {
+          "id": "dehnuloud",
+          "name": "Dehnul Oud"
+        },
+        {
+          "id": "carperfume",
+          "name": "Car Perfume"
+        }
+      ],
+      "shortName": "Fragrance"
     },
     {
       "id": "decor",
       "name": "Islamic Home Decor",
-      "subtitle": "3D Acrylic Tugra, Resin Islamic Clocks & Sacred Art",
+      "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
       "icon": "Clock",
       "badge": "Handcrafted Luxury",
-      "image": "/assets/studio/ayatul_kursi_tugra.jpg"
+      "image": "/assets/products/resin_wall_clock_emerald.jpg",
+      "subcategories": [
+        {
+          "id": "acrylic-tugra",
+          "name": "Acrylic Tugra Frame"
+        },
+        {
+          "id": "acrylic-clock",
+          "name": "Acrylic Wall Clocks"
+        },
+        {
+          "id": "resin-clock",
+          "name": "Resin Wall Clock"
+        },
+        {
+          "id": "resin-tugre",
+          "name": "Resin Tugre"
+        },
+        {
+          "id": "acrylic-accessories",
+          "name": "Acrylic Accessories"
+        }
+      ],
+      "shortName": "Home Decor"
     },
     {
       "id": "wedding",
-      "name": "Nikah & Wedding Collection",
-      "subtitle": "Nikah Nama Booklets, Signing Pens & Haq Mehar Boxes",
+      "name": "Muslim Wedding Products",
+      "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
       "icon": "BookOpen",
       "badge": "Sunnah Nikah",
-      "image": "/assets/studio/nikah_nama_booklet.jpg"
+      "image": "/assets/products/nikah_nama_booklet_royal.jpg",
+      "subcategories": [
+        {
+          "id": "nikah-booklet",
+          "name": "Nikah Nama Booklet"
+        },
+        {
+          "id": "booklet-box",
+          "name": "Booklet Box"
+        },
+        {
+          "id": "nikah-pen",
+          "name": "Nikah Pen"
+        },
+        {
+          "id": "thumb-board",
+          "name": "Nikah Thumb Board"
+        },
+        {
+          "id": "nikah-mirror",
+          "name": "Nikah Mirror (Arsi)"
+        },
+        {
+          "id": "nikah-dupatta",
+          "name": "Nikah Dupatta"
+        },
+        {
+          "id": "nikah-sehra",
+          "name": "Nikah Sehra"
+        },
+        {
+          "id": "haq-mehar",
+          "name": "Haq Mehar Box"
+        },
+        {
+          "id": "all-wedding",
+          "name": "All Wedding Hampers"
+        }
+      ],
+      "shortName": "Muslim Wedding"
     }
   ],
   "products": [
@@ -78,6 +225,7 @@
       "id": "thobe-saudi-classic-white",
       "name": "Luxury Saudi Cut Pure White Arabian Thobe",
       "category": "wearing",
+      "subcategory": "thobes",
       "price": 1699,
       "mrp": 2299,
       "rating": 5,
@@ -104,13 +252,18 @@
       "tags": [
         "Saudi White",
         "Umrah Ready",
-        "Men's Jubba"
-      ]
+        "Men's Jubba",
+        "Thobe"
+      ],
+      "isNew": false,
+      "subCategory": "thobes",
+      "imageFit": "auto"
     },
     {
       "id": "thobe-al-noor-signature",
       "name": "Al-Noor Signature Embroidered Designer Thobe",
       "category": "wearing",
+      "subcategory": "thobes",
       "price": 1899,
       "mrp": 2699,
       "rating": 4.9,
@@ -122,7 +275,7 @@
         "58 (XL)",
         "60 (XXL)"
       ],
-      "badge": "Al Noor Catalog",
+      "badge": "Al Noor Signature",
       "stock": 25,
       "image": "/assets/thobes/thobes__al_noor_design_p1_1.png",
       "gallery": [
@@ -143,642 +296,1858 @@
       ]
     },
     {
-      "id": "thobe-burberry-collar",
-      "name": "Arabian Burberry Pattern Collar Luxury Thobe",
+      "id": "amama-shareef-madani-green",
+      "name": "Traditional Madani Green Sunnah Amama Shareef (7 Meters)",
       "category": "wearing",
-      "price": 1999,
-      "mrp": 2799,
-      "rating": 4.9,
-      "reviewsCount": 64,
-      "sizes": [
-        "52 (S)",
-        "54 (M)",
-        "56 (L)",
-        "58 (XL)",
-        "60 (XXL)"
-      ],
-      "badge": "Trending Style",
-      "stock": 20,
-      "image": "/assets/thobes/thobes_burberry_design_p1_1.png",
+      "subcategory": "amama",
+      "price": 799,
+      "mrp": 1299,
+      "rating": 5,
+      "reviewsCount": 88,
+      "badge": "Sunnah Mubarak",
+      "stock": 50,
+      "image": "/assets/products/amama_shareef_madani_green.jpg",
       "gallery": [
-        "/assets/thobes/thobes_burberry_design_p1_1.png"
+        "/assets/products/amama_shareef_madani_green.jpg"
       ],
-      "description": "Sophisticated modern Arabian thobe tailored with designer checked Burberry-inspired accents along the collar stand and placket lining.",
+      "description": "Sacred dark emerald green Amama Shareef cut to the authentic 7-meter Sunnah proportion. Woven from lightweight breathable pure voile cotton that wraps smoothly without slip.",
       "benefits": [
-        "Contrast collar styling for festive occasions",
-        "Structured formal collar that retains crisp shape",
-        "Silky soft touch with zero skin irritation"
-      ],
-      "tags": [
-        "Burberry Trim",
-        "Modern Cut",
-        "Men's Attire"
-      ]
-    },
-    {
-      "id": "amama-shareef-madani",
-      "name": "Traditional Kashmiri Amama Shareef (7 Meters)",
-      "category": "wearing",
-      "price": 599,
-      "mrp": 899,
-      "rating": 4.9,
-      "reviewsCount": 72,
-      "sizes": [
-        "7 Meters Length"
-      ],
-      "badge": "Sunnah Crown",
-      "stock": 35,
-      "image": "/assets/thobes/thobes_al_noor_2_p5_1.png",
-      "gallery": [
-        "/assets/thobes/thobes_al_noor_2_p5_1.png"
-      ],
-      "description": "Pure unadulterated fine cotton Amama Shareef cloth. Available in traditional Sunnah colors (Pure White, Deep Emerald Green, Jet Black). Soft, lightweight, and holds folds firmly.",
-      "benefits": [
-        "Prophetic Sunnah headwear for namaz and dignity",
-        "Keeps head cool and absorbs sweat naturally",
-        "Authentic 7-meter wrapping length"
+        "Full 7-meter continuous uncut length with finished selvedge",
+        "Soft breathable pure voile cotton with natural grip",
+        "Includes protective breathable travel pouch"
       ],
       "tags": [
         "Amama Shareef",
-        "Cotton Turban",
-        "Sunnah"
+        "Madani Green",
+        "Sunnah Turban",
+        "Islamic Cap"
       ]
     },
     {
-      "id": "arabians-rumal-shemagh",
-      "name": "Arabians Red & White Shemagh Rumal with Heavy Agal",
+      "id": "amama-shareef-ready-black-gold",
+      "name": "Ready-to-Wear Pre-Tied Royal Black & Gold Amama Cap",
       "category": "wearing",
-      "price": 699,
-      "mrp": 999,
-      "rating": 4.8,
-      "reviewsCount": 58,
+      "subcategory": "amama",
+      "price": 1199,
+      "mrp": 1799,
+      "rating": 4.9,
+      "reviewsCount": 46,
       "sizes": [
-        "55x55 Inch Square"
+        "21.5 Inch (55cm)",
+        "22.0 Inch (56cm)",
+        "22.5 Inch (57cm)",
+        "23.0 Inch (58cm)"
       ],
-      "badge": "Arabian Heritage",
-      "stock": 30,
-      "image": "/assets/thobes/thobes__al_noor_design_p6_1.png",
+      "badge": "Pre-Tied Instant",
+      "stock": 22,
+      "image": "/assets/products/cap_barkati_diamond_crown.jpg",
       "gallery": [
-        "/assets/thobes/thobes__al_noor_design_p6_1.png"
+        "/assets/reels/real_amama_tutorial.jpg"
       ],
-      "description": "Authentic woven jacquard Red & White Yashmagh (Keffiyeh) accompanied by a heavy double-ring black braided cord (Agal). Complete Gulf style head attire.",
+      "description": "Instant luxury pre-wound Amama fitted onto a structured velvet prayer cap base with gold brocade band. Put on in 5 seconds with zero wrapping hassle.",
       "benefits": [
-        "Heavy woven tassels and authentic Arabian jacquard patterns",
-        "Durable agal cord that sits firmly without slipping",
-        "Protection against heat, dust and direct sun"
+        "Permanent pre-styled Sunnah folds that never unravel",
+        "Padded sweatband lining for all-day comfort",
+        "Gold metallic thread border highlight"
+      ],
+      "tags": [
+        "Ready Amama",
+        "Pre-Tied Turban",
+        "Black Gold",
+        "Easy Wear"
+      ]
+    },
+    {
+      "id": "arabians-rumal-shemagh-red",
+      "name": "Arabians Classic Red & White Shemagh Rumal with Heavy Agal",
+      "category": "wearing",
+      "subcategory": "rumal",
+      "price": 799,
+      "mrp": 1299,
+      "rating": 4.9,
+      "reviewsCount": 76,
+      "badge": "Best Seller",
+      "stock": 60,
+      "image": "/assets/products/shemagh_rumal_red_white.jpg",
+      "gallery": [
+        "/assets/products/shemagh_rumal_red_white.jpg"
+      ],
+      "description": "Authentic Saudi Arabian 55x55 inch woven red and white houndstooth Shemagh scarf complete with weighted wool tassel fringes and heavy double black Agal head cord.",
+      "benefits": [
+        "100% combed Egyptian cotton yarn-dyed jacquard weave",
+        "Includes double reinforced black Agal rope band",
+        "Protects against sun, wind, dust and air conditioning"
       ],
       "tags": [
         "Shemagh",
         "Rumal",
-        "Agal",
-        "Gulf Wear"
+        "Agal Rope",
+        "Saudi Scarf"
       ]
     },
     {
-      "id": "islamic-cap-collection",
-      "name": "Handcrafted Turkish Velvet & Omani Embroidered Cap Set",
+      "id": "arabians-rumal-keffiyeh-black",
+      "name": "Authentic Palestinian Black & White Woven Keffiyeh Rumal",
       "category": "wearing",
-      "price": 449,
-      "mrp": 699,
-      "rating": 4.9,
-      "reviewsCount": 94,
-      "sizes": [
-        "Sizes: 21, 22, 22.5, 23 Inches"
-      ],
-      "badge": "Pack of 2",
-      "stock": 50,
-      "image": "/assets/thobes/thobes_al_noor_2_p8_1.png",
-      "gallery": [
-        "/assets/thobes/thobes_al_noor_2_p8_1.png"
-      ],
-      "description": "Set of 2 luxury prayer caps: 1x Hand-embroidered Omani rigid kufi and 1x Rich velvet Turkish prayer topi with intricate gold threadwork. Breathable inner lining.",
-      "benefits": [
-        "Non-slip comfortable fit for daily five-time prayers",
-        "Reinforced sweatband to maintain crisp circular shape",
-        "Available in standard Indian head circumferences"
-      ],
-      "tags": [
-        "Islamic Cap",
-        "Kufi",
-        "Topi",
-        "Prayer Cap"
-      ]
-    },
-    {
-      "id": "royal-arabic-bisht",
-      "name": "Royal Arabian Bisht / Qubba (Heavy Gold Zari Border)",
-      "category": "wearing",
-      "price": 3499,
-      "mrp": 4999,
+      "subcategory": "rumal",
+      "price": 699,
+      "mrp": 1099,
       "rating": 5,
-      "reviewsCount": 46,
-      "sizes": [
-        "Free Size (Length 56-60)"
-      ],
-      "badge": "Groom Royal",
-      "stock": 15,
-      "image": "/assets/thobes/thobes__al_noor_design_p8_1.png",
+      "reviewsCount": 94,
+      "badge": "Heritage Woven",
+      "stock": 45,
+      "image": "/assets/products/keffiyeh_rumal_black_white.jpg",
       "gallery": [
-        "/assets/thobes/thobes__al_noor_design_p8_1.png"
+        "/assets/products/keffiyeh_rumal_black_white.jpg"
       ],
-      "description": "Traditional Arab ceremonial cloak worn over the thobe for weddings, Eid, and high honors. Hand-trimmed with heavy real metallic gold thread (Zari) along the collar and front lapels.",
+      "description": "Historical fishnet, olive leaf, and bold border patterned Palestinian style black and white keffiyeh. Hand-knotted corner tassels with ultra-durable cotton weave.",
       "benefits": [
-        "Gives an instant majestic Sheikh look for grooms and dignitaries",
-        "Includes authentic matching gold braided tasselled cord",
-        "Lightweight sheer luxury wool-blend drape"
+        "Traditional woven pattern (not printed)",
+        "Generous 48x48 inch versatile drape size",
+        "Softens with every wash, lasting for years"
       ],
       "tags": [
-        "Royal Bisht",
-        "Groom Cloak",
-        "Gold Zari"
+        "Keffiyeh",
+        "Palestinian Rumal",
+        "Black White Scarf",
+        "Heritage"
       ]
     },
     {
-      "id": "wedding-dulha-turban",
-      "name": "Royal Dulha Groom Wedding Turban (Zari Brocade with Kalgi)",
+      "id": "cap-turkish-velvet-fez",
+      "name": "Handcrafted Turkish Velvet Fez Prayer Cap with Zari Motif",
       "category": "wearing",
-      "price": 1899,
-      "mrp": 2699,
-      "rating": 4.9,
-      "reviewsCount": 38,
+      "subcategory": "caps",
+      "price": 599,
+      "mrp": 999,
+      "rating": 5,
+      "reviewsCount": 62,
       "sizes": [
-        "Free Size Padded"
+        "55 cm",
+        "56 cm",
+        "57 cm",
+        "58 cm"
+      ],
+      "badge": "Ottoman Velvet",
+      "stock": 40,
+      "image": "/assets/products/turkish_velvet_cap.jpg",
+      "gallery": [
+        "/assets/products/turkish_velvet_cap.jpg"
+      ],
+      "description": "Stately Turkish Ottoman hard-crown velvet cap finished with golden silk Zari floral crest embroidery, breathable cotton sweatband, and regal posture support.",
+      "benefits": [
+        "Dense short-pile plush velvet that maintains rigid structure",
+        "Sweat-absorbing hypoallergenic interior lining",
+        "Ideal foundation base for wrapping Amama Shareef"
+      ],
+      "tags": [
+        "Turkish Cap",
+        "Velvet Topi",
+        "Fez Cap",
+        "Zari Embroidery"
+      ]
+    },
+    {
+      "id": "cap-omani-embroidered-silk",
+      "name": "Authentic Omani Geometric Silk-Thread Embroidered Topi (Kummah)",
+      "category": "wearing",
+      "subcategory": "caps",
+      "price": 699,
+      "mrp": 1199,
+      "rating": 4.9,
+      "reviewsCount": 48,
+      "sizes": [
+        "55 cm",
+        "56 cm",
+        "57 cm",
+        "58 cm"
+      ],
+      "badge": "Omani Kummah",
+      "stock": 30,
+      "image": "/assets/products/omani_embroidered_cap.jpg",
+      "gallery": [
+        "/assets/products/omani_embroidered_cap.jpg"
+      ],
+      "description": "Handcrafted Sultanate of Oman Kummah cap featuring multi-color micro needlework geometric eyelets, dual ventilation perforations, and pliable foldable crown.",
+      "benefits": [
+        "Air-circulating micro-perforations ideal for hot climates",
+        "100% fine cotton canvas base with silky embroidery",
+        "Folds completely flat for pocket storage without creasing"
+      ],
+      "tags": [
+        "Omani Topi",
+        "Kummah Cap",
+        "Geometric Embroidery",
+        "Sunnah Cap"
+      ]
+    },
+    {
+      "id": "royal-arabic-bisht-black-gold",
+      "name": "Royal Arabian Bisht / Qubba (Heavy 24K Gold Zari Border - Jet Black)",
+      "category": "wearing",
+      "subcategory": "bisht",
+      "price": 2999,
+      "mrp": 4499,
+      "rating": 5,
+      "reviewsCount": 53,
+      "sizes": [
+        "Free Size (Standard Sheikh Cut)"
+      ],
+      "badge": "Royal Cloak",
+      "stock": 15,
+      "image": "/assets/products/royal_arabic_bisht_black.jpg",
+      "gallery": [
+        "/assets/products/royal_arabic_bisht_black.jpg"
+      ],
+      "description": "Magnificent ceremonial Arabian Bisht in sheer jet black poly-wool blend, featuring 3-inch wide hand-braided gold metallic Zari bullion borders (Darbawiah) along the neckline and front opening.",
+      "benefits": [
+        "Master artisan metallic gold embroidery that does not tarnish",
+        "Lightweight semi-translucent drape designed to be worn over white thobes",
+        "Complete with matching golden braided front tassels"
+      ],
+      "tags": [
+        "Bisht",
+        "Qubba",
+        "Gold Zari",
+        "Royal Cloak",
+        "Sheikh Bisht"
+      ]
+    },
+    {
+      "id": "royal-arabic-bisht-cream-ivory",
+      "name": "Imperial Wedding Bisht / Qubba (Ivory Silk Wool with Gold Embroidery)",
+      "category": "wearing",
+      "subcategory": "bisht",
+      "price": 3299,
+      "mrp": 4999,
+      "rating": 4.9,
+      "reviewsCount": 31,
+      "sizes": [
+        "Free Size (Standard Sheikh Cut)"
+      ],
+      "badge": "Groom Special",
+      "stock": 12,
+      "image": "/assets/products/royal_arabic_bisht_ivory.jpg",
+      "gallery": [
+        "/assets/products/royal_arabic_bisht_ivory.jpg",
+        "/assets/products/royal_bisht_black_gold.jpg"
+      ],
+      "description": "Bespoke cream ivory wedding Bisht tailored for Muslim grooms, scholars, and dignitaries. Highlights high-luster golden lace work and opulent flowing silhouette.",
+      "benefits": [
+        "Exquisite ivory and gold contrast for wedding photography",
+        "Sheer breathable wool-silk blend",
+        "Free-size flowing fit tailored for all heights"
+      ],
+      "tags": [
+        "Ivory Bisht",
+        "Wedding Qubba",
+        "Dulha Bisht",
+        "Cream Gold"
+      ]
+    },
+    {
+      "id": "wedding-dulha-turban-cream-gold",
+      "name": "Royal Dulha Groom Wedding Turban (Zari Brocade with Antique Kalgi)",
+      "category": "wearing",
+      "subcategory": "turban",
+      "price": 2499,
+      "mrp": 3699,
+      "rating": 5,
+      "reviewsCount": 44,
+      "sizes": [
+        "21.5 Inch (55cm)",
+        "22.0 Inch (56cm)",
+        "22.5 Inch (57cm)",
+        "23.0 Inch (58cm)"
       ],
       "badge": "Dulha Special",
-      "stock": 18,
-      "image": "/assets/thobes/thobes_al_noor_2_p10_1.png",
+      "stock": 16,
+      "image": "/assets/products/wedding_dulha_turban_royal.jpg",
       "gallery": [
-        "/assets/thobes/thobes_al_noor_2_p10_1.png"
+        "/assets/products/wedding_dulha_turban_royal.jpg"
       ],
-      "description": "Exquisite pre-tied royal groom turban fashioned from golden Banarasi brocade fabric, adorned with pearl strings and an antique gold Kalgi brooch with green emerald stone.",
+      "description": "Exquisite cream and champagne gold brocade Nikah turban for the Muslim groom. Accented with an antique gold Kundan & ruby Kalgi brooch and pleated tail.",
       "benefits": [
-        "Pre-tied structured frame — ready to wear in seconds",
-        "Cushioned inner cotton band prevents headache or tightness",
-        "Majestic royal groom presentation"
+        "Ready-to-wear pre-styled firm base (no tying needed)",
+        "Includes detachable Kundan Kalgi feather brooch",
+        "Soft padded velvet sweat lining"
       ],
       "tags": [
-        "Wedding Turban",
         "Dulha Pagdi",
-        "Groom Wear"
+        "Groom Turban",
+        "Nikah Turban",
+        "Kalgi Brooch"
+      ]
+    },
+    {
+      "id": "wedding-dulha-turban-emerald-velvet",
+      "name": "Emerald Green Velvet & Zirconia Dulha Royal Turban",
+      "category": "wearing",
+      "subcategory": "turban",
+      "price": 2799,
+      "mrp": 3999,
+      "rating": 4.9,
+      "reviewsCount": 28,
+      "sizes": [
+        "21.5 Inch (55cm)",
+        "22.0 Inch (56cm)",
+        "22.5 Inch (57cm)",
+        "23.0 Inch (58cm)"
+      ],
+      "badge": "Emerald Luxury",
+      "stock": 12,
+      "image": "/assets/products/wedding_dulha_turban_emerald.jpg",
+      "gallery": [
+        "/assets/products/wedding_dulha_turban_emerald.jpg"
+      ],
+      "description": "Deep emerald royal velvet groom safa embellished with hand-stitched Zari braids, micro pearls, and an Austrian crystal Kalgi crest.",
+      "benefits": [
+        "Opulent micro-velvet fabric with rich sheen under stage lights",
+        "Custom padded comfort fit for long wedding ceremonies",
+        "Comes in luxury hardboard presentation box"
+      ],
+      "tags": [
+        "Emerald Turban",
+        "Velvet Safa",
+        "Dulha Pagdi",
+        "Zirconia Kalgi"
       ]
     },
     {
       "id": "talbina-vanilla",
-      "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
+      "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits - 400g)",
       "category": "health",
-      "price": 349,
-      "mrp": 449,
-      "rating": 4.9,
-      "reviewsCount": 148,
-      "netWeight": "250 Gram",
-      "badge": "Flagship Brand",
-      "stock": 50,
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 5,
+      "reviewsCount": 142,
+      "badge": "Flagship Bestseller",
+      "stock": 85,
       "image": "/assets/talbina/talbina_vanilla_dryfruits.jpg",
       "gallery": [
         "/assets/talbina/talbina_vanilla_dryfruits.jpg"
       ],
-      "description": "Original Arabian's Talbina crafted from whole sprouted barley (Jau), premium California almonds, green pistachios, cashews and natural vanilla. Prepared in just 5 minutes with warm milk or water.",
+      "description": "Authentic Sunnah recipe made from sprouted whole grain barley (Jau), enriched with California almonds, Afghan cashews, pistachios, and natural vanilla. Clinically revered to soothe sadness and energize the heart.",
       "benefits": [
-        "Sunnah superfood recommended for soothing heart and grief",
-        "High dietary fiber that heals digestion, acidity and gut health",
-        "Natural stamina booster without artificial chemicals",
-        "Ready in 5 minutes — wholesome family breakfast"
+        "Authentic Sunnah superfood based on Sahih Bukhari Hadith",
+        "High soluble fiber (Beta-Glucan) supports digestion and cholesterol",
+        "Zero refined sugar, zero preservatives, 100% Halal certified"
       ],
       "tags": [
+        "Talbina",
+        "Talbeena",
         "Sunnah Food",
-        "100% Veg",
-        "Ready in 5 Min",
-        "High Fiber"
+        "Vanilla",
+        "Dry Fruits"
       ]
     },
     {
       "id": "talbina-milk-mawa",
-      "name": "Arabian's Talbeena Nutritional Breakfast (Milk Mawa Flavour)",
+      "name": "Arabian's Talbeena Nutritional Breakfast (Milk Mawa Flavour - 400g)",
       "category": "health",
-      "price": 349,
-      "mrp": 449,
-      "rating": 4.8,
-      "reviewsCount": 96,
-      "netWeight": "250 Gram",
-      "badge": "Customer Favorite",
-      "stock": 45,
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 4.9,
+      "reviewsCount": 98,
+      "badge": "Creamy Rich",
+      "stock": 65,
       "image": "/assets/talbina/talbina_milk_mawa.jpg",
       "gallery": [
         "/assets/talbina/talbina_milk_mawa.jpg"
       ],
-      "description": "Rich, creamy traditional Milk Mawa infused Talbina packed with crunchy dry fruits. Combines the heritage taste of authentic mawa dessert with the supreme nutritional healing of sunnah barley.",
+      "description": "Traditional Khoya (Mawa) and cream infused whole barley porridge. Rich, velvety, and deeply comforting for elderly health, joint strength, and growing children.",
       "benefits": [
-        "Rich in calcium and healthy fats for joint strength",
-        "Delicious creamy taste loved by elders and youth alike",
-        "Zero refined sugar; naturally sweetened with dried dates and nuts",
-        "Instant energy replenishment"
+        "Rich in natural calcium, magnesium, and dietary fiber",
+        "Delicious authentic traditional sweet pudding taste",
+        "Instant 5-minute hot milk cooking preparation"
       ],
       "tags": [
+        "Talbina",
         "Milk Mawa",
-        "Energy Booster",
-        "Sunnah Recipe"
+        "Barley Porridge",
+        "Healthy Breakfast"
       ]
     },
     {
-      "id": "talbina-chocolate",
-      "name": "Arabian's Talbeena For Kids (Chocolate Flavour - 1+ Years)",
+      "id": "honey-mix-dryfruits-premium",
+      "name": "Arabians Royal Sidr Honey Mix with 7 Roasted Dry Fruits (500g Glass Jar)",
       "category": "health",
-      "price": 369,
-      "mrp": 499,
-      "rating": 4.9,
+      "subcategory": "honey-mix",
+      "price": 999,
+      "mrp": 1499,
+      "rating": 5,
       "reviewsCount": 112,
-      "netWeight": "250 Gram",
-      "badge": "Kids Special",
-      "stock": 40,
-      "image": "/assets/talbina/talbina_chocolate_kids.jpg",
-      "gallery": [
-        "/assets/talbina/talbina_chocolate_kids.jpg"
-      ],
-      "description": "Specially formulated for toddlers and growing children aged 1 year plus. Made with natural Dutch cocoa, stone-ground barley, micronutrients and pulverized dry fruits for sharp memory and immunity.",
-      "benefits": [
-        "Yummy chocolate taste that kids drink without fuss",
-        "Promotes brain development and bone density in growing children",
-        "Free from preservatives, artificial colors or excess sucrose"
-      ],
-      "tags": [
-        "Kids 1+ Years",
-        "Brain Nutrition",
-        "Chocolate"
-      ]
-    },
-    {
-      "id": "talbina-baby-barley",
-      "name": "Arabian's Talbeena Baby Cereal With Barley (3+ Years)",
-      "category": "health",
-      "price": 329,
-      "mrp": 429,
-      "rating": 4.8,
-      "reviewsCount": 84,
-      "netWeight": "200 Gram",
-      "badge": "Gentle Formula",
-      "stock": 35,
-      "image": "/assets/talbina/talbina_baby_barley.jpg",
-      "gallery": [
-        "/assets/talbina/talbina_baby_barley.jpg"
-      ],
-      "description": "Ultra-fine, gentle barley cereal designed for delicate stomachs. Fortified with essential vitamins, iron, and fiber to support digestion and steady growth.",
-      "benefits": [
-        "Easy to swallow and gentle on little tummies",
-        "Prevents constipation and indigestion naturally",
-        "100% natural, lab-tested hygienic Sunnah cereal"
-      ],
-      "tags": [
-        "Baby Cereal",
-        "3+ Years",
-        "Easy Digestion"
-      ]
-    },
-    {
-      "id": "talbina-dry-dates",
-      "name": "Arabian's Talbeena With Dry Dates & Vanilla Flavour",
-      "category": "health",
-      "price": 379,
-      "mrp": 499,
-      "rating": 5,
-      "reviewsCount": 167,
-      "netWeight": "250 Gram",
-      "badge": "Royal Sidr Blend",
+      "badge": "100% Raw Sidr",
       "stock": 60,
-      "image": "/assets/talbina/talbina_dry_dates_vanilla.jpg",
+      "image": "/assets/products/honey_dryfruits_premium.jpg",
       "gallery": [
-        "/assets/talbina/talbina_dry_dates_vanilla.jpg"
+        "/assets/products/honey_dryfruits_premium.jpg"
       ],
-      "description": "The ultimate Sunnah pairing of Ajwa & Medjool dried dates with roasted barley and aromatic vanilla. Rich in iron, natural fructose, and antioxidants for peak vitality.",
+      "description": "Premium hexagonal glass jar packed with layers of roasted Mamra almonds, walnut kernels, cashews, Afghani figs, green pistachios, pine nuts, and Iranian saffron, steeped in raw Sidr honey.",
       "benefits": [
-        "Infused with nutrient-dense dates for natural sweetness and hemoglobin",
-        "Sustained energy release without sugar crash",
-        "Supports cardiovascular and nervous system wellness"
+        "Dense power-snack for daily stamina, immunity, and brain memory",
+        "Unheated raw Sidr forest honey packed with live enzymes",
+        "Sealed in heavy hexagon glass jar with safety tamper band"
       ],
       "tags": [
-        "Dry Dates",
-        "Natural Iron",
-        "Ajwa Blend"
+        "Honey Dry Fruits",
+        "Sidr Honey",
+        "Mamra Almonds",
+        "Sunnah Superfood"
       ]
     },
     {
-      "id": "honey-mix-dryfruits",
-      "name": "Arabians Royal Sidr Honey Mix with Dry Fruits",
+      "id": "honey-mix-saffron-kashmiri",
+      "name": "Kashmiri Mongra Saffron & Wild Berry Honey Infused Dryfruit Jar (450g)",
       "category": "health",
-      "price": 699,
-      "mrp": 899,
-      "rating": 4.9,
-      "reviewsCount": 78,
-      "netWeight": "450 Gram Hexagonal Jar",
-      "badge": "Immunity Powerhouse",
-      "stock": 30,
-      "image": "/assets/studio/honey_mix_dryfruits.jpg",
-      "gallery": [
-        "/assets/studio/honey_mix_dryfruits.jpg"
-      ],
-      "description": "100% Raw unprocessed Sidr Honey packed with roasted California almonds, Iranian pistachios, cashews, and whole dried figs. A royal morning vitality spoon.",
-      "benefits": [
-        "Boosts vigor, immunity, and daily stamina",
-        "Natural cold, cough, and throat relief",
-        "Pure Sunnah recipe with raw unheated Sidr honey"
-      ],
-      "tags": [
-        "Pure Honey",
-        "Dry Fruits Mix",
-        "Sunnah Health"
-      ]
-    },
-    {
-      "id": "real-pure-honey",
-      "name": "Arabians 100% Pure Raw Sidr Honey",
-      "category": "health",
-      "price": 549,
-      "mrp": 749,
-      "rating": 4.9,
-      "reviewsCount": 65,
-      "netWeight": "500 Gram",
-      "badge": "100% Pure Raw",
-      "stock": 40,
-      "image": "/assets/studio/honey_mix_dryfruits.jpg",
-      "gallery": [
-        "/assets/studio/honey_mix_dryfruits.jpg"
-      ],
-      "description": "Pure single-origin wild Sidr berry nectar honey. Unpasteurized, unheated, and unfiltered to preserve all natural bee pollen, enzymes, and medicinal nutrients.",
-      "benefits": [
-        "Natural antibiotic and wound healing properties",
-        "Immediate soothing for digestive and respiratory health",
-        "Zero sugar or corn syrup dilution"
-      ],
-      "tags": [
-        "Raw Sidr Honey",
-        "Unfiltered",
-        "Medicinal Grade"
-      ]
-    },
-    {
-      "id": "dehnul-oud-pure",
-      "name": "Aged Royal Dehnul Oud (Cambodian Reserve - 6ml)",
-      "category": "fragrance",
-      "price": 2499,
-      "mrp": 3499,
-      "rating": 5,
-      "reviewsCount": 88,
-      "netWeight": "6 ml Crystal Bottle",
-      "badge": "100% Pure Oil",
-      "stock": 20,
-      "image": "/assets/studio/dehnul_oud_pure.jpg",
-      "gallery": [
-        "/assets/studio/dehnul_oud_pure.jpg"
-      ],
-      "description": "Distilled from aged wild agarwood trees from the Koh Kong forests of Cambodia. A deep, smoky, woody, and resinous aroma with balsamic sweet dry-down that lingers on clothes for days.",
-      "benefits": [
-        "Zero alcohol, 100% pure steam-distilled agarwood oil",
-        "24-48 hours extreme longevity with majestic projection",
-        "Presented in crystal bottle inside antique velvet gift box"
-      ],
-      "tags": [
-        "Pure Dehnul Oud",
-        "Cambodian",
-        "Alcohol Free"
-      ]
-    },
-    {
-      "id": "white-oudh-attar",
-      "name": "Imperial White Oudh Non-Alcoholic Attar (12ml)",
-      "category": "fragrance",
-      "price": 649,
-      "mrp": 899,
-      "rating": 4.8,
-      "reviewsCount": 176,
-      "netWeight": "12 ml",
-      "badge": "Top Rated",
-      "stock": 50,
-      "image": "/assets/studio/dehnul_oud_pure.jpg",
-      "gallery": [
-        "/assets/studio/dehnul_oud_pure.jpg"
-      ],
-      "description": "Crisp, airy, and aristocratic blend of white musk, tender agarwood, ambergris, and Taif rose. Clean and refreshing for daily prayers and professional meetings.",
-      "benefits": [
-        "Non-alcoholic Halal roll-on perfume oil",
-        "Gentle on sensitive skin with no synthetic burning",
-        "Signature scent loved across all age groups"
-      ],
-      "tags": [
-        "White Oudh",
-        "Roll On",
-        "12ml",
-        "Long Lasting"
-      ]
-    },
-    {
-      "id": "arabian-bakhoor-burner-combo",
-      "name": "Arabian Royal Bakhoor & Electric Brass Mabkhara Set",
-      "category": "fragrance",
-      "price": 1299,
+      "subcategory": "honey-mix",
+      "price": 1199,
       "mrp": 1799,
       "rating": 4.9,
-      "reviewsCount": 94,
-      "badge": "Home Blessing",
-      "stock": 25,
-      "image": "/assets/studio/bakhoor_mabkhara.jpg",
+      "reviewsCount": 67,
+      "badge": "Kashmiri Saffron",
+      "stock": 35,
+      "image": "/assets/products/honey_dryfruits_premium.jpg",
       "gallery": [
-        "/assets/studio/bakhoor_mabkhara.jpg"
+        "/assets/products/honey_dryfruits_premium.jpg"
       ],
-      "description": "Transform your home into an Arabian palace. Includes 100g of slow-burning fragrant Oud Muattar chips infused with musk and rose water, accompanied by a heavy brass electric smokeless burner.",
+      "description": "Infused with Grade-A Kashmiri Mongra saffron threads, rich organic wild berry honey, roasted walnuts, and Turkish dried apricots.",
       "benefits": [
-        "Purifies home air and eliminates stubborn odors",
-        "Electric burner operates safely without charcoal or open flame",
-        "Creates calm serene atmosphere for Quran recitation and meditation"
+        "High antioxidant saffron promotes glowing skin and heart health",
+        "Natural aphrodisiac and vitality booster for active lifestyles",
+        "Pure golden hue and hypnotic floral saffron aroma"
       ],
       "tags": [
-        "Bakhoor",
-        "Mabkhara",
-        "Electric Burner",
-        "Oud Muattar"
+        "Saffron Honey",
+        "Kashmiri Honey",
+        "Dryfruit Jar",
+        "Vitality Honey"
       ]
     },
     {
-      "id": "oud-wood-chips-assamese",
-      "name": "Arabians Real Assamese Agarwood Oud Chips (50g)",
-      "category": "fragrance",
+      "id": "honey-pure-raw-sidr",
+      "name": "Arabians 100% Pure Raw Unpasteurized Forest Sidr Honey (500g Jar)",
+      "category": "health",
+      "subcategory": "pure-honey",
+      "price": 849,
+      "mrp": 1199,
+      "rating": 5,
+      "reviewsCount": 156,
+      "badge": "100% Pure Raw",
+      "stock": 75,
+      "image": "/assets/products/raw_sidr_honey_pure.jpg",
+      "gallery": [
+        "/assets/products/raw_sidr_honey_pure.jpg"
+      ],
+      "description": "Directly harvested from wild Sidr (Beri / Ziziphus) tree groves. Completely raw, cold-extracted, unheated, unpasteurized, and free from added corn syrup or artificial sugars.",
+      "benefits": [
+        "Tested 100% pure with intact natural bee pollen and propolis",
+        "Potent natural antibiotic mentioned in Quran Surah An-Nahl",
+        "Distinctive butterscotch aroma and thick amber consistency"
+      ],
+      "tags": [
+        "Raw Honey",
+        "Sidr Honey",
+        "Beri Honey",
+        "Pure Honey",
+        "Unpasteurized"
+      ]
+    },
+    {
+      "id": "honey-yemen-doani-wild",
+      "name": "Royal Yemen Do'ani Grade-A Wild Mountain Sidr Honey (250g Luxury Jar)",
+      "category": "health",
+      "subcategory": "pure-honey",
       "price": 1499,
       "mrp": 2199,
       "rating": 5,
-      "reviewsCount": 41,
-      "netWeight": "50 Grams",
-      "badge": "Wild Harvested",
-      "stock": 18,
-      "image": "/assets/studio/dehnul_oud_pure.jpg",
+      "reviewsCount": 78,
+      "badge": "Yemen Do'ani Reserve",
+      "stock": 25,
+      "image": "/assets/products/yemen_doani_honey.jpg",
       "gallery": [
-        "/assets/studio/dehnul_oud_pure.jpg"
+        "/assets/products/yemen_doani_honey.jpg"
       ],
-      "description": "Resin-dense wild Agarwood chips hand-carved from Assam, India. Emits a warm, deeply spiritual balsamic incense aroma when heated over charcoal or electric mabkhara.",
+      "description": "The world's most prized monofloral honey, wild-harvested from ancient Sidr trees in the secluded valleys of Wadi Do'an, Hadramaut, Yemen.",
       "benefits": [
-        "100% natural tree resin with zero synthetic fragrances",
-        "Slow-burning chips that last over 40+ sessions",
-        "Traditional Arabian greeting hospitality ritual"
+        "Extraordinary medicinal grade antibacterial potency (TA 30+)",
+        "Unrivalled rich, aromatic taste of authentic Yemeni Sidr",
+        "Packaged in heavy UV-protected collector glass jar"
       ],
       "tags": [
-        "Agarwood Chips",
-        "Oud Wood",
-        "Natural Incense"
+        "Yemen Honey",
+        "Doani Sidr",
+        "Luxury Honey",
+        "Wadi Doan"
       ]
     },
     {
-      "id": "acrylic-ayatul-kursi-tugra",
-      "name": "3D Royal Gold Acrylic Ayat-ul-Kursi Tugra Wall Art",
-      "category": "decor",
+      "id": "perfume-arabian-night-royal-oud",
+      "name": "Arabians Night Royal Oud Luxury Eau De Parfum (100ml Vaporisateur)",
+      "category": "fragrance",
+      "subcategory": "perfume",
+      "price": 1899,
+      "mrp": 2799,
+      "rating": 5,
+      "reviewsCount": 118,
+      "badge": "Signature EDP",
+      "stock": 35,
+      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
+      "gallery": [
+        "/assets/products/arabian_perfume_royal_oud.jpg"
+      ],
+      "description": "Opulent Arabic luxury eau de parfum blending aged Cambodian oud, smokey leather, Bulgarian damask rose, and golden amber. Housed in a custom faceted crystal flask with gold mosque dome cap.",
+      "benefits": [
+        "Extrait de Parfum concentration delivering 18+ hours projection",
+        "Unisex royal profile admired across Gulf high society",
+        "Includes velvet gift box with magnetic gold latch"
+      ],
+      "tags": [
+        "Arabians Perfume",
+        "Royal Oud",
+        "EDP Spray",
+        "Oud Perfume"
+      ]
+    },
+    {
+      "id": "perfume-desert-amber-rose",
+      "name": "Desert Amber & Damascus Rose Intense EDP (100ml Luxury Spray)",
+      "category": "fragrance",
+      "subcategory": "perfume",
+      "price": 1749,
+      "mrp": 2499,
+      "rating": 4.9,
+      "reviewsCount": 73,
+      "badge": "Warm Floral Oud",
+      "stock": 30,
+      "image": "/assets/products/desert_amber_perfume.jpg",
+      "gallery": [
+        "/assets/products/desert_amber_perfume.jpg"
+      ],
+      "description": "Intoxicating blend of velvety Taif roses, warming golden amber resin, Madagascan vanilla pod, and subtle white musk trails.",
+      "benefits": [
+        "High sillage and alluring romantic trail for special evenings",
+        "Non-staining formulation safe for white thobes and silk dupattas",
+        "Gold-plated atomizer delivers ultra-fine continuous mist"
+      ],
+      "tags": [
+        "Amber Perfume",
+        "Taif Rose",
+        "Arabian Fragrance",
+        "Luxury EDP"
+      ]
+    },
+    {
+      "id": "attar-imperial-white-oudh",
+      "name": "Imperial White Oudh Non-Alcoholic Concentrated Attar (12ml Crystal Bottle)",
+      "category": "fragrance",
+      "subcategory": "attar",
+      "price": 899,
+      "mrp": 1499,
+      "rating": 5,
+      "reviewsCount": 142,
+      "badge": "100% Halal Attar",
+      "stock": 80,
+      "image": "/assets/products/attar_crystal_bottle.jpg",
+      "gallery": [
+        "/assets/products/attar_crystal_bottle.jpg"
+      ],
+      "description": "Pure oil concentrate of sweet white oudh blended with crushed white florals, ambergris notes, and subtle cedarwood. Completely alcohol-free for prayers.",
+      "benefits": [
+        "Zero alcohol, 100% concentrated perfume oil (Ittar)",
+        "Crystal octagonal bottle with glass dip wand for precise application",
+        "Stays vibrant on prayer garments for up to 3 days"
+      ],
+      "tags": [
+        "White Oudh",
+        "Attar",
+        "Ittar",
+        "Non-Alcoholic",
+        "Sunnah Attar"
+      ]
+    },
+    {
+      "id": "attar-kasturi-deer-musk",
+      "name": "Kasturi Deer Musk Sunnah Attar (12ml Pure Alcohol-Free Oil)",
+      "category": "fragrance",
+      "subcategory": "attar",
+      "price": 999,
+      "mrp": 1699,
+      "rating": 4.9,
+      "reviewsCount": 88,
+      "badge": "Sunnah Musk",
+      "stock": 50,
+      "image": "/assets/products/attar_crystal_bottle.jpg",
+      "gallery": [
+        "/assets/products/attar_crystal_bottle.jpg"
+      ],
+      "description": "Deep, earthy, animalic-sweet Kasturi musk formulation inspired by classical Sunnah traditions. Worn for Jummah and sacred spiritual gatherings.",
+      "benefits": [
+        "Authentic warm musk formulation praised in Islamic traditions",
+        "Calming therapeutic effect on the mind and heart",
+        "Aged in dark glass flacons for maximum depth"
+      ],
+      "tags": [
+        "Kasturi Musk",
+        "Deer Musk",
+        "Black Musk",
+        "Sunnah Ittar"
+      ]
+    },
+    {
+      "id": "bakhoor-oud-muattar-chips",
+      "name": "Arabians Royal Oud Muattar Luxury Agarwood Incense Chips (70g Glass Jar)",
+      "category": "fragrance",
+      "subcategory": "bakhoor",
+      "price": 799,
+      "mrp": 1199,
+      "rating": 5,
+      "reviewsCount": 96,
+      "badge": "Royal Muattar",
+      "stock": 55,
+      "image": "/assets/products/bakhoor_incense_muattar.jpg",
+      "gallery": [
+        "/assets/products/bakhoor_incense_muattar.jpg"
+      ],
+      "description": "Premium natural agarwood wood chips soaked for months in essential oils of French amber, musk, and aged Dehnul Oud. Emits dense, long-lasting luxury smoke.",
+      "benefits": [
+        "Fills entire home and clothing with royal Arabic palace aroma",
+        "Burns smoothly on both charcoal and electric burners",
+        "Sealed in heavy glass jar preserving freshness for years"
+      ],
+      "tags": [
+        "Bakhoor",
+        "Oud Muattar",
+        "Agarwood Chips",
+        "Arabic Incense"
+      ]
+    },
+    {
+      "id": "bakhoor-salalah-luban-tablets",
+      "name": "Salalah Luban Royal Frankincense & Oudh Slow-Burning Bakhoor (50g)",
+      "category": "fragrance",
+      "subcategory": "bakhoor",
+      "price": 649,
+      "mrp": 999,
+      "rating": 4.9,
+      "reviewsCount": 71,
+      "badge": "Omani Luban",
+      "stock": 45,
+      "image": "/assets/products/salalah_luban_frankincense.jpg",
+      "gallery": [
+        "/assets/products/salalah_luban_frankincense.jpg"
+      ],
+      "description": "Authentic Hojari green Frankincense (Luban) crystals from Salalah, Oman, blended with powdered agarwood and rose petals. Purifies indoor air and drives away negative energy.",
+      "benefits": [
+        "Natural antimicrobial air-purifying properties of pure Luban",
+        "Creates soothing spiritual ambiance before prayer times",
+        "Zero harsh black carbon smoke or chemical fillers"
+      ],
+      "tags": [
+        "Luban",
+        "Frankincense",
+        "Bakhoor",
+        "Air Purifier",
+        "Oman Luban"
+      ]
+    },
+    {
+      "id": "burner-electric-brass-mabkhara",
+      "name": "Arabians Antique Electric Brass Mabkhara Incense Burner",
+      "category": "fragrance",
+      "subcategory": "burner",
+      "price": 1299,
+      "mrp": 1999,
+      "rating": 5,
+      "reviewsCount": 88,
+      "badge": "Electric Brass",
+      "stock": 40,
+      "image": "/assets/products/brass_mabkhara_electric.jpg",
+      "gallery": [
+        "/assets/products/brass_mabkhara_electric.jpg"
+      ],
+      "description": "Cast solid brass electric incense burner featuring ornate Islamic fretwork, insulated handle, on/off toggle switch, and instant high-temperature ceramic heating plate.",
+      "benefits": [
+        "No charcoal, lighter fluid, or open flames needed",
+        "Instant heating within 60 seconds with thermostat safety control",
+        "Includes heavy brass tongs and removable ash dish"
+      ],
+      "tags": [
+        "Mabkhara",
+        "Electric Burner",
+        "Bakhoor Burner",
+        "Brass Mabkhara"
+      ]
+    },
+    {
+      "id": "burner-smart-usb-car-portable",
+      "name": "Smart USB Rechargeable Portable Pocket & Car Mabkhara Burner",
+      "category": "fragrance",
+      "subcategory": "burner",
+      "price": 1499,
+      "mrp": 2299,
+      "rating": 4.9,
+      "reviewsCount": 63,
+      "badge": "Portable USB",
+      "stock": 30,
+      "image": "/assets/reels/real_aroma_lamp.jpg",
+      "gallery": [
+        "/assets/reels/real_aroma_lamp.jpg"
+      ],
+      "description": "Compact wireless rechargeable electric Mabkhara. Fits in car cupholders, handbags, and travel luggage. Vaporizes oud chips without ash mess.",
+      "benefits": [
+        "USB Type-C fast charging battery lasts up to 15 incense sessions",
+        "Safe automatic 90-second shut-off timer prevents overheating",
+        "Allows smoking of hair, beards, thobes, and car interiors anywhere"
+      ],
+      "tags": [
+        "Portable Mabkhara",
+        "Car Incense Burner",
+        "USB Bakhoor",
+        "Travel Burner"
+      ]
+    },
+    {
+      "id": "roomspray-kaaba-kiswah-luxury",
+      "name": "Haramain Kaaba Kiswah Luxury Air & Room Freshener Spray (300ml)",
+      "category": "fragrance",
+      "subcategory": "roomspray",
+      "price": 599,
+      "mrp": 899,
+      "rating": 5,
+      "reviewsCount": 114,
+      "badge": "Kaaba Kiswah Scent",
+      "stock": 65,
+      "image": "/assets/products/room_spray_kaaba_kiswah.jpg",
+      "gallery": [
+        "/assets/products/room_spray_kaaba_kiswah.jpg"
+      ],
+      "description": "Formulated to recreate the sacred, unforgettable aroma of the Holy Kaaba's black silk Kiswah cloth in Makkah. Infused with aged oud, royal rose, amber, and musk.",
+      "benefits": [
+        "Brings the spiritual aura of Haramain Sharifain into your home",
+        "Gas-free pump spray formula safe for prayer carpets, curtains, and sofas",
+        "Long-lasting fragrance lingers for hours without chemical after-smell"
+      ],
+      "tags": [
+        "Kaaba Kiswah",
+        "Room Spray",
+        "Haramain Spray",
+        "Air Freshener",
+        "Sacred Mist"
+      ]
+    },
+    {
+      "id": "roomspray-madinah-amber-rose",
+      "name": "Madinah Munawwarah Amber & Rose Sacred Room Mist (300ml)",
+      "category": "fragrance",
+      "subcategory": "roomspray",
+      "price": 549,
+      "mrp": 849,
+      "rating": 4.9,
+      "reviewsCount": 82,
+      "badge": "Madinah Rose",
+      "stock": 50,
+      "image": "/assets/products/room_spray_kaaba_kiswah.jpg",
+      "gallery": [
+        "/assets/products/room_spray_kaaba_kiswah.jpg"
+      ],
+      "description": "Refreshing, sweet spiritual mist echoing the tranquil gardens of the Prophet's Mosque (Al-Masjid an-Nabawi) with floral Taif rose, white musk, and soft amber.",
+      "benefits": [
+        "Gentle, calming aroma promotes tranquility and prayer focus",
+        "Water-based gentle fabric formulation that leaves zero oily stains",
+        "Extra-large 300ml bottle delivers over 1,200 sprays"
+      ],
+      "tags": [
+        "Madinah Spray",
+        "Rose Amber",
+        "Home Fragrance",
+        "Room Freshener"
+      ]
+    },
+    {
+      "id": "bodyspray-oud-al-layl-gasfree",
+      "name": "Arabians Deodorant Body Spray - Oud Al Layl (200ml Gas-Free)",
+      "category": "fragrance",
+      "subcategory": "bodyspray",
+      "price": 399,
+      "mrp": 599,
+      "rating": 4.9,
+      "reviewsCount": 92,
+      "badge": "Gas Free 100% Perfume",
+      "stock": 70,
+      "image": "/assets/products/body_spray_oud_layl.jpg",
+      "gallery": [
+        "/assets/products/body_spray_oud_layl.jpg"
+      ],
+      "description": "100% perfume liquid deodorant without pressurized gas filler. Delivers pure masculine Arabian oud, warm spices, and leather notes that fight sweat all day.",
+      "benefits": [
+        "Zero gas formula lasts 3X longer than conventional aerosol cans",
+        "24-hour sweat defense with non-irritating skin formulation",
+        "Bold nighttime projection loved by young men and professionals"
+      ],
+      "tags": [
+        "Body Spray",
+        "Oud Al Layl",
+        "Men's Deodorant",
+        "Gas Free Spray"
+      ]
+    },
+    {
+      "id": "bodyspray-arabian-breeze-aqua",
+      "name": "Arabian Breeze Cool Aqua Musk Deodorant Body Spray (200ml)",
+      "category": "fragrance",
+      "subcategory": "bodyspray",
+      "price": 399,
+      "mrp": 599,
+      "rating": 4.8,
+      "reviewsCount": 64,
+      "badge": "Cooling Aqua",
+      "stock": 60,
+      "image": "/assets/products/body_spray_oud_layl.jpg",
+      "gallery": [
+        "/assets/products/body_spray_oud_layl.jpg"
+      ],
+      "description": "Fresh oceanic breeze notes blended with cool mint, sage, white musk, and soft amberwood. Designed for daytime freshness during humid summers.",
+      "benefits": [
+        "Invigorating cooling sensation on skin application",
+        "Antimicrobial protection against perspiration odor",
+        "Clean sporty aquatic profile"
+      ],
+      "tags": [
+        "Aqua Deodorant",
+        "Cool Musk",
+        "Body Spray",
+        "Summer Fresh"
+      ]
+    },
+    {
+      "id": "essential-oil-kalonji-coldpressed",
+      "name": "100% Pure Kalonji (Black Seed) Cold-Pressed Therapeutic Oil (100ml)",
+      "category": "fragrance",
+      "subcategory": "essential-oil",
+      "price": 449,
+      "mrp": 699,
+      "rating": 5,
+      "reviewsCount": 168,
+      "badge": "Sunnah Cure-All",
+      "stock": 90,
+      "image": "/assets/products/pure_kalonji_blackseed_oil.jpg",
+      "gallery": [
+        "/assets/products/pure_kalonji_blackseed_oil.jpg"
+      ],
+      "description": "First single-press virgin cold-pressed Nigella Sativa oil from premium Ethiopian black seeds. High Thymoquinone (TQ) content. Revered in Prophetic medicine for universal healing.",
+      "benefits": [
+        "High TQ potency certified 100% virgin cold-pressed without heat",
+        "Can be consumed orally for immunity or massaged for joint/hair health",
+        "Dark amber UV glass bottle with measured glass dropper"
+      ],
+      "tags": [
+        "Kalonji Oil",
+        "Black Seed Oil",
+        "Tibb-e-Nabawi",
+        "Sunnah Medicine",
+        "Nigella Sativa"
+      ]
+    },
+    {
+      "id": "essential-oil-mysore-sandalwood",
+      "name": "Pure Mysore Sandalwood (Chandan) Therapeutic Essential Oil (15ml)",
+      "category": "fragrance",
+      "subcategory": "essential-oil",
+      "price": 1299,
+      "mrp": 1999,
+      "rating": 5,
+      "reviewsCount": 58,
+      "badge": "Mysore Grade-A",
+      "stock": 30,
+      "image": "/assets/products/sandalwood_essential_oil.jpg",
+      "gallery": [
+        "/assets/products/sandalwood_essential_oil.jpg"
+      ],
+      "description": "Steam-distilled heartwood oil of Santalum Album from Mysore, Karnataka. Rich, creamy, deeply woody and meditative fragrance praised for spiritual grounding.",
+      "benefits": [
+        "100% pure undiluted therapeutic aromatherapy grade",
+        "Promotes deep mental calmness, prayer focus, and skin nourishment",
+        "Natural scent fixative that enriches any attar blend"
+      ],
+      "tags": [
+        "Sandalwood Oil",
+        "Chandan Oil",
+        "Essential Oil",
+        "Mysore Sandal"
+      ]
+    },
+    {
+      "id": "oudwood-assamese-triple-super",
+      "name": "Arabians Real Assamese Agarwood Triple Super Oud Chips (50g Box)",
+      "category": "fragrance",
+      "subcategory": "oudwood",
       "price": 2199,
       "mrp": 3299,
       "rating": 5,
-      "reviewsCount": 114,
-      "badge": "Handcrafted 3D",
-      "stock": 18,
-      "image": "/assets/studio/ayatul_kursi_tugra.jpg",
+      "reviewsCount": 84,
+      "badge": "Triple Super Grade",
+      "stock": 25,
+      "image": "/assets/products/assamese_agarwood_chips.jpg",
       "gallery": [
-        "/assets/studio/ayatul_kursi_tugra.jpg"
+        "/assets/products/assamese_agarwood_chips.jpg"
       ],
-      "description": "Exquisite 3D mirror-finish gold acrylic Arabic calligraphy plaque featuring Ayat-ul-Kursi in Ottoman Tugra royal crest style. High-grade shatterproof acrylic on matte black backplate.",
+      "description": "Dark, resin-saturated Aquilaria Agallocha wild agarwood chips harvested from aged Assam forests. Bubbles intensely upon hot coals, producing sweet medicinal balsamic oud smoke.",
       "benefits": [
-        "Brings divine blessings and royal elegance to living room or office",
-        "Ready to hang with heavy-duty pre-installed brass brackets",
-        "Scratch-resistant mirror gold that never fades or tarnishes"
+        "Sinks in water test verifying dense natural resin saturation",
+        "Smells authentic, profound, and deeply traditional",
+        "Packaged in velvet-lined gift chest for connoisseurs"
       ],
       "tags": [
-        "Ayat-ul-Kursi",
-        "3D Gold Acrylic",
-        "Islamic Wall Art"
+        "Assam Oud",
+        "Agarwood Chips",
+        "Real Oud Wood",
+        "Oud Wood",
+        "Assamese Agarwood"
       ]
     },
     {
-      "id": "resin-islamic-wall-clock",
-      "name": "Emerald Green Geode & Gold Resin Islamic Wall Clock",
-      "category": "decor",
-      "price": 2799,
-      "mrp": 3999,
+      "id": "oudwood-wild-kalimantan-grade-a",
+      "name": "Wild Kalimantan Indonesian Grade-A Agarwood Scented Wood Pieces (50g)",
+      "category": "fragrance",
+      "subcategory": "oudwood",
+      "price": 2499,
+      "mrp": 3799,
       "rating": 4.9,
-      "reviewsCount": 63,
-      "badge": "Masterpiece",
-      "stock": 12,
-      "image": "/assets/studio/ayatul_kursi_tugra.jpg",
+      "reviewsCount": 41,
+      "badge": "Wild Kalimantan",
+      "stock": 20,
+      "image": "/assets/products/assamese_agarwood_chips.jpg",
       "gallery": [
-        "/assets/studio/ayatul_kursi_tugra.jpg"
+        "/assets/products/assamese_agarwood_chips.jpg"
       ],
-      "description": "Hand-poured resin geode clock crafted with real crushed crystals, deep emerald pigments, 24K gold leaf veins, and 3D Arabic numerical markers with silent sweep quartz movement.",
+      "description": "Direct from the deep tropical jungles of Kalimantan, Indonesia. Known for its earthy, herbal, sweet vanilla-like drydown when heated gently on charcoal.",
       "benefits": [
-        "100% silent quartz movement (no ticking sound)",
-        "Every single clock is unique hand-made artisanal art",
-        "16-inch diameter statement centerpiece"
+        "Hand-selected dense heartwood chips rich in wild resin veins",
+        "Burns for an exceptionally long duration without charred aftertaste",
+        "Highly prized for majlis welcoming rituals and Eid festivals"
       ],
       "tags": [
-        "Resin Clock",
-        "Emerald & Gold",
-        "Silent Quartz"
+        "Kalimantan Oud",
+        "Indonesian Agarwood",
+        "Wild Oud",
+        "Agarwood Pieces"
       ]
     },
     {
-      "id": "nikah-nama-booklet-luxury",
-      "name": "Luxury Velvet Gold-Foil Nikah Nama Certificate Booklet",
+      "id": "dehnuloud-cambodian-reserve-6ml",
+      "name": "Aged Royal Dehnul Oud (Cambodian Reserve - 6ml Velvet Box)",
+      "category": "fragrance",
+      "subcategory": "dehnuloud",
+      "price": 2499,
+      "mrp": 3999,
+      "rating": 5,
+      "reviewsCount": 92,
+      "badge": "Cambodian Reserve",
+      "stock": 30,
+      "image": "/assets/products/aged_cambodian_dehnul_oud.jpg",
+      "gallery": [
+        "/assets/products/aged_cambodian_dehnul_oud.jpg"
+      ],
+      "description": "Pure oil of aged wild Cambodian agarwood tree heartwood. Aged for 8 years in glass carboys to achieve a thick, syrupy consistency with rich sweet leather and fruit undertones.",
+      "benefits": [
+        "100% pure unadulterated Dehnul Oud oil without blending cuts",
+        "Presented in gold-plated crystal tola vial with velvet gift box",
+        "Develops complex multifaceted projection lasting 24+ hours on skin"
+      ],
+      "tags": [
+        "Dehnul Oud",
+        "Cambodian Oud",
+        "Pure Oud Oil",
+        "Aged Oud",
+        "Royal Reserve"
+      ]
+    },
+    {
+      "id": "dehnuloud-hindi-qadeem-15yr",
+      "name": "100% Pure Hindi Qadeem Dehnul Oud (Assam Vintage Aged 15 Years - 3ml)",
+      "category": "fragrance",
+      "subcategory": "dehnuloud",
+      "price": 3499,
+      "mrp": 5499,
+      "rating": 5,
+      "reviewsCount": 47,
+      "badge": "15 Years Aged Vintage",
+      "stock": 12,
+      "image": "/assets/studio/dehnul_oud_banner_43.jpg",
+      "gallery": [
+        "/assets/products/aged_cambodian_dehnul_oud.jpg"
+      ],
+      "description": "The pinnacle of classical Indian perfumery. Distilled in 2011 from wild Assamese heartwood and aged for 15 years. Rich, deep, barnyard-animalic opening that settles into divine smoky honey.",
+      "benefits": [
+        "Rare vintage heritage oil with unmatched depth and longevity",
+        "A single drop on pulse points projects for 48 hours",
+        "Delivered in hand-cut luxury crystal tola bottle"
+      ],
+      "tags": [
+        "Hindi Qadeem",
+        "Assam Oud",
+        "Vintage Dehnul Oud",
+        "15 Year Aged"
+      ]
+    },
+    {
+      "id": "carperfume-hanging-wood-diffuser",
+      "name": "Arabians Wood-Cap Hanging Glass Diffuser Car Perfume (Oud & Amber 10ml)",
+      "category": "fragrance",
+      "subcategory": "carperfume",
+      "price": 349,
+      "mrp": 499,
+      "rating": 4.9,
+      "reviewsCount": 145,
+      "badge": "Car Essential",
+      "stock": 95,
+      "image": "/assets/products/car_diffuser_oud_bottle.jpg",
+      "gallery": [
+        "/assets/products/car_diffuser_oud_bottle.jpg"
+      ],
+      "description": "Aesthetic diamond glass mini bottle with porous beech wood cap and adjustable hanging cord. Inverts to soak the wood and diffuses continuous luxury oud scent into your car.",
+      "benefits": [
+        "Slow-evaporating oil lasts over 45 days in Indian climate",
+        "Natural beech wood cap regulates consistent fragrance emission",
+        "Refillable glass flask with spill-proof inner silicone stopper"
+      ],
+      "tags": [
+        "Car Perfume",
+        "Hanging Diffuser",
+        "Car Oud",
+        "Auto Aroma",
+        "Car Air Freshener"
+      ]
+    },
+    {
+      "id": "carperfume-solar-crystal-rotating",
+      "name": "Solar Powered 360° Rotating Crystal Arabic Car Dashboard Aromatherapy",
+      "category": "fragrance",
+      "subcategory": "carperfume",
+      "price": 799,
+      "mrp": 1299,
+      "rating": 5,
+      "reviewsCount": 78,
+      "badge": "Solar Powered",
+      "stock": 45,
+      "image": "/assets/products/car_perfume_solar_crystal.jpg",
+      "gallery": [
+        "/assets/products/car_perfume_solar_crystal.jpg"
+      ],
+      "description": "Futuristic dual-ring solar suspended crystal mechanism that rotates automatically in sunlight on your car dashboard, accelerating fragrance distribution.",
+      "benefits": [
+        "Requires no batteries or charging — runs purely on ambient daylight",
+        "Includes non-slip dashboard base and concentrated beechwood scent ring",
+        "Stunning visual motion adds luxury aesthetics to your car interior"
+      ],
+      "tags": [
+        "Solar Car Perfume",
+        "Dashboard Diffuser",
+        "Crystal Car Aroma",
+        "Rotating Aromatherapy"
+      ]
+    },
+    {
+      "id": "decor-acrylic-ayatul-kursi-tugra",
+      "name": "3D Royal Gold Mirror Acrylic Ayat-ul-Kursi Tugra Wall Art (30x30 inch)",
+      "category": "decor",
+      "subcategory": "acrylic-tugra",
+      "price": 2499,
+      "mrp": 3799,
+      "rating": 5,
+      "reviewsCount": 110,
+      "badge": "Masterpiece Decor",
+      "stock": 30,
+      "image": "/assets/products/acrylic_ayatul_kursi_gold.jpg",
+      "gallery": [
+        "/assets/products/acrylic_ayatul_kursi_gold.jpg"
+      ],
+      "description": "Showstopping 3D laser-cut mirror gold acrylic Ayat-ul-Kursi calligraphy mounted on black acrylic base with brass standoff pins. Creates breathtaking floating shadows on living room and prayer hall walls.",
+      "benefits": [
+        "High-grade 6mm shatterproof mirror acrylic with crystal optical clarity",
+        "Floating wall mount design creates dramatic 3D shadow effects",
+        "Complete with stainless steel gold standoff bolts and installation template"
+      ],
+      "tags": [
+        "Ayat ul Kursi",
+        "Acrylic Tugra",
+        "Islamic Wall Art",
+        "Gold Calligraphy",
+        "Islamic Frame"
+      ]
+    },
+    {
+      "id": "decor-acrylic-circular-4qul",
+      "name": "Bismillah & 4 Qul Circular Calligraphy Luxury Acrylic Wall Plaque (24 Inch)",
+      "category": "decor",
+      "subcategory": "acrylic-tugra",
+      "price": 1899,
+      "mrp": 2799,
+      "rating": 4.9,
+      "reviewsCount": 74,
+      "badge": "Protective Surahs",
+      "stock": 35,
+      "image": "/assets/studio/ayatul_kursi_tugra.jpg",
+      "gallery": [
+        "/assets/products/acrylic_tugra_circular_frame.jpg"
+      ],
+      "description": "Sacred circular wall art plaque featuring Surah Al-Kafirun, Al-Ikhlas, Al-Falaq, and An-Nas engraved in radiant mirror gold script around a central Bismillah.",
+      "benefits": [
+        "Spiritual protection and blessing for homes and entryways",
+        "Anti-scratch UV-coated golden mirror surface",
+        "Lightweight and easy to hang with pre-attached heavy-duty hanger"
+      ],
+      "tags": [
+        "4 Qul Frame",
+        "Circular Tugra",
+        "Bismillah Frame",
+        "Acrylic Wall Art"
+      ]
+    },
+    {
+      "id": "decor-acrylic-clock-arabic-gold",
+      "name": "Luxury Arabic Numerals Mirror Gold Acrylic Silent Wall Clock (18 Inch)",
+      "category": "decor",
+      "subcategory": "acrylic-clock",
+      "price": 1599,
+      "mrp": 2399,
+      "rating": 4.9,
+      "reviewsCount": 86,
+      "badge": "Silent Quartz",
+      "stock": 45,
+      "image": "/assets/products/acrylic_wall_clock_gold.jpg",
+      "gallery": [
+        "/assets/products/acrylic_wall_clock_gold.jpg"
+      ],
+      "description": "Clean modern wall clock featuring bold Arabic numerals (١ ٢ ٣ ٤...) cut from high-reflectivity mirror gold acrylic with silent non-ticking Japanese quartz sweep mechanism.",
+      "benefits": [
+        "100% silent sweep clock movement — zero ticking sound for peaceful sleep",
+        "Large 18-inch diameter with clear high-contrast readability across room",
+        "Pre-assembled with metal gold hands and battery included"
+      ],
+      "tags": [
+        "Acrylic Clock",
+        "Arabic Wall Clock",
+        "Silent Clock",
+        "Gold Clock",
+        "Islamic Clock"
+      ]
+    },
+    {
+      "id": "decor-acrylic-clock-ayatul-kursi-dial",
+      "name": "Ayatul Kursi Calligraphy Border Acrylic Wall Clock with Silent Sweep (20 Inch)",
+      "category": "decor",
+      "subcategory": "acrylic-clock",
+      "price": 1899,
+      "mrp": 2799,
+      "rating": 5,
+      "reviewsCount": 68,
+      "badge": "Sacred Dial",
+      "stock": 35,
+      "image": "/assets/products/acrylic_wall_clock_gold.jpg",
+      "gallery": [
+        "/assets/products/acrylic_wall_clock_gold.jpg"
+      ],
+      "description": "Features the full Ayat-ul-Kursi in flowing Thuluth calligraphy forming the outer circular border, with gold Arabic numerals in the inner dial.",
+      "benefits": [
+        "Combines continuous Quranic reminder with precise timekeeping",
+        "Laser-precision cut edges with glass-smooth bevels",
+        "Low power consumption movement runs 12+ months on a single AA battery"
+      ],
+      "tags": [
+        "Ayatul Kursi Clock",
+        "Islamic Clock",
+        "Arabic Calligraphy Clock",
+        "Gold Wall Clock"
+      ]
+    },
+    {
+      "id": "decor-resin-clock-emerald-geode",
+      "name": "Emerald Green Geode & 24K Gold Leaf Handcrafted Resin Islamic Wall Clock (16 Inch)",
+      "category": "decor",
+      "subcategory": "resin-clock",
+      "price": 2999,
+      "mrp": 4499,
+      "rating": 5,
+      "reviewsCount": 94,
+      "badge": "Handmade Geode",
+      "stock": 22,
+      "image": "/assets/products/decor_resin_clock_emerald_geode.jpg",
+      "gallery": [
+        "/assets/products/decor_resin_clock_emerald_geode.jpg"
+      ],
+      "description": "One-of-a-kind art piece hand-poured with deep emerald green epoxy resin, genuine crushed crystal geode stones along the perimeter, 24K gold leaf veins, and raised gold Arabic numerals.",
+      "benefits": [
+        "Each clock is 100% uniquely hand-crafted — no two pieces are identical",
+        "High-gloss glass-like resin finish that resists yellowing and scratching",
+        "Silent high-torque sweep movement with heavy-duty metal hands"
+      ],
+      "tags": [
+        "Resin Wall Clock",
+        "Geode Clock",
+        "Emerald Clock",
+        "Handmade Resin",
+        "Islamic Clock"
+      ]
+    },
+    {
+      "id": "decor-resin-clock-black-marquina",
+      "name": "Black Marquina Marble & 24K Gold Swirl Luxury Resin Arabic Clock (16 Inch)",
+      "category": "decor",
+      "subcategory": "resin-clock",
+      "price": 3199,
+      "mrp": 4799,
+      "rating": 4.9,
+      "reviewsCount": 43,
+      "badge": "Marble Geode",
+      "stock": 18,
+      "image": "/assets/products/decor_resin_clock_black_marquina.jpg",
+      "gallery": [
+        "/assets/products/decor_resin_clock_black_marquina.jpg"
+      ],
+      "description": "Dramatic jet-black epoxy resin swirl replicating Spanish Nero Marquina marble with real gold leaf accents and metallic Arabic numeral markers.",
+      "benefits": [
+        "Luxury statement piece for contemporary luxury apartments",
+        "High-gloss crystal resin finish reflects ambient room light",
+        "Completely silent operation with reinforced hanging bracket"
+      ],
+      "tags": [
+        "Black Resin Clock",
+        "Marble Clock",
+        "Gold Swirl Clock",
+        "Resin Art"
+      ]
+    },
+    {
+      "id": "decor-resin-tugre-allah-muhammad",
+      "name": "Handcrafted Resin 3D 'Allah & Muhammad' Dual Desktop Memorial Plaques",
+      "category": "decor",
+      "subcategory": "resin-tugre",
+      "price": 1299,
+      "mrp": 1999,
+      "rating": 5,
+      "reviewsCount": 78,
+      "badge": "Sacred Names",
+      "stock": 40,
+      "image": "/assets/products/acrylic_tugra_circular_frame.jpg",
+      "gallery": [
+        "/assets/products/acrylic_tugra_circular_frame.jpg"
+      ],
+      "description": "Set of two freestanding arch-shaped resin plaques featuring the sacred names of Allah (ﷻ) and Muhammad (ﷺ) in raised metallic gold leaf calligraphy with marble swirl bases.",
+      "benefits": [
+        "Heavy solid resin construction with weighted scratch-proof base",
+        "Perfect desktop decor for study tables, offices, and bookshelf displays",
+        "Packaged in satin-lined presentation box ready for gifting"
+      ],
+      "tags": [
+        "Resin Tugre",
+        "Allah Muhammad Plaque",
+        "Desktop Decor",
+        "Islamic Plaque"
+      ]
+    },
+    {
+      "id": "decor-resin-tugre-mashallah-geode",
+      "name": "Mashallah La Quwwata Illa Billah Golden Resin Geode Desktop Tablet",
+      "category": "decor",
+      "subcategory": "resin-tugre",
+      "price": 1199,
+      "mrp": 1799,
+      "rating": 4.9,
+      "reviewsCount": 52,
+      "badge": "Evil Eye Protection",
+      "stock": 35,
+      "image": "/assets/products/resin_wall_clock_emerald.jpg",
+      "gallery": [
+        "/assets/products/resin_wall_clock_emerald.jpg"
+      ],
+      "description": "Compact geode slice tablet with raw crystal edges and embossed golden calligraphy of 'Mashallah La Quwwata Illa Billah' for protection against jealousy and the evil eye.",
+      "benefits": [
+        "Symbolizes spiritual gratitude and protection in business and homes",
+        "Comes with transparent acrylic display easel stand",
+        "Durable non-yellowing epoxy resin casting"
+      ],
+      "tags": [
+        "Mashallah Plaque",
+        "Resin Geode Tablet",
+        "Islamic Desktop",
+        "Evil Eye Protection"
+      ]
+    },
+    {
+      "id": "decor-acrylic-rehal-quran-stand",
+      "name": "Luxury Crystal Clear Acrylic Quran Rehal (Folding Stand with Gold Engraving)",
+      "category": "decor",
+      "subcategory": "acrylic-accessories",
+      "price": 1299,
+      "mrp": 1999,
+      "rating": 5,
+      "reviewsCount": 124,
+      "badge": "Crystal Rehal",
+      "stock": 60,
+      "image": "/assets/products/acrylic_quran_rehal_stand.jpg",
+      "gallery": [
+        "/assets/products/acrylic_quran_rehal_stand.jpg"
+      ],
+      "description": "Contemporary two-piece interlocking folding Quran book stand crafted from 8mm thick optical cast acrylic with laser-engraved golden Bismillah and arabesque vines.",
+      "benefits": [
+        "Heavy 8mm shatter-resistant acrylic securely holds big heavy Qurans",
+        "Folds completely flat into two interlocking pieces for travel storage",
+        "Crystal clear transparency matches any modern prayer room aesthetic"
+      ],
+      "tags": [
+        "Acrylic Rehal",
+        "Quran Stand",
+        "Folding Rehal",
+        "Crystal Rehal",
+        "Islamic Accessories"
+      ]
+    },
+    {
+      "id": "decor-acrylic-door-nameplate",
+      "name": "Custom Arabic Calligraphy Family Nameplate Acrylic Door Plaque",
+      "category": "decor",
+      "subcategory": "acrylic-accessories",
+      "price": 899,
+      "mrp": 1499,
+      "rating": 4.9,
+      "reviewsCount": 71,
+      "badge": "Personalized",
+      "stock": 50,
+      "image": "/assets/products/decor_acrylic_door_nameplate.jpg",
+      "gallery": [
+        "/assets/products/decor_acrylic_door_nameplate.jpg"
+      ],
+      "description": "Personalized Islamic entrance nameplate with your family name written below an elegant golden Bismillah or Mashallah arch. Weatherproof for main door installation.",
+      "benefits": [
+        "100% waterproof and sunlight UV-resistant acrylic material",
+        "Customizable with family surname or house name via WhatsApp",
+        "Includes high-strength 3M foam tape and screw mounting hardware"
+      ],
+      "tags": [
+        "Islamic Nameplate",
+        "Door Plaque",
+        "Custom Acrylic",
+        "Home Entrance"
+      ]
+    },
+    {
+      "id": "wedding-nikah-nama-booklet-velvet",
+      "name": "Luxury Velvet Gold-Foil Nikah Nama Certificate Booklet (Custom Names)",
       "category": "wedding",
+      "subcategory": "nikah-booklet",
       "price": 1499,
       "mrp": 2299,
       "rating": 5,
-      "reviewsCount": 152,
-      "badge": "Nikah Bestseller",
-      "stock": 35,
+      "reviewsCount": 138,
+      "badge": "Bespoke Couple Gift",
+      "stock": 50,
+      "image": "/assets/studio/nikah_nama_booklet.jpg",
+      "gallery": [
+        "/assets/products/nikah_nama_booklet_royal.jpg",
+        "/assets/studio/nikah_nama_booklet.jpg"
+      ],
+      "description": "Heirloom-grade hardcover Nikah contract certificate booklet bound in plush royal velvet with hot-stamped 24K gold foil calligraphy, custom couple names, Islamic vows, and official Qazi signature fields.",
+      "benefits": [
+        "Customized with bride and groom names, Nikah date, and Hijri calendar",
+        "Archival-grade 300 GSM non-bleed textured parchment paper",
+        "Complies with Islamic Shariah marriage contract documentation"
+      ],
+      "tags": [
+        "Nikah Nama",
+        "Nikah Booklet",
+        "Islamic Wedding Certificate",
+        "Velvet Booklet",
+        "Nikah Nama Book"
+      ]
+    },
+    {
+      "id": "wedding-nikah-nama-booklet-emerald",
+      "name": "Traditional Emerald Green Urdu-English Hardcover Nikah Nama",
+      "category": "wedding",
+      "subcategory": "nikah-booklet",
+      "price": 1299,
+      "mrp": 1999,
+      "rating": 4.9,
+      "reviewsCount": 84,
+      "badge": "Emerald Traditional",
+      "stock": 40,
       "image": "/assets/studio/nikah_nama_booklet.jpg",
       "gallery": [
         "/assets/studio/nikah_nama_booklet.jpg"
       ],
-      "description": "Make the sacred Nikah memorable for eternity. Handbound in deep emerald green velvet with hot-stamped gold foil calligraphy, custom groom/bride name embossing, and parchment archival certificate paper.",
+      "description": "Classic Islamic emerald green textured cloth cover with golden Quranic verse 'And We created you in pairs' (Surah An-Naba 78:8) embossed on the cover.",
       "benefits": [
-        "Lifetime keepsake preserving your sacred Sunnah contract",
-        "Includes Nikah signature page, Quranic marital verses, and witness slots",
-        "Comes with magnetic closure velvet presentation box"
+        "Complete bilingual text in elegant Urdu Nastaliq and English",
+        "Dedicated witness signatures, Haq Mehar terms, and Qazi stamp area",
+        "Satin bookmark ribbon with pearl bead pendant"
       ],
       "tags": [
-        "Nikah Nama",
-        "Velvet Gold",
+        "Urdu Nikah Nama",
+        "Emerald Booklet",
         "Marriage Certificate",
         "Sunnah Nikah"
       ]
     },
     {
-      "id": "nikah-luxury-pen-box-set",
-      "name": "Royal Crystal & Ostrich Feather Nikah Signing Pen Set",
+      "id": "wedding-booklet-box-acrylic-gold",
+      "name": "Custom Engraved Clear Acrylic & Gold Velvet Nikah Booklet Presentation Box",
       "category": "wedding",
-      "price": 799,
-      "mrp": 1199,
-      "rating": 4.9,
-      "reviewsCount": 73,
-      "badge": "Nikah Essential",
-      "stock": 28,
-      "image": "/assets/studio/nikah_nama_booklet.jpg",
+      "subcategory": "booklet-box",
+      "price": 1199,
+      "mrp": 1799,
+      "rating": 5,
+      "reviewsCount": 76,
+      "badge": "Luxury Display",
+      "stock": 35,
+      "image": "/assets/products/wedding_nikah_box_acrylic.jpg",
       "gallery": [
-        "/assets/studio/nikah_nama_booklet.jpg"
+        "/assets/products/wedding_nikah_box_acrylic.jpg"
       ],
-      "description": "Exquisite gold signing pen with crystal embellishments and pure white feather, paired with a matching weighted brass pen stand for the signature ceremony.",
+      "description": "Showcase preservation box with crystal clear beveled acrylic lid, engraved with couple names and 'Bismillah', resting on a gold-trimmed emerald velvet tray base.",
       "benefits": [
-        "Smudge-proof archival ink ensures sharp signatures on parchment",
-        "Photogenic centerpiece for wedding ceremony videography",
-        "Presented in cushioned gift box"
+        "Protects the Nikah Nama certificate booklet from dust and moisture for decades",
+        "Allows the certificate to be displayed as home art on bedroom console tables",
+        "Magnetic hidden closure provides seamless opening during the ceremony"
+      ],
+      "tags": [
+        "Booklet Box",
+        "Nikah Box",
+        "Acrylic Presentation Box",
+        "Nikah Nama Case"
+      ]
+    },
+    {
+      "id": "wedding-booklet-box-heritage-wood",
+      "name": "Heritage Wood-Carved Brass Inlaid Nikah Nama Preservation Box",
+      "category": "wedding",
+      "subcategory": "booklet-box",
+      "price": 1399,
+      "mrp": 2099,
+      "rating": 4.9,
+      "reviewsCount": 48,
+      "badge": "Handcrafted Teak",
+      "stock": 25,
+      "image": "/assets/products/haq_mehar_jewel_box.jpg",
+      "gallery": [
+        "/assets/products/haq_mehar_jewel_box.jpg"
+      ],
+      "description": "Solid seasoned Sheesham rosewood keepsake box hand-carved with traditional floral Jali cutwork and genuine brass wire inlay on the lid.",
+      "benefits": [
+        "Heirloom wooden construction that lasts generations",
+        "Plush red velvet cushioned interior tailored to fit standard booklets",
+        "Brass antique latch and sturdy hinges"
+      ],
+      "tags": [
+        "Wooden Box",
+        "Brass Inlaid Box",
+        "Nikah Box",
+        "Heirloom Chest"
+      ]
+    },
+    {
+      "id": "wedding-nikah-pen-feather-crystal",
+      "name": "Royal Crystal & Ostrich Feather White Nikah Signing Pen (with Gold Stand)",
+      "category": "wedding",
+      "subcategory": "nikah-pen",
+      "price": 799,
+      "mrp": 1299,
+      "rating": 5,
+      "reviewsCount": 145,
+      "badge": "Ceremony Essential",
+      "stock": 80,
+      "image": "/assets/products/nikah_signing_pen_feather.jpg",
+      "gallery": [
+        "/assets/products/nikah_signing_pen_feather.jpg"
+      ],
+      "description": "Magnificent bridal signing pen featuring a fluffy pure white genuine ostrich feather, crystal rhinestone brooch collar, and polished gold barrel standing in a heavy filigree gold base.",
+      "benefits": [
+        "Creates iconic, breathtaking wedding photography during the contract signing",
+        "Smooth quick-dry smudge-proof German ballpoint refill",
+        "Heavy cast metal stand prevents tipping over on the stage table"
       ],
       "tags": [
         "Nikah Pen",
         "Feather Pen",
-        "Signing Pen"
+        "Signing Pen",
+        "Ostrich Pen",
+        "Bridal Pen"
       ]
     },
     {
-      "id": "haq-mehar-luxury-box",
-      "name": "Royal Velvet & Acrylic Haq Mehar Treasury Box",
+      "id": "wedding-nikah-pen-swarovski-pearl",
+      "name": "Personalized Gold Metal Swarovski Pearl Ballpoint Signing Pen with Names",
       "category": "wedding",
-      "price": 1299,
-      "mrp": 1899,
+      "subcategory": "nikah-pen",
+      "price": 649,
+      "mrp": 999,
       "rating": 4.9,
-      "reviewsCount": 61,
-      "badge": "Royal Mahr",
-      "stock": 22,
-      "image": "/assets/studio/nikah_nama_booklet.jpg",
+      "reviewsCount": 88,
+      "badge": "Personalized Pen",
+      "stock": 65,
+      "image": "/assets/products/wedding_nikah_pen_pearl.jpg",
       "gallery": [
-        "/assets/studio/nikah_nama_booklet.jpg"
+        "/assets/products/wedding_nikah_pen_pearl.jpg"
       ],
-      "description": "Handcrafted keepsake treasury box for presenting the sacred Haq Mehar (gold coins, cash, or jewelry) during the Nikah ceremony. Features mirror-gold 'Barakallahu Lakuma' laser engraving on clear crystal acrylic with emerald velvet lining.",
+      "description": "Sleek metallic gold ballpoint pen capped with a floating Swarovski crystal floating chamber and custom laser engraving of the bride & groom's names.",
       "benefits": [
-        "Dignified Islamic presentation for the bride's Haq Mehar",
-        "Heavy brass latch and velvet interior cushion",
-        "Preserved as a family heirloom"
+        "Permanently laser engraved with couple names and wedding date",
+        "Refillable standard Parker-style ink cartridge for lifelong use",
+        "Comes in velvet gift pouch with magnetic closure"
+      ],
+      "tags": [
+        "Custom Pen",
+        "Engraved Nikah Pen",
+        "Gold Pen",
+        "Swarovski Pen"
+      ]
+    },
+    {
+      "id": "wedding-thumb-board-acrylic-gold",
+      "name": "Personalized Acrylic Nikah Thumb Impression Board with Golden Stamp Ink Pad",
+      "category": "wedding",
+      "subcategory": "thumb-board",
+      "price": 1299,
+      "mrp": 1999,
+      "rating": 5,
+      "reviewsCount": 104,
+      "badge": "Trending Ceremony Hit",
+      "stock": 45,
+      "image": "/assets/products/wedding_nikah_thumb_board_acrylic.jpg",
+      "gallery": [
+        "/assets/products/wedding_nikah_thumb_board_acrylic.jpg"
+      ],
+      "description": "Clear optical acrylic board framed in polished mirror gold, pre-printed with bride & groom names, Nikah date, Quranic verse, and two designated golden stamp frames for the bride and groom's thumbprints.",
+      "benefits": [
+        "Includes matching non-toxic washable metallic gold thumbprint ink compact",
+        "Includes gold metal table easel stand for instant stage display",
+        "Creates a cherished framed memorial keepsake for the couple's new home"
+      ],
+      "tags": [
+        "Thumb Board",
+        "Nikah Thumbprint",
+        "Acrylic Thumb Board",
+        "Thumb Impression",
+        "Gold Stamp"
+      ]
+    },
+    {
+      "id": "wedding-thumb-board-mirror-frame",
+      "name": "Mirror Gold Floral Border Framed Nikah Thumbprint Keepsake Canvas",
+      "category": "wedding",
+      "subcategory": "thumb-board",
+      "price": 1499,
+      "mrp": 2299,
+      "rating": 4.9,
+      "reviewsCount": 68,
+      "badge": "Mirror Canvas",
+      "stock": 30,
+      "image": "/assets/products/nikah_thumb_board_gold.jpg",
+      "gallery": [
+        "/assets/products/nikah_thumb_board_gold.jpg"
+      ],
+      "description": "Heavy mirror-backed golden Islamic arch canvas featuring UV-printed Urdu calligraphy and floral foliage with gold stamp wells.",
+      "benefits": [
+        "Luxurious mirror effect highlights wedding lights during photography",
+        "Non-fading gold ink withstands decades without discoloration",
+        "Pre-installed hanging hardware for bedroom wall display"
+      ],
+      "tags": [
+        "Mirror Thumb Board",
+        "Nikah Board",
+        "Keepsake Canvas",
+        "Islamic Wedding"
+      ]
+    },
+    {
+      "id": "wedding-nikah-mirror-arsi-brass",
+      "name": "Royal Arsi Mus'haf Handcrafted Antique Brass & Glass Nikah Ceremony Mirror",
+      "category": "wedding",
+      "subcategory": "nikah-mirror",
+      "price": 1499,
+      "mrp": 2299,
+      "rating": 5,
+      "reviewsCount": 82,
+      "badge": "Arsi Ceremony",
+      "stock": 30,
+      "image": "/assets/products/wedding_arsi_brass_mirror.jpg",
+      "gallery": [
+        "/assets/products/wedding_arsi_brass_mirror.jpg"
+      ],
+      "description": "Handcrafted antique brass handheld mirror with embossed floral filigree and beveled crystal mirror glass. Used in the sacred traditional Arsi Mus'haf ceremony where the bride and groom view each other.",
+      "benefits": [
+        "Heavy solid brass casing with authentic antique patina",
+        "Flawless distortion-free crystal beveled mirror glass",
+        "Includes embroidered velvet protective storage pouch"
+      ],
+      "tags": [
+        "Nikah Mirror",
+        "Arsi Mushaf",
+        "Aarsi Mirror",
+        "Bridal Mirror",
+        "Antique Brass"
+      ]
+    },
+    {
+      "id": "wedding-nikah-mirror-floral-gold",
+      "name": "Floral Gold Rimmed Handheld Oval Bridal Mirror with Velvet Pouch",
+      "category": "wedding",
+      "subcategory": "nikah-mirror",
+      "price": 1199,
+      "mrp": 1799,
+      "rating": 4.9,
+      "reviewsCount": 57,
+      "badge": "Floral Gold",
+      "stock": 35,
+      "image": "/assets/products/wedding_nikah_mirror_arsi.jpg",
+      "gallery": [
+        "/assets/products/wedding_nikah_mirror_arsi.jpg"
+      ],
+      "description": "Romantic vintage Victorian-Arabic fusion handheld mirror in polished gold finish with raised rose vine carvings and slender balanced handle.",
+      "benefits": [
+        "Ergonomic handle designed for graceful bridal stage hold",
+        "High reflectivity glass enhances bridal touch-ups and photography",
+        "Tarnish-resistant electroplated gold finish"
+      ],
+      "tags": [
+        "Handheld Mirror",
+        "Gold Bridal Mirror",
+        "Arsi Mirror",
+        "Wedding Mirror"
+      ]
+    },
+    {
+      "id": "wedding-nikah-dupatta-qubool-hai",
+      "name": "Hand-Embroidered 'Qubool Hai' Crimson Red Bridal Net Dupatta with Scalloped Zari",
+      "category": "wedding",
+      "subcategory": "nikah-dupatta",
+      "price": 1999,
+      "mrp": 2999,
+      "rating": 5,
+      "reviewsCount": 154,
+      "badge": "Qubool Hai Veil",
+      "stock": 45,
+      "image": "/assets/products/nikah_dupatta_qubool_hai.jpg",
+      "gallery": [
+        "/assets/products/nikah_dupatta_qubool_hai.jpg"
+      ],
+      "description": "The viral bridal essential! Ethereal deep crimson red net veil featuring heavy scalloped gold Zari borders and exquisite gold bullion embroidery spelling 'Qubool Hai' in flowing Nastaliq calligraphy.",
+      "benefits": [
+        "2.5-meter generous length allows royal trailing veil draping",
+        "Ultra-soft fine French tulle net that sits comfortably on head without weight",
+        "Gold Zari embroidery on both border margins for 360° wedding photography"
+      ],
+      "tags": [
+        "Qubool Hai Dupatta",
+        "Nikah Dupatta",
+        "Bridal Veil",
+        "Red Dupatta",
+        "Zari Border"
+      ]
+    },
+    {
+      "id": "wedding-nikah-dupatta-ivory-tissue",
+      "name": "Ivory Tissue Silk Gold Kiran Lace Nikah Bridal Dupatta (2.5 Meters)",
+      "category": "wedding",
+      "subcategory": "nikah-dupatta",
+      "price": 1699,
+      "mrp": 2599,
+      "rating": 4.9,
+      "reviewsCount": 78,
+      "badge": "Ivory Kiran",
+      "stock": 35,
+      "image": "/assets/products/nikah_dupatta_ivory_tissue.jpg",
+      "gallery": [
+        "/assets/products/nikah_dupatta_ivory_tissue.jpg"
+      ],
+      "description": "Shimmering champagne ivory tissue organza dupatta bordered with traditional golden Kiran fringes and delicate hand-stitched sequin booties across the field.",
+      "benefits": [
+        "Subtle metallic shimmer catches bridal stage chandelier lighting",
+        "Authentic Punjabi-Lucknowi traditional Kiran fringe lace work",
+        "Matches ivory, gold, pastel pink, and mint bridal lehengas"
+      ],
+      "tags": [
+        "Kiran Dupatta",
+        "Ivory Dupatta",
+        "Tissue Silk Dupatta",
+        "Bridal Scarf"
+      ]
+    },
+    {
+      "id": "wedding-nikah-sehra-pearl-dulha",
+      "name": "Royal Dulha Pearl & Zirconia Golden Groom Sehra with Brocade Headband",
+      "category": "wedding",
+      "subcategory": "nikah-sehra",
+      "price": 1199,
+      "mrp": 1799,
+      "rating": 5,
+      "reviewsCount": 72,
+      "badge": "Pearl Sehra",
+      "stock": 40,
+      "image": "/assets/products/wedding_dulha_sehra_pearl.jpg",
+      "gallery": [
+        "/assets/products/wedding_dulha_sehra_pearl.jpg"
+      ],
+      "description": "Traditional groom veil handcrafted with cascading multi-layered white pearl strands (Ladis), golden Zari tassels, and an adjustable brocade headband with crystal brooch.",
+      "benefits": [
+        "Multi-strand pearls drape evenly across the face creating royal mystique",
+        "Elasticated adjustable brocade headband fits all pagdis and head sizes",
+        "Tarnish-resistant beads and reinforced silk threading prevent breakage"
+      ],
+      "tags": [
+        "Dulha Sehra",
+        "Groom Sehra",
+        "Pearl Sehra",
+        "Nikah Sehra",
+        "Wedding Veil"
+      ]
+    },
+    {
+      "id": "wedding-nikah-sehra-traditional-moti",
+      "name": "Traditional Fresh Moti & Silk Thread Golden Zari Groom Nikah Sehra",
+      "category": "wedding",
+      "subcategory": "nikah-sehra",
+      "price": 999,
+      "mrp": 1499,
+      "rating": 4.8,
+      "reviewsCount": 53,
+      "badge": "Classic Moti",
+      "stock": 50,
+      "image": "/assets/products/wedding_dulha_sehra_pearl.jpg",
+      "gallery": [
+        "/assets/products/wedding_dulha_sehra_pearl.jpg"
+      ],
+      "description": "Classic red and gold silk thread Sehra woven with graduated pearl beads, golden bells (ghungroo), and embroidered forehead crown band.",
+      "benefits": [
+        "Lightweight and breathable so the groom remains cool during rituals",
+        "Traditional red and gold festive styling",
+        "Ties securely behind the turban"
+      ],
+      "tags": [
+        "Moti Sehra",
+        "Groom Headdress",
+        "Nikah Sehra",
+        "Traditional Sehra"
+      ]
+    },
+    {
+      "id": "wedding-haq-mehar-box-velvet-acrylic",
+      "name": "Royal Velvet & Acrylic Haq Mehar Treasury Box with Gold Coin & Note Slots",
+      "category": "wedding",
+      "subcategory": "haq-mehar",
+      "price": 1399,
+      "mrp": 2099,
+      "rating": 5,
+      "reviewsCount": 112,
+      "badge": "Sacred Sunnah Gift",
+      "stock": 40,
+      "image": "/assets/products/wedding_haq_mehar_box_velvet.jpg",
+      "gallery": [
+        "/assets/products/wedding_haq_mehar_box_velvet.jpg"
+      ],
+      "description": "Bespoke presentation treasury chest with clear display window lid, interior plush emerald velvet with custom slots for pure gold coins, currency notes, and bridal gold jewelry. Finished with a heavy brass latch.",
+      "benefits": [
+        "Dignifies the obligatory Sunnah of Haq Mehar with royal honor",
+        "Dedicated compartments for currency rolls, gold guinea coins, and rings",
+        "Engraved with 'Haq Mehar - Sunnah of Rasulullah ﷺ' in gold foil"
       ],
       "tags": [
         "Haq Mehar Box",
-        "Mahr Treasury",
-        "Nikah Gift"
+        "Mehar Box",
+        "Islamic Wedding Box",
+        "Treasury Box",
+        "Sunnah Mehar"
       ]
     },
     {
-      "id": "big-quraan-set-16-inch",
-      "name": "Royal Velvet & Acrylic Big Quraan Set (16 Inch Wedding Edition)",
+      "id": "wedding-haq-mehar-box-geometric-brass",
+      "name": "Transparent Geometric Brass & Glass Golden Haq Mehar Keepsake Case",
       "category": "wedding",
-      "price": 2499,
-      "mrp": 3999,
-      "rating": 5,
-      "reviewsCount": 86,
-      "badge": "Viral Wedding Gift",
-      "stock": 15,
-      "image": "/assets/reels/real_quran_set.jpg",
+      "subcategory": "haq-mehar",
+      "price": 1599,
+      "mrp": 2399,
+      "rating": 4.9,
+      "reviewsCount": 65,
+      "badge": "Geometric Glass",
+      "stock": 30,
+      "image": "/assets/products/haq_mehar_jewel_box.jpg",
       "gallery": [
-        "/assets/reels/real_quran_set.jpg"
+        "/assets/products/haq_mehar_jewel_box.jpg"
       ],
-      "description": "Grand 16-inch velvet and laser-cut acrylic royal Quran gift set. Specially handcrafted for Islamic weddings, Haq Mehar, and sacred gift presentations with customized couple name plate and crystal embellishments.",
+      "description": "Vintage Moroccan terrarium-style box crafted from hand-soldered brass metal and beveled transparent glass with a mirrored base and chain lid stay.",
       "benefits": [
-        "Extra-large 16-inch grand size with velvet cushion bed",
-        "Laser-carved gold mirror calligraphy and brass corners",
-        "Viral Instagram bestseller gift item for bride and groom"
+        "Contemporary modern aesthetic allowing gifts to be viewed from all angles",
+        "Mirrored bottom reflects gold coins and currency beautifully",
+        "Can be repurposed after the wedding as a luxury jewelry vanity box"
       ],
       "tags": [
-        "Quran Box Set",
-        "16 Inch Quran Set",
-        "Wedding Gift",
-        "Islamic Bridal Gift"
+        "Glass Mehar Box",
+        "Brass Terrarium",
+        "Haq Mehar Display",
+        "Keepsake Case"
+      ]
+    },
+    {
+      "id": "wedding-hamper-ultimate-7in1",
+      "name": "The Ultimate Royal Nikah Essentials 7-in-1 Master Hamper Set",
+      "category": "wedding",
+      "subcategory": "all-wedding",
+      "price": 4999,
+      "mrp": 7499,
+      "rating": 5,
+      "reviewsCount": 89,
+      "badge": "Complete 7-in-1 Combo",
+      "stock": 20,
+      "image": "/assets/products/wedding_nikah_master_hamper.jpg",
+      "gallery": [
+        "/assets/products/wedding_nikah_master_hamper.jpg",
+        "/assets/products/nikah_thumb_board_gold.jpg",
+        "/assets/products/nikah_signing_pen_feather.jpg"
+      ],
+      "description": "The complete all-in-one bridal Nikah suite: Luxury Velvet Nikah Nama Booklet, Custom Presentation Box, Crystal Feather Signing Pen with Stand, Acrylic Thumb Impression Board with Gold Ink, Antique Brass Arsi Mirror, Haq Mehar Treasury Box, and 12ml Royal White Oudh Attar.",
+      "benefits": [
+        "Saves over ₹2,500 compared to purchasing each wedding piece individually",
+        "Guarantees 100% color and style harmony across all ceremony accessories",
+        "Delivered in a massive gold-embossed royal presentation trunk"
+      ],
+      "tags": [
+        "Wedding Hamper",
+        "Nikah Combo",
+        "7 in 1 Hamper",
+        "Master Wedding Set",
+        "Complete Nikah"
+      ]
+    },
+    {
+      "id": "wedding-quran-set-16inch",
+      "name": "Royal Velvet & Acrylic Big Quraan Set (16 Inch Grand Wedding Edition)",
+      "category": "wedding",
+      "subcategory": "all-wedding",
+      "price": 3499,
+      "mrp": 4999,
+      "rating": 5,
+      "reviewsCount": 76,
+      "badge": "Grand Wedding Edition",
+      "stock": 25,
+      "image": "/assets/products/wedding_royal_quran_set.jpg",
+      "gallery": [
+        "/assets/products/wedding_royal_quran_set.jpg"
+      ],
+      "description": "Monumental 16-inch velvet hardcover Quran Sharif with 24K gold foil page edges, paired with an engraved crystal clear acrylic folding Rehal stand, velvet box, and crystal tasbih.",
+      "benefits": [
+        "The most blessed and sacred wedding gift from groom's family to the bride",
+        "Large Arabic Indo-Pak 15-line script with easy-read typography",
+        "Velvet padded chest box with crystal tasbih beads included"
+      ],
+      "tags": [
+        "Big Quran",
+        "Wedding Quran",
+        "Quran Set",
+        "16 Inch Quran",
+        "Royal Quran"
       ]
     }
   ],
@@ -6446,489 +7815,65 @@
       "productPrice": "₹349"
     }
   ],
-  "orders": [
-    {
-      "id": "ASZ-7731",
-      "date": "2026-09-03 00:55",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63523727",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:55",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:55",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-2861",
-      "date": "2026-09-03 00:54",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63481548",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:54",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:54",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-4934",
-      "date": "2026-09-03 00:53",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63433496",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-6667",
-      "date": "2026-09-03 00:53",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63410904",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-3395",
-      "date": "2026-09-03 00:40",
-      "customer": {
-        "name": "Arshad Khan",
-        "phone": "9988776655",
-        "email": "arshad@test.com",
-        "city": "Lucknow",
-        "state": "Uttar Pradesh",
-        "address": "Hazratganj, Lucknow"
-      },
-      "items": [
-        {
-          "id": "thobe-saudi-classic-white",
-          "name": "Luxury Saudi Cut Pure White Arabian Thobe",
-          "price": 1699,
-          "quantity": 1,
-          "selectedSize": "54 (M)"
-        }
-      ],
-      "subtotal": 1699,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 0,
-      "total": 1699,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK62651971",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:40",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:40",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-1089",
-      "createdAt": "2026-09-02 18:45",
-      "date": "2026-09-02 18:45",
-      "customerName": "Syed Tariq Hashmi",
-      "phone": "9871234560",
-      "email": "tariq.hashmi@gmail.com",
-      "address": "Flat 402, Al-Madina Heights, Mehdipatnam, Hyderabad, Telangana - 500028",
-      "customer": {
-        "name": "Syed Tariq Hashmi",
-        "phone": "9871234560",
-        "email": "tariq.hashmi@gmail.com",
-        "address": "Flat 402, Al-Madina Heights, Mehdipatnam",
-        "city": "Hyderabad",
-        "state": "Telangana",
-        "pincode": "500028"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Vanilla Dry Fruits (250g)",
-          "price": 349,
-          "quantity": 2,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        },
-        {
-          "id": "white-oudh-attar",
-          "name": "Imperial White Oudh Attar (12ml)",
-          "price": 649,
-          "quantity": 1,
-          "image": "/assets/studio/dehnul_oud_pure.jpg"
-        }
-      ],
-      "subtotal": 1347,
-      "discount": 135,
-      "couponCode": "ARABIAN10",
-      "deliveryFee": 0,
-      "total": 1212,
-      "paymentMode": "cod",
-      "status": "Dispatched",
-      "courier": "BlueDart Express",
-      "trackingNumber": "BD982341982IN"
-    },
-    {
-      "id": "ASZ-1088",
-      "createdAt": "2026-09-02 14:20",
-      "date": "2026-09-02 14:20",
-      "customerName": "Irfan Mansoori",
-      "phone": "9123456789",
-      "email": "irfan.mansoori@yahoo.com",
-      "address": "House 12, Gulshan Colony, Zakir Nagar, Okhla, New Delhi, Delhi - 110025",
-      "customer": {
-        "name": "Irfan Mansoori",
-        "phone": "9123456789",
-        "email": "irfan.mansoori@yahoo.com",
-        "address": "House 12, Gulshan Colony, Zakir Nagar, Okhla",
-        "city": "New Delhi",
-        "state": "Delhi",
-        "pincode": "110025"
-      },
-      "items": [
-        {
-          "id": "thobe-al-noor-signature",
-          "name": "Al-Noor Signature Embroidered Thobe",
-          "selectedSize": "56 (L)",
-          "price": 1899,
-          "quantity": 1,
-          "image": "/assets/thobes/thobes__al_noor_design_p1_1.png"
-        }
-      ],
-      "subtotal": 1899,
-      "discount": 190,
-      "couponCode": "ARABIAN10",
-      "deliveryFee": 0,
-      "total": 1709,
-      "paymentMode": "upi",
-      "status": "In Transit",
-      "courier": "Delhivery Air",
-      "trackingNumber": "DLH99238419"
-    },
-    {
-      "id": "ASZ-1087",
-      "createdAt": "2026-09-01 11:15",
-      "date": "2026-09-01 11:15",
-      "customerName": "Farhan Ahmed",
-      "phone": "9845123456",
-      "email": "farhan.ahmed@gmail.com",
-      "address": "7th Cross, Shivaji Nagar, Bangalore, Karnataka - 560051",
-      "customer": {
-        "name": "Farhan Ahmed",
-        "phone": "9845123456",
-        "email": "farhan.ahmed@gmail.com",
-        "address": "7th Cross, Shivaji Nagar",
-        "city": "Bangalore",
-        "state": "Karnataka",
-        "pincode": "560051"
-      },
-      "items": [
-        {
-          "id": "nikah-nama-booklet-luxury",
-          "name": "Luxury Velvet Gold-Foil Nikah Nama Booklet",
-          "price": 1499,
-          "quantity": 1,
-          "image": "/assets/studio/nikah_nama_booklet.jpg"
-        },
-        {
-          "id": "nikah-luxury-pen-box-set",
-          "name": "Royal Crystal & Ostrich Feather Nikah Signing Pen Set",
-          "price": 799,
-          "quantity": 1,
-          "image": "/assets/studio/nikah_nama_booklet.jpg"
-        }
-      ],
-      "subtotal": 2298,
-      "discount": 200,
-      "couponCode": "SUNNAH100",
-      "deliveryFee": 0,
-      "total": 2098,
-      "paymentMode": "upi",
-      "status": "In Transit",
-      "courier": "BlueDart Express Air",
-      "trackingNumber": "BD778899IN",
-      "trackingId": "BD778899IN",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-01 11:15",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-01 11:15",
-          "done": true
-        },
-        {
-          "status": "Dispatched via Express Courier",
-          "time": "Pending",
-          "done": true
-        },
-        {
-          "status": "In Transit to City Hub",
-          "time": "04 Sept, 00:45",
-          "done": true
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    }
-  ],
+  "orders": [],
   "distributors": [
+    {
+      "id": "DIST-525",
+      "name": "Al-Hasan Islamic Mart",
+      "contactPerson": "Mohammad Tariq",
+      "phone": "9876543210",
+      "email": "",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "currentBusiness": "Retail Store / Islamic Mart",
+      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
+      "interestedProducts": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Saudi & Emirati Thobes",
+        "Islamic Home Decor (Ayat-ul-Kursi Art)"
+      ],
+      "message": "",
+      "status": "New Lead",
+      "date": "2026-09-04"
+    },
+    {
+      "id": "DIST-348",
+      "name": "Al-Hasan Islamic Mart",
+      "contactPerson": "Mohammad Tariq",
+      "phone": "9876543210",
+      "email": "",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "currentBusiness": "Retail Store / Islamic Mart",
+      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
+      "interestedProducts": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Saudi & Emirati Thobes",
+        "Islamic Home Decor (Ayat-ul-Kursi Art)"
+      ],
+      "message": "",
+      "status": "New Lead",
+      "date": "2026-09-04"
+    },
+    {
+      "id": "DIST-784",
+      "name": "Al-Hasan Islamic Mart",
+      "contactPerson": "Mohammad Tariq",
+      "phone": "9876543210",
+      "email": "",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "currentBusiness": "Retail Store / Islamic Mart",
+      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
+      "interestedProducts": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Saudi & Emirati Thobes",
+        "Islamic Home Decor (Ayat-ul-Kursi Art)"
+      ],
+      "message": "",
+      "status": "New Lead",
+      "date": "2026-09-04"
+    },
     {
       "id": "DIST-101",
       "businessName": "Al-Huda Islamic Emporium",

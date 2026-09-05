@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import CategoryStories from '../components/CategoryStories';
 import Hero from '../components/Hero';
 import FlashSaleTimer from '../components/FlashSaleTimer';
@@ -22,13 +23,43 @@ import {
   PhoneCall,
   Flame,
   TrendingUp,
-  Gift
+  Gift,
+  ChevronDown,
+  HelpCircle
 } from 'lucide-react';
+
+const HOME_FAQS = [
+  {
+    q: "What is Talbina and what are its prophetic health benefits?",
+    a: "Talbina is a soothing, nutrient-rich porridge made from finely ground sprouted whole barley (Jau), enriched with roasted dry fruits (almonds, cashews, pistachios, dates, pumpkin seeds) and honey or milk. As recorded in Sahih Bukhari (Hadith 5417), the Prophet Muhammad (ﷺ) recommended Talbina for comforting the heart of the sick and relieving grief, stress, and physical exhaustion. Arabians Shopping Zone prepares 100% natural Talbina free of chemicals, sugar, and preservatives."
+  },
+  {
+    q: "How do I choose the correct Saudi or Emirati Thobe size?",
+    a: "Our Thobes follow standard Arab Gulf sizing based on overall height from shoulder to ankle (sizes 52 to 62) and chest fitting (M, L, XL, XXL). We provide an exact size guide on every product page, free measurement guidance via WhatsApp, and 100% Free Size Exchange across India so your fit is always royal and comfortable."
+  },
+  {
+    q: "Are your Attars, Ouds, and Perfumes 100% alcohol-free?",
+    a: "Yes, all fragrances at Arabians Shopping Zone are 100% alcohol-free (Halal), pure concentrated perfume oils (Ittar) and aged Dehnul Oud (Assamese, Cambodian, and Taif rose blends). Due to pure non-alcoholic formulation, a single application on cuffs and collar lasts 24 to 48 hours."
+  },
+  {
+    q: "Can I customize bride and groom names on the Nikah Nama certificate?",
+    a: "Yes! Our bespoke Nikah Nama certificates, quills, and royal groom presentation hampers include complimentary custom gold-foil personalization for Dulha and Dulhan names, Islamic Hijri wedding dates, and city names. Simply type your details on the product page or connect on WhatsApp."
+  },
+  {
+    q: "Do you offer Pan-India Cash on Delivery (COD) and Free Shipping?",
+    a: "Yes, we offer express air shipping with Cash on Delivery (COD) across all 19,000+ pincodes in India via BlueDart, Delhivery, and DTDC. Free express delivery is automatically applied on all orders above ₹999."
+  },
+  {
+    q: "Are Arabians Shopping Zone products available in offline physical stores?",
+    a: "Yes, Arabians Shopping Zone is a verified physical brand with our flagship boutique in Jaipur and partner distribution network in Hyderabad where you can try thobes, sample pure attars, and buy authentic products in person."
+  }
+];
 
 export default function HomePage() {
   const { products, categories, settings } = useStore();
   const [activeCatalogTab, setActiveCatalogTab] = useState('all');
   const [visibleCount, setVisibleCount] = useState(8);
+  const [openFaq, setOpenFaq] = useState(0);
 
   const handleTabChange = (tabId) => {
     setActiveCatalogTab(tabId);
@@ -45,8 +76,15 @@ export default function HomePage() {
   const hasMore = visibleCount < currentTabProducts.length;
 
   return (
-    <div className="bg-[#faf8f5] text-slate-800 animate-fadeIn pb-20 space-y-12 sm:space-y-16">
+    <div className="bg-[#faf8f5] text-slate-800 animate-fadeIn space-y-12 sm:space-y-16">
       
+      {/* Universal Dynamic SEO Optimization */}
+      <SEO 
+        title="Arabians Shopping Zone | Royal Sunnah Lifestyle, Authentic Talbina, Thobes & Pure Dehnul Oud"
+        description="Shop India's premier royal Sunnah lifestyle boutique. Authentic Talbina dry fruit nutrition, handcrafted Saudi Arabian thobes, aged Dehnul Oud, 3D Islamic wall decor, and custom bespoke Nikah Nama essentials with Pan-India express delivery & Cash on Delivery."
+        keywords="Arabians Shopping Zone, Talbina buy online India, authentic talbina dry fruits, saudi thobe hyderabad, emirati jubba men, madani green amama shareef, aged dehnul oud, pure attar perfume, custom nikah nama certificate, haq mehar box, islamic wall decor 3d acrylic ayatul kursi, halal certified store india, sunnah lifestyle products"
+      />
+
       {/* 1. Circular Category Stories / Quick Avatars */}
       <CategoryStories />
 
@@ -443,7 +481,71 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 12. Verified Customer Reviews */}
+      {/* 12. Sunnah Lifestyle Knowledge Hub & SEO FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" id="faq-section">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold uppercase tracking-wider">
+            <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>Customer Knowledge Hub</span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#032219]">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600">
+            Learn more about authentic Sunnah nutrition, artisanal tailoring, pure Dehnul Oud longevity, and express Pan-India shipping.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {HOME_FAQS.map((faq, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div 
+                key={idx}
+                className="bg-white rounded-2xl border border-amber-900/10 shadow-sm overflow-hidden transition-all duration-200"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  className="w-full text-left px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between gap-4 font-serif font-bold text-slate-900 hover:text-amber-800 transition"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-sm sm:text-base flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center text-xs font-bold shrink-0 border border-amber-200/60">
+                      {idx + 1}
+                    </span>
+                    <span>{faq.q}</span>
+                  </span>
+                  <ChevronDown className={`w-5 h-5 text-amber-600 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isOpen && (
+                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-amber-900/5 animate-fadeIn">
+                    <p>{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Local Store & Inquiry Teaser */}
+        <div className="mt-8 p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="text-xs text-slate-700">
+            <span className="font-bold text-amber-950">Have a specific question about an order or custom Nikah size?</span>
+            <span className="block text-slate-500">Our customer care desk replies in less than 5 minutes on WhatsApp.</span>
+          </div>
+          <Link
+            to="/store"
+            className="text-xs font-bold text-emerald-800 hover:text-emerald-950 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>Visit Physical Store & Hub</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </section>
+
+      {/* 13. Verified Customer Reviews */}
       <ReviewsSection />
 
     </div>

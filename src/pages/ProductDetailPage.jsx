@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
 import { 
   Star, 
@@ -18,6 +19,7 @@ import {
   Ruler
 } from 'lucide-react';
 import SmartSizeFinderModal from '../components/SmartSizeFinderModal';
+import PersonalizationStudio from '../components/PersonalizationStudio';
 import { getProductOrderWhatsAppUrl } from '../utils/whatsapp';
 
 export default function ProductDetailPage() {
@@ -29,19 +31,43 @@ export default function ProductDetailPage() {
 
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [customization, setCustomization] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [addedAnimation, setAddedAnimation] = useState(false);
   const [isSizeFinderOpen, setIsSizeFinderOpen] = useState(false);
+  const [detailImgClass, setDetailImgClass] = useState('object-cover object-top');
+  const [hasDetailImgError, setHasDetailImgError] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (product) {
       setSelectedImage(product.image);
+      setHasDetailImgError(false);
+      const defaultFit = product.imageFit === 'contain'
+        ? 'object-contain p-4'
+        : (product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+      setDetailImgClass(defaultFit);
       if (product.sizes && product.sizes.length > 0) {
         setSelectedSize(product.sizes[0]);
       }
     }
   }, [id, product]);
+
+  const handleDetailImageLoad = (e) => {
+    if (product?.imageFit && product?.imageFit !== 'auto') {
+      if (product.imageFit === 'contain') setDetailImgClass('object-contain p-4');
+      return;
+    }
+    const { naturalWidth, naturalHeight } = e.target;
+    if (naturalWidth && naturalHeight) {
+      const ratio = naturalWidth / naturalHeight;
+      if (ratio < 0.85) {
+        setDetailImgClass('object-cover object-top');
+      } else {
+        setDetailImgClass('object-cover object-center');
+      }
+    }
+  };
 
   if (!product) {
     return (
@@ -64,18 +90,18 @@ export default function ProductDetailPage() {
   const isWishlisted = wishlist.includes(product.id);
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedSize);
+    addToCart(product, quantity, selectedSize, customization);
     setAddedAnimation(true);
     setTimeout(() => setAddedAnimation(false), 1500);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedSize);
+    addToCart(product, quantity, selectedSize, customization);
     navigate('/checkout');
   };
 
   const handleWhatsAppOrder = () => {
-    const waUrl = getProductOrderWhatsAppUrl(product, quantity, selectedSize, settings.whatsapp);
+    const waUrl = getProductOrderWhatsAppUrl(product, quantity, selectedSize, settings.whatsapp, customization);
     window.open(waUrl, '_blank');
   };
 
@@ -83,8 +109,54 @@ export default function ProductDetailPage() {
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
+  const productSchema = product ? {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": [
+      product.image?.startsWith('http') ? product.image : `https://arabiansshoppingzone.com${product.image || '/assets/logo/logo_main.png'}`
+    ],
+    "description": product.description || `Buy authentic ${product.name} at Arabians Shopping Zone. 100% Halal certified.`,
+    "sku": product.id,
+    "mpn": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "Arabians Shopping Zone"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": `https://arabiansshoppingzone.com/#/product/${product.id}`,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "priceValidUntil": "2027-12-31",
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": (product.stock && product.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/InStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Arabians Shopping Zone"
+      }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": product.rating || 5.0,
+      "reviewCount": product.reviewsCount || 10,
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  } : null;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 animate-fadeIn">
+      
+      {/* Dynamic Product SEO & Google Product Rich Snippets */}
+      <SEO 
+        title={`${product.name} - ₹${product.price} | Arabians Shopping Zone`}
+        description={product.description ? `${product.description.slice(0, 150)}... Buy at ₹${product.price} with Cash on Delivery.` : `Buy ${product.name} online at ₹${product.price}. 100% Halal certified with Pan-India express delivery.`}
+        image={product.image}
+        url={`https://arabiansshoppingzone.com/#/product/${product.id}`}
+        type="product"
+        schema={productSchema}
+      />
       
       {/* Breadcrumbs - Hidden on mobile */}
       <nav className="hidden sm:flex items-center gap-2 text-xs text-slate-500 overflow-x-auto no-scrollbar">
@@ -106,22 +178,38 @@ export default function ProductDetailPage() {
       {/* Main 2-Column Showcase */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 bg-white rounded-3xl p-5 sm:p-8 border border-slate-200 shadow-sm">
         
-        {/* Left Column: Image Gallery (5 cols) */}
+        {/* Left Column: Image Gallery (6 cols) */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 aspect-square flex items-center justify-center">
-            <img
-              src={selectedImage || product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] border border-slate-200 aspect-square flex items-center justify-center">
+            {hasDetailImgError ? (
+              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-emerald-950 via-slate-900 to-amber-950 text-amber-200">
+                <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center mb-3">
+                  <Sparkles className="w-8 h-8 text-amber-400" />
+                </div>
+                <span className="text-sm font-serif font-bold text-amber-100 line-clamp-2 px-4">
+                  {product.name}
+                </span>
+                <span className="text-xs text-amber-400/80 uppercase font-mono mt-1.5">
+                  Arabians Authentic Collection
+                </span>
+              </div>
+            ) : (
+              <img
+                src={selectedImage || product.image}
+                alt={product.name}
+                onLoad={handleDetailImageLoad}
+                onError={() => setHasDetailImgError(true)}
+                className={`w-full h-full ${detailImgClass}`}
+              />
+            )}
             {discountPercent > 0 && (
-              <span className="absolute top-3 left-3 bg-rose-600 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-md">
+              <span className="absolute top-3 left-3 bg-rose-600 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-md z-10">
                 {discountPercent}% OFF
               </span>
             )}
             <button
               onClick={() => toggleWishlist(product.id)}
-              className="absolute top-3 right-3 p-2 rounded-full bg-white/90 shadow border border-slate-200 text-slate-400 hover:text-rose-500 transition"
+              className="absolute top-3 right-3 p-2 rounded-full bg-white/90 shadow border border-slate-200 text-slate-400 hover:text-rose-500 transition z-10"
             >
               <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
             </button>
@@ -237,6 +325,12 @@ export default function ProductDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Custom Personalization Studio (Nikah Names, Date, Inscriptions) */}
+          <PersonalizationStudio 
+            product={product} 
+            onChange={setCustomization} 
+          />
 
           {/* Quantity & Dual Action Purchase Buttons */}
           <div className="space-y-3 pt-2">

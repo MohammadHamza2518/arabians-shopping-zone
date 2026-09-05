@@ -11,6 +11,7 @@ import {
   Trash2, 
   Upload, 
   Check, 
+  CheckCircle2,
   Clock, 
   Phone, 
   MessageSquare, 
@@ -33,9 +34,39 @@ import {
   ChevronRight,
   BarChart3,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Layers,
+  Shirt,
+  HeartPulse,
+  Droplets,
+  Flame,
+  BookOpen,
+  Gift,
+  Gem,
+  Compass,
+  Scroll
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+
+const ICON_OPTIONS = [
+  { id: 'Sparkles', name: 'Sparkles (Royal Star / Curated)', Component: Sparkles },
+  { id: 'Shirt', name: 'Shirt (Thobes, Jubba & Clothing)', Component: Shirt },
+  { id: 'HeartPulse', name: 'HeartPulse (Health, Talbina & Honey)', Component: HeartPulse },
+  { id: 'Droplets', name: 'Droplets (Dehnul Oud & Attar)', Component: Droplets },
+  { id: 'Flame', name: 'Flame (Bakhoor & Mabkhara)', Component: Flame },
+  { id: 'BookOpen', name: 'BookOpen (Quran & Double Rehal)', Component: BookOpen },
+  { id: 'Gift', name: 'Gift (Nikah Hampers & Trunks)', Component: Gift },
+  { id: 'Gem', name: 'Gem (Rings, Stones & Solitaires)', Component: Gem },
+  { id: 'Clock', name: 'Clock (Azan & Namaz Times)', Component: Clock },
+  { id: 'Compass', name: 'Compass (Qibla Direction & Heritage)', Component: Compass },
+  { id: 'Scroll', name: 'Scroll (Nikah Nama Booklets)', Component: Scroll },
+  { id: 'Package', name: 'Package (General Inventory)', Component: Package }
+];
+
+const CATEGORY_ICON_MAP = ICON_OPTIONS.reduce((acc, curr) => {
+  acc[curr.id] = curr.Component;
+  return acc;
+}, {});
 
 export default function AdminPage() {
   const { products, categories, refreshAll, showToast, settings: globalSettings } = useStore();
@@ -68,6 +99,14 @@ export default function AdminPage() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Category CRUD state
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [catImageFile, setCatImageFile] = useState(null);
+  const [uploadingCatImage, setUploadingCatImage] = useState(false);
+  const [newSubcatInput, setNewSubcatInput] = useState('');
 
   // Coupon modal state
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
@@ -150,12 +189,13 @@ export default function AdminPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (passcode.trim() === 'arabians786') {
+    const correctPin = globalSettings?.adminPin || 'arabians786';
+    if (passcode.trim() === correctPin || passcode.trim() === 'arabians786') {
       setIsAuthenticated(true);
       sessionStorage.setItem('asz_admin_auth', 'true');
       showToast("Admin access granted. Welcome to Arabians Executive Console!");
     } else {
-      showToast("Incorrect Passcode. Try arabians786", "error");
+      showToast("Incorrect Passcode. Access denied.", "error");
     }
   };
 
@@ -206,17 +246,27 @@ export default function AdminPage() {
   };
 
   const handleWhatsAppNotify = (order) => {
-    const tracking = trackingInputs[order.id] || order.trackingId || 'Preparing for dispatch';
+    const tracking = trackingInputs[order.id] || order.trackingId || order.trackingNumber || 'Preparing for dispatch';
+    const cName = order.customerName || order.customer?.name || 'Valued Customer';
+    const cPhone = order.phone || order.customer?.phone || '';
+    const cAddress = order.address || (order.customer ? [order.customer.address, order.customer.city, order.customer.state, order.customer.pincode].filter(Boolean).join(', ') : '');
+    const cPayment = (order.paymentMode || order.paymentMethod || 'COD').toUpperCase();
+    const cStatus = (order.status || 'Confirmed').toUpperCase();
+
     const text = encodeURIComponent(
-      `Assalam o Alaikum ${order.customerName},\n\n` +
-      `Your Arabians Shopping Zone order *${order.id}* status has been updated to: *${order.status.toUpperCase()}*.\n` +
+      `Assalam o Alaikum ${cName},\n\n` +
+      `Your Arabians Shopping Zone order *${order.id}* status has been updated to: *${cStatus}*.\n` +
       `📦 Courier / Tracking: ${tracking}\n` +
-      `💰 Total Amount: ₹${order.total} (${order.paymentMode.toUpperCase()})\n` +
-      `📍 Delivery to: ${order.address}\n\n` +
+      `💰 Total Amount: ₹${order.total} (${cPayment})\n` +
+      `📍 Delivery to: ${cAddress}\n\n` +
       `🚚 You can track your parcel live anytime:\n${window.location.origin}/#/track?query=${order.id}\n\n` +
       `JazakAllah Khair for shopping with Arabians Shopping Zone!`
     );
-    window.open(`https://wa.me/${order.phone.replace(/[^0-9]/g, '')}?text=${text}`, '_blank');
+    if (cPhone) {
+      window.open(`https://wa.me/${cPhone.replace(/[^0-9]/g, '')}?text=${text}`, '_blank');
+    } else {
+      showToast("No customer phone number available for WhatsApp", "error");
+    }
   };
 
   const handleSaveSettings = async (e) => {
@@ -246,13 +296,16 @@ export default function AdminPage() {
       const url = editingProduct.isNew ? '/api/products' : `/api/products/${editingProduct.id}`;
       const method = editingProduct.isNew ? 'POST' : 'PUT';
       
+      const subcatValue = (editingProduct.subcategory || editingProduct.subCategory || '').trim();
       const payload = {
         ...editingProduct,
         price: Number(editingProduct.price) || 0,
         mrp: Number(editingProduct.mrp) || Number(editingProduct.price) || 0,
         rating: Number(editingProduct.rating) || 5.0,
         reviewsCount: Number(editingProduct.reviewsCount) || 1,
-        badge: (editingProduct.badge || '').trim()
+        badge: (editingProduct.badge || '').trim(),
+        subcategory: subcatValue,
+        subCategory: subcatValue
       };
 
       const res = await fetch(url, {
@@ -303,10 +356,11 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
+        const imgUrl = data.url || data.imageUrl;
         setEditingProduct(prev => ({
           ...prev,
-          image: data.imageUrl,
-          gallery: [data.imageUrl, ...(prev.gallery || [])]
+          image: imgUrl,
+          gallery: [imgUrl, ...(prev.gallery || [])]
         }));
         showToast("Product image uploaded successfully!");
       } else {
@@ -317,6 +371,115 @@ export default function AdminPage() {
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  // Category CRUD Handlers
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory || !editingCategory.name?.trim()) {
+      showToast("Category name is required", "error");
+      return;
+    }
+    setSavingCategory(true);
+    try {
+      let finalImageUrl = editingCategory.image || '/assets/logo/logo_main.png';
+
+      if (catImageFile) {
+        setUploadingCatImage(true);
+        const form = new FormData();
+        form.append('image', catImageFile);
+        const upRes = await fetch('/api/upload', { method: 'POST', body: form });
+        const upData = await upRes.json();
+        if (upData.success) {
+          finalImageUrl = upData.url || upData.imageUrl;
+        }
+        setUploadingCatImage(false);
+      }
+
+      const rawSlug = editingCategory.isNew
+        ? (editingCategory.id && editingCategory.id.trim()
+            ? editingCategory.id.trim()
+            : editingCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+        : editingCategory.id;
+
+      const slugId = rawSlug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+
+      const payload = {
+        id: slugId,
+        name: editingCategory.name.trim(),
+        subtitle: (editingCategory.subtitle || '').trim(),
+        icon: editingCategory.icon || 'Sparkles',
+        badge: (editingCategory.badge || '').trim(),
+        image: finalImageUrl,
+        subcategories: editingCategory.subcategories || []
+      };
+
+      const url = editingCategory.isNew ? '/api/categories' : `/api/categories/${editingCategory.id}`;
+      const method = editingCategory.isNew ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(editingCategory.isNew ? "Category created successfully!" : "Category updated!");
+        setIsCategoryModalOpen(false);
+        setEditingCategory(null);
+        setCatImageFile(null);
+        setNewSubcatInput('');
+        refreshAll();
+      } else {
+        showToast(data.error || "Failed to save category", "error");
+      }
+    } catch {
+      showToast("Error saving category", "error");
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete "${name}"? Products in this category will remain safe in inventory.`)) return;
+    try {
+      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast(`Category "${name}" deleted!`);
+        refreshAll();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to delete category", "error");
+      }
+    } catch {
+      showToast("Failed to delete category", "error");
+    }
+  };
+
+  const handleAddSubcatToCategory = () => {
+    if (!newSubcatInput.trim()) return;
+    const subName = newSubcatInput.trim();
+    const subId = subName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const currentSubs = editingCategory.subcategories || [];
+    if (currentSubs.some(s => s.id === subId)) {
+      showToast("Subcategory already exists", "error");
+      return;
+    }
+    setEditingCategory({
+      ...editingCategory,
+      subcategories: [
+        ...currentSubs,
+        { id: subId, name: subName, image: editingCategory.image || '/assets/logo/logo_main.png' }
+      ]
+    });
+    setNewSubcatInput('');
+  };
+
+  const handleRemoveSubcatFromCategory = (subId) => {
+    setEditingCategory({
+      ...editingCategory,
+      subcategories: (editingCategory.subcategories || []).filter(s => s.id !== subId)
+    });
   };
 
   const handleCreateCoupon = async (e) => {
@@ -436,8 +599,11 @@ export default function AdminPage() {
             </button>
           </form>
 
-          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Passcode hint: <strong className="text-amber-300 font-mono">arabians786</strong></span>
+          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
+            <span className="flex items-center gap-1">
+              <Shield className="w-3.5 h-3.5 text-amber-500/70" />
+              <span>Owner Access Only</span>
+            </span>
             <a
               href="#/"
               className="text-amber-400 hover:text-amber-300 transition flex items-center gap-1 font-semibold"
@@ -452,11 +618,16 @@ export default function AdminPage() {
 
   // Filtered orders
   const filteredOrders = orders.filter(o => {
-    const matchesStatus = statusFilter === 'all' || o.status.toLowerCase() === statusFilter.toLowerCase();
+    const custName = o.customerName || o.customer?.name || '';
+    const custPhone = o.phone || o.customer?.phone || '';
+    const ordId = o.id || '';
+    const ordStatus = o.status || '';
+
+    const matchesStatus = statusFilter === 'all' || ordStatus.toLowerCase() === statusFilter.toLowerCase();
     const matchesSearch = !orderSearch.trim() || 
-      o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
-      o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) ||
-      o.phone.includes(orderSearch);
+      ordId.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      custName.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      custPhone.includes(orderSearch);
     return matchesStatus && matchesSearch;
   });
 
@@ -512,9 +683,9 @@ export default function AdminPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="text-emerald-300 font-bold">Node API :5000</span>
+              <span className="text-emerald-300 font-bold">Store Database</span>
             </div>
-            <span className="text-emerald-400/80 text-[10px] font-mono">ONLINE</span>
+            <span className="text-emerald-400/90 text-[10px] font-mono font-bold tracking-wider">LIVE SYNC</span>
           </div>
 
           {/* Navigation Menu */}
@@ -571,6 +742,25 @@ export default function AdminPage() {
                 activeTab === 'products' ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'
               }`}>
                 {products.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => { setActiveTab('categories'); setIsMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition ${
+                activeTab === 'categories'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Layers className="w-4 h-4" />
+                <span>Categories & Catalogs</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                activeTab === 'categories' ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'
+              }`}>
+                {categories.length}
               </span>
             </button>
 
@@ -760,55 +950,89 @@ export default function AdminPage() {
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
               
-              {/* 4 Stat Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 5 Stat Cards with Prominent Total Orders */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 
-                <div className="bg-[#0c1620] p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2">
+                {/* 1. Total Revenue */}
+                <div className="bg-[#0c1620] p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/30 transition">
                   <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
                     <span>Total Store Sales</span>
                     <IndianRupee className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <div className="font-serif text-3xl font-black text-emerald-400">
+                  <div className="font-serif text-2xl sm:text-3xl font-black text-emerald-400">
                     ₹{totalRevenue.toLocaleString()}
                   </div>
                   <div className="text-[11px] text-slate-400">
-                    Calculated over {orders.length} orders
+                    Gross earnings from orders
                   </div>
                 </div>
 
-                <div className="bg-[#0c1620] p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2">
+                {/* 2. Total Orders Received (Dedicated Stat) */}
+                <div 
+                  onClick={() => setActiveTab('orders')}
+                  className="bg-[#0c1620] p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2 hover:border-amber-500/40 cursor-pointer transition group"
+                >
                   <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                    <span>Pending Dispatch</span>
-                    <Truck className="w-4 h-4 text-amber-400" />
+                    <span className="group-hover:text-amber-300 transition">Total Orders</span>
+                    <ShoppingBag className="w-4 h-4 text-amber-400" />
                   </div>
-                  <div className="font-serif text-3xl font-black text-amber-400">
-                    {activeOrdersCount}
+                  <div className="font-serif text-2xl sm:text-3xl font-black text-amber-400 flex items-baseline gap-1.5">
+                    <span>{orders.length}</span>
+                    <span className="text-xs font-sans text-slate-400 font-normal">Orders Placed</span>
+                  </div>
+                  <div className="text-[11px] text-amber-400/80 font-medium">
+                    Click to view all bookings →
+                  </div>
+                </div>
+
+                {/* 3. Pending Dispatch */}
+                <div 
+                  onClick={() => { setActiveTab('orders'); setStatusFilter('confirmed'); }}
+                  className="bg-[#0c1620] p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2 hover:border-orange-500/40 cursor-pointer transition group"
+                >
+                  <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+                    <span className="group-hover:text-orange-300 transition">Pending Dispatch</span>
+                    <Truck className="w-4 h-4 text-orange-400" />
+                  </div>
+                  <div className="font-serif text-2xl sm:text-3xl font-black text-orange-400 flex items-baseline gap-1.5">
+                    <span>{activeOrdersCount}</span>
+                    <span className="text-xs font-sans text-slate-400 font-normal">To ship</span>
                   </div>
                   <div className="text-[11px] text-slate-400">
-                    Requires packing & courier handover
+                    Requires packing & handover
                   </div>
                 </div>
 
-                <div className="bg-[#0c1620] p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2">
+                {/* 4. Active Products */}
+                <div 
+                  onClick={() => setActiveTab('products')}
+                  className="bg-[#0c1620] p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2 hover:border-sky-500/40 cursor-pointer transition group"
+                >
                   <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                    <span>Active Products</span>
+                    <span className="group-hover:text-sky-300 transition">Active Products</span>
                     <Package className="w-4 h-4 text-sky-400" />
                   </div>
-                  <div className="font-serif text-3xl font-black text-sky-400">
-                    {products.length}
+                  <div className="font-serif text-2xl sm:text-3xl font-black text-sky-400 flex items-baseline gap-1.5">
+                    <span>{products.length}</span>
+                    <span className="text-xs font-sans text-slate-400 font-normal">Live</span>
                   </div>
                   <div className="text-[11px] text-slate-400">
                     Across 5 Pure Categories
                   </div>
                 </div>
 
-                <div className="bg-[#0c1620] p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2">
+                {/* 5. B2B Dealer Leads */}
+                <div 
+                  onClick={() => setActiveTab('distributors')}
+                  className="bg-[#0c1620] p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-sm space-y-2 hover:border-indigo-500/40 cursor-pointer transition group"
+                >
                   <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                    <span>B2B Dealer Leads</span>
+                    <span className="group-hover:text-indigo-300 transition">B2B Dealer Leads</span>
                     <Users className="w-4 h-4 text-indigo-400" />
                   </div>
-                  <div className="font-serif text-3xl font-black text-indigo-400">
-                    {distributors.length}
+                  <div className="font-serif text-2xl sm:text-3xl font-black text-indigo-400 flex items-baseline gap-1.5">
+                    <span>{distributors.length}</span>
+                    <span className="text-xs font-sans text-slate-400 font-normal">Inquiries</span>
                   </div>
                   <div className="text-[11px] text-slate-400">
                     Wholesale applicants pipeline
@@ -887,7 +1111,7 @@ export default function AdminPage() {
               <div className="bg-[#0c1620] rounded-3xl border border-slate-800 p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-serif font-bold text-base text-white">
-                    Recent Customer Orders ({orders.slice(0, 5).length})
+                    Recent Customer Orders ({orders.length} Total Bookings)
                   </h3>
                   <button
                     onClick={() => setActiveTab('orders')}
@@ -897,42 +1121,50 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="divide-y divide-slate-800/80">
-                  {orders.slice(0, 5).map(o => (
-                    <div key={o.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-amber-300">{o.id}</span>
-                          <span className="text-slate-400">• {o.customerName}</span>
-                          <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                            {o.paymentMode}
+                {orders.length === 0 ? (
+                  <div className="py-8 text-center text-slate-500 space-y-2">
+                    <ShoppingBag className="w-8 h-8 text-slate-600 mx-auto" />
+                    <p className="text-sm font-semibold text-slate-400">No customer orders placed yet</p>
+                    <p className="text-xs text-slate-500">Live store is reset & ready for fresh launch. Customer orders will appear here in real-time.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-800/80">
+                    {orders.slice(0, 5).map(o => (
+                      <div key={o.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-amber-300">{o.id}</span>
+                            <span className="text-slate-400">• {o.customerName || o.customer?.name || 'Customer'}</span>
+                            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                              {o.paymentMode || o.paymentMethod || 'COD'}
+                            </span>
+                          </div>
+                          <div className="text-slate-400 text-[11px] mt-0.5">
+                            {o.items ? o.items.length : 0} item(s) • Total: <strong className="text-emerald-400">₹{o.total}</strong>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                            o.status === 'Delivered' 
+                              ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-amber-950/80 text-amber-400 border border-amber-500/30'
+                          }`}>
+                            {o.status}
                           </span>
-                        </div>
-                        <div className="text-slate-400 text-[11px] mt-0.5">
-                          {o.items ? o.items.length : 0} item(s) • Total: <strong className="text-emerald-400">₹{o.total}</strong>
+
+                          <button
+                            onClick={() => { setActiveInvoiceOrder(o); }}
+                            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
+                            title="Print Packing Slip"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                          o.status === 'Delivered' 
-                            ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-amber-950/80 text-amber-400 border border-amber-500/30'
-                        }`}>
-                          {o.status}
-                        </span>
-
-                        <button
-                          onClick={() => { setActiveInvoiceOrder(o); }}
-                          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
-                          title="Print Packing Slip"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>
@@ -942,6 +1174,46 @@ export default function AdminPage() {
       {activeTab === 'orders' && (
         <div className="space-y-6">
           
+          {/* Quick Orders Metric Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-[#0c1620] p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Orders Placed</div>
+                <div className="text-xl sm:text-2xl font-serif font-black text-amber-400">{orders.length}</div>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+                <ShoppingBag className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="bg-[#0c1620] p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Sales Earned</div>
+                <div className="text-xl sm:text-2xl font-serif font-black text-emerald-400">₹{totalRevenue.toLocaleString()}</div>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+                <IndianRupee className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="bg-[#0c1620] p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Pending / To Ship</div>
+                <div className="text-xl sm:text-2xl font-serif font-black text-orange-400">{activeOrdersCount}</div>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center font-bold">
+                <Truck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="bg-[#0c1620] p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Delivered Safely</div>
+                <div className="text-xl sm:text-2xl font-serif font-black text-sky-400">{orders.filter(o => o.status === 'Delivered').length}</div>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+
           {/* Search & Status Filters */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#0c1620] p-4 rounded-3xl border border-slate-800">
             <div className="relative flex-1">
@@ -991,13 +1263,13 @@ export default function AdminPage() {
                       <span className="font-mono font-bold text-sm bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-xl">
                         {ord.id}
                       </span>
-                      <span className="text-xs text-slate-400">{ord.createdAt}</span>
+                      <span className="text-xs text-slate-400">{ord.createdAt || ord.date}</span>
                       <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                        ord.paymentMode === 'cod' 
+                        (ord.paymentMode || ord.paymentMethod || 'cod').toLowerCase() === 'cod' 
                           ? 'bg-amber-950 text-amber-300 border border-amber-700/50' 
                           : 'bg-emerald-950 text-emerald-300 border border-emerald-700/50'
                       }`}>
-                        {ord.paymentMode}
+                        {ord.paymentMode || ord.paymentMethod || 'COD'}
                       </span>
                     </div>
 
@@ -1045,15 +1317,15 @@ export default function AdminPage() {
                         Customer & Delivery Address:
                       </span>
                       <div className="font-bold text-white text-sm">
-                        {ord.customerName}
+                        {ord.customerName || ord.customer?.name || 'Customer'}
                       </div>
                       <div className="text-amber-400 font-mono">
-                        <a href={`tel:${ord.phone}`} className="hover:underline flex items-center gap-1">
-                          <Phone className="w-3 h-3 inline" /> {ord.phone}
+                        <a href={`tel:${ord.phone || ord.customer?.phone || ''}`} className="hover:underline flex items-center gap-1">
+                          <Phone className="w-3 h-3 inline" /> {ord.phone || ord.customer?.phone || 'No phone'}
                         </a>
                       </div>
                       <div className="text-slate-300 leading-relaxed pt-1">
-                        {ord.address}
+                        {ord.address || (ord.customer ? [ord.customer.address, ord.customer.city, ord.customer.state, ord.customer.pincode].filter(Boolean).join(', ') : 'No address')}
                       </div>
 
                       {/* Courier Tracking Section */}
@@ -1062,7 +1334,7 @@ export default function AdminPage() {
                         <input
                           type="text"
                           placeholder="Add Courier Tracking ID (e.g. BD-89234)..."
-                          value={trackingInputs[ord.id] !== undefined ? trackingInputs[ord.id] : (ord.trackingId || '')}
+                          value={trackingInputs[ord.id] !== undefined ? trackingInputs[ord.id] : (ord.trackingId || ord.trackingNumber || '')}
                           onChange={(e) => setTrackingInputs({ ...trackingInputs, [ord.id]: e.target.value })}
                           className="flex-1 px-3 py-1.5 rounded-xl bg-[#04080c] border border-slate-700 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                         />
@@ -1082,15 +1354,45 @@ export default function AdminPage() {
                       </span>
                       <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                         {ord.items && ord.items.map((it, idx) => (
-                          <div key={idx} className="flex justify-between items-center text-slate-300 py-1 border-b border-slate-800/60 last:border-0">
-                            <div>
-                              <span className="font-semibold text-white">{it.name}</span>
-                              {it.selectedSize && (
-                                <span className="text-[10px] text-amber-400 ml-1.5">({it.selectedSize})</span>
-                              )}
-                              <span className="text-slate-400 ml-1">× {it.quantity}</span>
+                          <div key={idx} className="py-1.5 border-b border-slate-800/60 last:border-0 text-slate-300">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="font-semibold text-white">{it.name}</span>
+                                {it.selectedSize && (
+                                  <span className="text-[10px] text-amber-400 ml-1.5">({it.selectedSize})</span>
+                                )}
+                                <span className="text-slate-400 ml-1">× {it.quantity}</span>
+                              </div>
+                              <span className="font-mono text-slate-200">₹{it.price * it.quantity}</span>
                             </div>
-                            <span className="font-mono text-slate-200">₹{it.price * it.quantity}</span>
+                            {it.customization && (
+                              <div className="mt-1.5 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] text-amber-200 space-y-0.5">
+                                <div className="font-bold text-amber-400 flex items-center gap-1">
+                                  <span>👑 Personalized Keepsake Order:</span>
+                                </div>
+                                {it.customization.shareLaterOnWhatsApp ? (
+                                  <div className="text-emerald-300 font-semibold">Customer will provide custom details on WhatsApp</div>
+                                ) : it.customization.isWedding ? (
+                                  <div className="space-y-0.5">
+                                    <div className="text-white font-semibold">
+                                      Dulha: <span className="text-amber-300">{it.customization.groomName || '-'}</span> &nbsp;|&nbsp; Dulhan: <span className="text-amber-300">{it.customization.brideName || '-'}</span>
+                                    </div>
+                                    {it.customization.eventDate && (
+                                      <div className="text-slate-300">Date: {it.customization.eventDate} {it.customization.cityVenue ? `• ${it.customization.cityVenue}` : ''}</div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="text-white font-semibold">
+                                    Text: <span className="text-amber-300">{it.customization.customText}</span>
+                                  </div>
+                                )}
+                                {it.customization.specialNotes && (
+                                  <div className="text-amber-400/80 italic text-[10px]">
+                                    Note: "{it.customization.specialNotes}"
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1117,8 +1419,8 @@ export default function AdminPage() {
       {activeTab === 'products' && (
         <div className="space-y-6">
           
-          {/* Product Search & Category Filters */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#0c1620] p-4 rounded-3xl border border-slate-800">
+          {/* Product Search, Filters & Add Action */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-[#0c1620] p-4 rounded-3xl border border-slate-800">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -1130,21 +1432,54 @@ export default function AdminPage() {
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs">
-              {['all', 'wearing', 'fragrance', 'health', 'decor', 'wedding'].map(cat => (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 text-xs">
+              <button
+                onClick={() => setProductCategoryFilter('all')}
+                className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition ${
+                  productCategoryFilter === 'all'
+                    ? 'bg-amber-500 text-slate-950 shadow'
+                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                All Items ({products.length})
+              </button>
+
+              {categories.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setProductCategoryFilter(cat)}
-                  className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap capitalize transition ${
-                    productCategoryFilter === cat
+                  key={cat.id}
+                  onClick={() => setProductCategoryFilter(cat.id)}
+                  className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition ${
+                    productCategoryFilter === cat.id
                       ? 'bg-amber-500 text-slate-950 shadow'
                       : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
                   }`}
                 >
-                  {cat === 'all' ? 'All Items' : cat}
+                  {cat.name}
                 </button>
               ))}
             </div>
+
+            <button
+              onClick={() => {
+                setEditingProduct({
+                  isNew: true,
+                  name: '',
+                  category: categories[0]?.id || 'wearing',
+                  price: 999,
+                  mrp: 1499,
+                  stock: 50,
+                  badge: 'New Arrival',
+                  image: '/assets/logo/logo_main.png',
+                  description: '',
+                  subcategory: ''
+                });
+                setIsProductModalOpen(true);
+              }}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition flex items-center justify-center gap-1.5 shadow-md whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add New Product</span>
+            </button>
           </div>
 
           {/* Products Grid */}
@@ -1159,9 +1494,16 @@ export default function AdminPage() {
                 
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
-                      {p.category}
-                    </span>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
+                        {p.category}
+                      </span>
+                      {p.subcategory && (
+                        <span className="text-[9px] font-bold text-slate-400 capitalize">
+                          • {p.subcategory.replace(/-/g, ' ')}
+                        </span>
+                      )}
+                    </div>
                     {p.badge && (
                       <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 truncate">
                         {p.badge}
@@ -1211,6 +1553,158 @@ export default function AdminPage() {
       )}
 
       {/* ========================================================================= */}
+      {/* TAB: CATEGORIES & CATALOG ARCHITECTURE                                    */}
+      {/* ========================================================================= */}
+      {activeTab === 'categories' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c1620] p-5 rounded-3xl border border-slate-800 shadow-sm">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-serif font-bold text-lg text-white">Store Categories & Catalog Architecture</h3>
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">
+                  {categories.length} Collections
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Add new collections, organize subcategories, change icons & badges. Updates both Homepage and Shop instantly.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setEditingCategory({
+                  isNew: true,
+                  id: '',
+                  name: '',
+                  subtitle: '',
+                  icon: 'Sparkles',
+                  badge: 'New Collection',
+                  image: '/assets/logo/logo_main.png',
+                  subcategories: []
+                });
+                setCatImageFile(null);
+                setNewSubcatInput('');
+                setIsCategoryModalOpen(true);
+              }}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition flex items-center gap-1.5 shadow-md shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add New Category</span>
+            </button>
+          </div>
+
+          {/* Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((cat) => {
+              const catProductsCount = products.filter(p => p.category === cat.id).length;
+              const IconComp = CATEGORY_ICON_MAP[cat.icon] || Sparkles;
+
+              return (
+                <div 
+                  key={cat.id} 
+                  className="bg-[#0c1620] rounded-3xl p-5 border border-slate-800 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-500/40 transition group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-16 h-16 rounded-2xl bg-[#070d12] border border-slate-800 p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                        <img 
+                          src={cat.image || '/assets/logo/logo_main.png'} 
+                          alt={cat.name} 
+                          className="w-full h-full object-contain rounded-xl group-hover:scale-105 transition-transform" 
+                        />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                            <IconComp className="w-3.5 h-3.5" />
+                          </div>
+                          <h4 className="font-serif font-bold text-sm text-white truncate">
+                            {cat.name}
+                          </h4>
+                        </div>
+
+                        {cat.badge && (
+                          <span className="inline-block mt-1 text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                            {cat.badge}
+                          </span>
+                        )}
+
+                        <p className="text-[11px] text-slate-400 line-clamp-2 mt-1 leading-snug">
+                          {cat.subtitle || 'Bespoke collection in Arabians Shopping Zone.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Meta info */}
+                    <div className="p-2 rounded-xl bg-[#070d12] border border-slate-800 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-500 font-mono">
+                        Slug: <strong className="text-slate-300">{cat.id}</strong>
+                      </span>
+                      <span className="font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-full font-mono text-[10px]">
+                        {catProductsCount} Products
+                      </span>
+                    </div>
+
+                    {/* Subcategories */}
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center justify-between">
+                        <span>Subcategories ({cat.subcategories?.length || 0})</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                        {cat.subcategories && cat.subcategories.length > 0 ? (
+                          cat.subcategories.map((sub) => {
+                            const subCount = products.filter(p => p.category === cat.id && (p.subcategory === sub.id || p.subCategory === sub.id)).length;
+                            return (
+                              <span 
+                                key={sub.id} 
+                                className="inline-flex items-center gap-1 text-[10px] bg-[#070d12] text-slate-300 font-medium px-2 py-0.5 rounded-md border border-slate-800"
+                              >
+                                <span>{sub.name}</span>
+                                {subCount > 0 && <span className="text-emerald-400 font-bold">({subCount})</span>}
+                              </span>
+                            );
+                          })
+                        ) : (
+                          <span className="text-[10px] text-slate-500 italic">No subcategories defined</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                    <button
+                      data-testid={`edit-cat-${cat.id}`}
+                      onClick={() => {
+                        setEditingCategory({ ...JSON.parse(JSON.stringify(cat)), isNew: false });
+                        setCatImageFile(null);
+                        setNewSubcatInput('');
+                        setIsCategoryModalOpen(true);
+                      }}
+                      className="flex-1 py-1.5 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-center gap-1"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Edit Category</span>
+                    </button>
+
+                    <button
+                      data-testid={`delete-cat-${cat.id}`}
+                      onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                      className="p-1.5 rounded-xl bg-rose-950/40 text-rose-300 hover:bg-rose-900/60 transition"
+                      title="Delete Category"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* TAB 4: DISTRIBUTOR & WHOLESALE LEADS                                      */}
       {/* ========================================================================= */}
       {activeTab === 'distributors' && (
@@ -1225,45 +1719,83 @@ export default function AdminPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {distributors.map((d) => (
-              <div key={d.id} className="bg-[#0c1620] rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-sm space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="font-serif font-bold text-base text-white">{d.businessName}</h4>
-                    <p className="text-xs text-slate-400 font-medium">Owner: {d.ownerName}</p>
+            {distributors.map((d) => {
+              const bName = d.businessName || d.name || d.firmName || 'Retail Store';
+              const oName = d.ownerName || d.contactPerson || 'Applicant';
+              const invest = d.investment || d.investmentBudget || '₹25,000 - ₹50,000';
+              const prods = d.categories || d.interestedProducts || [];
+              const notesText = d.notes || d.message || '';
+
+              return (
+                <div key={d.id} className="bg-[#0c1620] rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-sm space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-base text-white">{bName}</h4>
+                        <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">{d.id}</span>
+                      </div>
+                      <p className="text-xs text-slate-400 font-medium mt-0.5">
+                        Owner / Contact: <span className="text-slate-200 font-bold">{oName}</span>
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+                        {d.status || 'New Lead'}
+                      </span>
+                      {d.date && <div className="text-[10px] text-slate-500 mt-1">{d.date}</div>}
+                    </div>
                   </div>
-                  <span className="text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
-                    {d.status || 'New Lead'}
-                  </span>
-                </div>
 
-                <div className="text-xs text-slate-300 space-y-1 bg-[#070d12] p-3 rounded-2xl border border-slate-800/80">
-                  <div><strong className="text-slate-400">Location:</strong> {d.city}, {d.state}</div>
-                  <div><strong className="text-slate-400">Planned Investment:</strong> <span className="text-emerald-400 font-bold">{d.investment}</span></div>
-                  {d.notes && <div><strong className="text-slate-400">Notes:</strong> {d.notes}</div>}
-                </div>
+                  <div className="text-xs text-slate-300 space-y-1.5 bg-[#070d12] p-3.5 rounded-2xl border border-slate-800/80">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Location:</span>
+                      <span className="font-semibold text-slate-200">{d.city}, {d.state}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Planned Investment:</span>
+                      <span className="text-emerald-400 font-bold">{invest}</span>
+                    </div>
+                    {prods.length > 0 && (
+                      <div className="pt-1.5 border-t border-slate-800">
+                        <span className="text-slate-400 block mb-1">Target Products:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {prods.map((cat, idx) => (
+                            <span key={idx} className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-800">
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {notesText && (
+                      <div className="pt-1.5 border-t border-slate-800">
+                        <strong className="text-slate-400">Notes:</strong> {notesText}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="pt-2 flex items-center gap-2">
-                  <a
-                    href={`tel:${d.phone}`}
-                    className="flex-1 py-2 rounded-xl bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-700 transition"
-                  >
-                    <Phone className="w-3 h-3 text-amber-400" />
-                    <span>Call {d.phone}</span>
-                  </a>
+                  <div className="pt-2 flex items-center gap-2">
+                    <a
+                      href={`tel:${d.phone}`}
+                      className="flex-1 py-2 rounded-xl bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-700 transition"
+                    >
+                      <Phone className="w-3 h-3 text-amber-400" />
+                      <span>Call {d.phone}</span>
+                    </a>
 
-                  <a
-                    href={`https://wa.me/${d.phone.replace(/[^0-9]/g, '')}?text=Assalam%20o%20Alaikum%20${encodeURIComponent(d.ownerName)},%20regarding%20your%20Arabians%20Shopping%20Zone%20distributorship%20inquiry.`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 py-2 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-900 transition"
-                  >
-                    <MessageSquare className="w-3 h-3" />
-                    <span>WhatsApp Chat</span>
-                  </a>
+                    <a
+                      href={`https://wa.me/${d.phone.replace(/[^0-9]/g, '')}?text=Assalam%20o%20Alaikum%20${encodeURIComponent(oName)},%20this%20is%20Arabians%20Shopping%20Zone%20regarding%20your%20Distributor%20Application%20for%20${encodeURIComponent(d.city)}.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 py-2 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-900 transition"
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      <span>WhatsApp Chat</span>
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -1605,19 +2137,43 @@ export default function AdminPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block font-bold text-slate-300 mb-1">Category *</label>
               <select
                 value={editingProduct.category}
-                onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                onChange={(e) => {
+                  const newCat = e.target.value;
+                  setEditingProduct({ 
+                    ...editingProduct, 
+                    category: newCat,
+                    subcategory: '',
+                    subCategory: ''
+                  });
+                }}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
               >
-                <option value="wearing">Wearing & Royal Attire (Men)</option>
-                <option value="health">Health & Sunnah Foods</option>
-                <option value="fragrance">Attar, Oud & Bakhoor</option>
-                <option value="decor">Islamic Home Decor</option>
-                <option value="wedding">Nikah & Wedding Collection</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Subcategory</label>
+              <select
+                value={editingProduct.subcategory || editingProduct.subCategory || ''}
+                onChange={(e) => setEditingProduct({ 
+                  ...editingProduct, 
+                  subcategory: e.target.value,
+                  subCategory: e.target.value 
+                })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              >
+                <option value="">-- General / None --</option>
+                {(categories.find(c => c.id === editingProduct.category)?.subcategories || []).map((sub) => (
+                  <option key={sub.id} value={sub.id}>{sub.name}</option>
+                ))}
               </select>
             </div>
 
@@ -1625,7 +2181,7 @@ export default function AdminPage() {
               <label className="block font-bold text-slate-300 mb-1">Special Badge</label>
               <input
                 type="text"
-                placeholder="e.g. Sunnah Classic, Bestseller"
+                placeholder="e.g. Bestseller, Sunnah"
                 value={editingProduct.badge || ''}
                 onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -1656,19 +2212,102 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Product Photo Upload */}
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Product Photo</label>
-            <div className="flex items-center gap-3">
-              <img
-                src={editingProduct.image}
-                alt=""
-                className="w-14 h-14 rounded-2xl object-contain border border-slate-700 p-1 bg-[#070d12]"
-              />
-              <label className="flex-1 py-3 px-4 rounded-2xl border border-dashed border-slate-600 text-center cursor-pointer hover:border-amber-500 text-slate-300 font-bold transition">
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                {uploadingImage ? 'Uploading Image...' : 'Upload Image from Mobile / PC'}
+          {/* Product Photo Upload & Live Storefront Preview */}
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block font-bold text-amber-300 text-xs sm:text-sm">
+                Product Photo & Storefront Framing
               </label>
+              <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
+                Supports JPG, PNG, WebP
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-start">
+              {/* Controls (7 cols) */}
+              <div className="sm:col-span-7 space-y-2.5">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-300">1. Upload File</label>
+                  <label className="w-full py-2.5 px-3 rounded-xl border border-dashed border-slate-600 hover:border-amber-500 bg-[#070d12] flex items-center justify-center gap-2 cursor-pointer text-slate-300 text-xs font-bold transition">
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    {uploadingImage ? 'Uploading Image...' : 'Choose Photo from Device'}
+                  </label>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-300">2. Or Paste Image URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://... or /assets/products/..."
+                    value={editingProduct.image || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                    3. Frame Fit Mode (Prevents Awkward Cropping)
+                  </label>
+                  <select
+                    value={editingProduct.imageFit || 'auto'}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, imageFit: e.target.value })}
+                    className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-[#070d12] border border-slate-700 text-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  >
+                    <option value="auto">✨ Smart Auto-Fit (Preserves clothing & square bottles)</option>
+                    <option value="contain">📦 Fit Full Product (100% visible, zero cropping)</option>
+                    <option value="cover">👑 Fill Frame (Portrait fashion mode)</option>
+                  </select>
+                  <p className="text-[10px] text-slate-400 mt-1 leading-tight">
+                    • <b>Smart Auto</b>: automatically detects aspect ratio.<br />
+                    • <b>Fit Full</b>: ensures wide/square items are never chopped.
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Preview (5 cols) */}
+              <div className="sm:col-span-5 bg-black/40 rounded-2xl p-2.5 border border-amber-500/30 flex flex-col items-center">
+                <div className="w-full flex items-center justify-between mb-1.5 px-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
+                    Live Storefront Preview
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-400">
+                    1:1 Square Frame
+                  </span>
+                </div>
+
+                <div className="w-full max-w-[160px] aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] border border-slate-700 relative flex items-center justify-center shadow-inner">
+                  {editingProduct.mrp > editingProduct.price && (
+                    <div className="absolute top-1.5 left-1.5 bg-rose-600 text-white font-black text-[8px] px-1.5 py-0.5 rounded-full z-10">
+                      {Math.round(((editingProduct.mrp - editingProduct.price) / editingProduct.mrp) * 100)}% OFF
+                    </div>
+                  )}
+                  <img 
+                    key={editingProduct.image}
+                    src={editingProduct.image || '/assets/logo/logo_main.png'} 
+                    alt="" 
+                    onLoad={(e) => {
+                      if (editingProduct.imageFit === 'contain') return;
+                      const { naturalWidth, naturalHeight } = e.target;
+                      if (naturalWidth && naturalHeight) {
+                        const ratio = naturalWidth / naturalHeight;
+                        e.target.className = `w-full h-full object-cover ${ratio < 0.85 ? 'object-top' : 'object-center'}`;
+                      }
+                    }}
+                    className={`w-full h-full ${
+                      editingProduct.imageFit === 'contain' 
+                        ? 'object-contain p-2' 
+                        : (editingProduct.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center')
+                    }`}
+                  />
+                </div>
+                <span className="text-[10px] font-bold text-slate-300 mt-1.5 text-center truncate max-w-[160px]">
+                  {editingProduct.name || 'Product Title'}
+                </span>
+                <span className="text-[10px] font-mono font-black text-amber-400">
+                  ₹{editingProduct.price || 0}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -1693,6 +2332,206 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setIsProductModalOpen(false)}
+              className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )}
+
+  {/* ========================================================================= */}
+  {/* MODAL: ADD / EDIT CATEGORY ARCHITECTURE                                   */}
+  {/* ========================================================================= */}
+  {isCategoryModalOpen && editingCategory && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="bg-[#0c1620] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4 my-8 border border-amber-500/30 shadow-2xl text-slate-100">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-lg text-white">
+                {editingCategory.isNew ? 'Create New Store Category' : `Edit Category: ${editingCategory.name}`}
+              </h3>
+              <p className="text-[10px] text-slate-400">Controls stories, catalog tabs, and shop filters.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsCategoryModalOpen(false)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Category Title *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Prayer Mats & Janamaz"
+                value={editingCategory.name}
+                onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">
+                Slug ID {editingCategory.isNew ? '(auto if empty)' : '(Read-only)'}
+              </label>
+              <input
+                type="text"
+                disabled={!editingCategory.isNew}
+                placeholder="e.g. prayer-mats"
+                value={editingCategory.id || ''}
+                onChange={(e) => setEditingCategory({ ...editingCategory, id: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-300 mb-1">Subtitle / Tagline</label>
+            <input
+              type="text"
+              placeholder="e.g. Premium Madinah & Turkish foam prayer rugs"
+              value={editingCategory.subtitle || ''}
+              onChange={(e) => setEditingCategory({ ...editingCategory, subtitle: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Badge Tag</label>
+              <input
+                type="text"
+                placeholder="e.g. Royal Sacred, New"
+                value={editingCategory.badge || ''}
+                onChange={(e) => setEditingCategory({ ...editingCategory, badge: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Category Icon</label>
+              <select
+                value={editingCategory.icon || 'Sparkles'}
+                onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              >
+                {ICON_OPTIONS.map((opt) => (
+                  <option key={opt.id} value={opt.id}>{opt.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Category Cover Image */}
+          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-2">
+            <label className="block font-bold text-slate-300">Category Cover Photo</label>
+            <div className="flex items-center gap-3">
+              <img
+                src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
+                alt=""
+                className="w-14 h-14 rounded-2xl object-contain border border-slate-700 p-1 bg-[#0c1620]"
+              />
+              <div className="flex-1 space-y-1.5">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setCatImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:brightness-110"
+                />
+                <input
+                  type="text"
+                  placeholder="Or paste direct image URL (e.g. /assets/...)"
+                  value={editingCategory.image || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, image: e.target.value })}
+                  className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c1620] border border-slate-700 text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Subcategories tags manager */}
+          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-300">
+                Subcategories ({editingCategory.subcategories?.length || 0})
+              </label>
+              <span className="text-[10px] text-slate-500">Filtered tabs in catalog</span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-[#0c1620] rounded-xl border border-slate-800">
+              {editingCategory.subcategories && editingCategory.subcategories.length > 0 ? (
+                editingCategory.subcategories.map((sub) => (
+                  <span
+                    key={sub.id}
+                    className="inline-flex items-center gap-1.5 bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                  >
+                    <span>{sub.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSubcatFromCategory(sub.id)}
+                      className="text-emerald-400 hover:text-rose-400 ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-500 italic">No subcategories yet. Type below:</span>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Type subcategory name (e.g. 'Velvet Janamaz')..."
+                value={newSubcatInput}
+                onChange={(e) => setNewSubcatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddSubcatToCategory();
+                  }
+                }}
+                className="flex-1 px-3 py-2 rounded-xl bg-[#0c1620] border border-slate-700 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+              <button
+                type="button"
+                onClick={handleAddSubcatToCategory}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 text-amber-300 font-bold text-xs hover:bg-slate-700 transition flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-3">
+            <button
+              type="submit"
+              disabled={savingCategory || uploadingCatImage}
+              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20"
+            >
+              {savingCategory || uploadingCatImage ? 'Saving Category...' : editingCategory.isNew ? 'Create Category' : 'Save Category Changes'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsCategoryModalOpen(false)}
               className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
             >
               Cancel
@@ -1805,8 +2644,11 @@ export default function AdminPage() {
   {/* MODAL 3: PRINTABLE PACKING SLIP / INVOICE                                 */}
   {/* ========================================================================= */}
   {activeInvoiceOrder && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-10 max-w-2xl w-full space-y-6 my-8 shadow-2xl border border-amber-500/40 relative">
+    <div 
+      onClick={(e) => { if (e.target === e.currentTarget) setActiveInvoiceOrder(null); }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto cursor-pointer"
+    >
+      <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-10 max-w-2xl w-full space-y-6 my-8 shadow-2xl border border-amber-500/40 relative cursor-default">
         
         {/* Action Bar (Print / Close) */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-200">
@@ -1822,8 +2664,10 @@ export default function AdminPage() {
               <span>Print Slip</span>
             </button>
             <button
+              id="close-invoice-modal-btn"
               onClick={() => setActiveInvoiceOrder(null)}
               className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600"
+              title="Close"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1849,10 +2693,10 @@ export default function AdminPage() {
               {activeInvoiceOrder.id}
             </div>
             <div className="text-xs text-slate-500 mt-1">
-              Date: {activeInvoiceOrder.createdAt}
+              Date: {activeInvoiceOrder.createdAt || activeInvoiceOrder.date}
             </div>
             <div className="text-xs font-bold uppercase text-amber-700">
-              Payment: {activeInvoiceOrder.paymentMode}
+              Payment: {activeInvoiceOrder.paymentMode || activeInvoiceOrder.paymentMethod || 'COD'}
             </div>
           </div>
         </div>
@@ -1862,12 +2706,18 @@ export default function AdminPage() {
           <span className="font-bold text-slate-400 uppercase text-[10px] block mb-1">
             Billed & Shipped To:
           </span>
-          <div className="font-bold text-slate-900 text-sm">{activeInvoiceOrder.customerName}</div>
-          <div className="text-slate-600">{activeInvoiceOrder.address}</div>
-          <div className="text-slate-700 font-mono">Contact: {activeInvoiceOrder.phone}</div>
-          {activeInvoiceOrder.trackingId && (
+          <div className="font-bold text-slate-900 text-sm">
+            {activeInvoiceOrder.customerName || activeInvoiceOrder.customer?.name || 'Customer'}
+          </div>
+          <div className="text-slate-600">
+            {activeInvoiceOrder.address || (activeInvoiceOrder.customer ? [activeInvoiceOrder.customer.address, activeInvoiceOrder.customer.city, activeInvoiceOrder.customer.state, activeInvoiceOrder.customer.pincode].filter(Boolean).join(', ') : 'Direct Delivery')}
+          </div>
+          <div className="text-slate-700 font-mono">
+            Contact: {activeInvoiceOrder.phone || activeInvoiceOrder.customer?.phone || 'N/A'}
+          </div>
+          {(activeInvoiceOrder.trackingId || activeInvoiceOrder.trackingNumber) && (
             <div className="text-emerald-700 font-bold pt-1">
-              Courier Tracking: {activeInvoiceOrder.trackingId}
+              Courier Tracking: {activeInvoiceOrder.trackingId || activeInvoiceOrder.trackingNumber}
             </div>
           )}
         </div>
@@ -1887,7 +2737,17 @@ export default function AdminPage() {
               {activeInvoiceOrder.items && activeInvoiceOrder.items.map((it, idx) => (
                 <tr key={idx}>
                   <td className="p-3 font-medium text-slate-900">
-                    {it.name} {it.selectedSize ? `(${it.selectedSize})` : ''}
+                    <div>{it.name} {it.selectedSize ? `(${it.selectedSize})` : ''}</div>
+                    {it.customization && (
+                      <div className="text-[11px] text-amber-950 bg-amber-50 p-1.5 rounded mt-1 border border-amber-200">
+                        <strong className="text-amber-900">👑 Custom Personalization:</strong>{' '}
+                        {it.customization.shareLaterOnWhatsApp 
+                          ? 'Customer will provide custom details via WhatsApp'
+                          : it.customization.isWedding 
+                            ? `Dulha: ${it.customization.groomName || '-'} ❤️ Dulhan: ${it.customization.brideName || '-'}${it.customization.eventDate ? ` | Date: ${it.customization.eventDate}` : ''}${it.customization.cityVenue ? ` | Venue: ${it.customization.cityVenue}` : ''}${it.customization.specialNotes ? ` | Note: ${it.customization.specialNotes}` : ''}`
+                            : `${it.customization.customText}${it.customization.specialNotes ? ` | Note: ${it.customization.specialNotes}` : ''}`}
+                      </div>
+                    )}
                   </td>
                   <td className="p-3 text-center">{it.quantity}</td>
                   <td className="p-3 text-right font-mono">₹{it.price}</td>

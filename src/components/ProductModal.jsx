@@ -9,9 +9,11 @@ import {
   ShieldCheck, 
   Truck, 
   Heart,
-  Share2
+  Share2,
+  Sparkles
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
+import SmartSizeFinderModal from '../components/SmartSizeFinderModal';
+import PersonalizationStudio from './PersonalizationStudio';
 import { getProductOrderWhatsAppUrl } from '../utils/whatsapp';
 
 export default function ProductModal() {
@@ -30,15 +32,38 @@ export default function ProductModal() {
   const [selectedSize, setSelectedSize] = useState(
     selectedProduct?.sizes ? selectedProduct.sizes[0] : null
   );
+  const [customization, setCustomization] = useState(null);
   const [qty, setQty] = useState(1);
+  const [hasModalImgError, setHasModalImgError] = useState(false);
+
+  const [modalImgClass, setModalImgClass] = useState('object-cover object-center');
+
+  const images = selectedProduct?.gallery && selectedProduct.gallery.length > 0 
+    ? selectedProduct.gallery 
+    : (selectedProduct ? [selectedProduct.image] : []);
+
+  const currentImage = images[activeImage] || selectedProduct?.image;
+
+  useEffect(() => {
+    setHasModalImgError(false);
+    if (selectedProduct?.imageFit === 'contain') {
+      setModalImgClass('object-contain p-2');
+    } else {
+      setModalImgClass(selectedProduct?.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+    }
+  }, [currentImage, selectedProduct]);
+
+  const handleModalImageLoad = (e) => {
+    if (selectedProduct?.imageFit === 'contain') return;
+    const { naturalWidth, naturalHeight } = e.target;
+    if (naturalWidth && naturalHeight) {
+      const ratio = naturalWidth / naturalHeight;
+      setModalImgClass(ratio < 0.85 ? 'object-cover object-top' : 'object-cover object-center');
+    }
+  };
 
   if (!selectedProduct) return null;
 
-  const images = selectedProduct.gallery && selectedProduct.gallery.length > 0 
-    ? selectedProduct.gallery 
-    : [selectedProduct.image];
-
-  const currentImage = images[activeImage] || selectedProduct.image;
   const isWishlisted = wishlist.includes(selectedProduct.id);
 
   const discountPercent = selectedProduct.mrp > selectedProduct.price
@@ -46,11 +71,11 @@ export default function ProductModal() {
     : 0;
 
   const handleAddToCart = () => {
-    addToCart(selectedProduct, qty, selectedSize);
+    addToCart(selectedProduct, qty, selectedSize, customization);
   };
 
   const handleBuyNow = () => {
-    addToCart(selectedProduct, qty, selectedSize);
+    addToCart(selectedProduct, qty, selectedSize, customization);
     setSelectedProduct(null);
     setIsCheckoutOpen(true);
   };
@@ -90,17 +115,33 @@ export default function ProductModal() {
             {/* Gallery Column */}
             <div className="md:col-span-6 space-y-3">
               {/* Main Image Display */}
-              <div className="relative aspect-square bg-[#faf8f5] rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center p-4">
+              <div className="relative aspect-square bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center">
+                {hasModalImgError ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-emerald-950 via-slate-900 to-amber-950 text-amber-200">
+                    <div className="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center mb-3">
+                      <Sparkles className="w-7 h-7 text-amber-400" />
+                    </div>
+                    <span className="text-sm font-serif font-bold text-amber-100 line-clamp-2 px-3">
+                      {selectedProduct.name}
+                    </span>
+                    <span className="text-[10px] text-amber-400/80 uppercase font-mono mt-1">
+                      Arabians Authentic
+                    </span>
+                  </div>
+                ) : (
+                  <img 
+                    src={currentImage} 
+                    alt={selectedProduct.name}
+                    onLoad={handleModalImageLoad}
+                    onError={() => setHasModalImgError(true)}
+                    className={`w-full h-full ${modalImgClass}`}
+                  />
+                )}
                 {discountPercent > 0 && (
                   <span className="absolute top-3 left-3 bg-amber-500 text-slate-950 font-black text-xs px-2.5 py-0.5 rounded-full z-10 shadow-sm">
                     {discountPercent}% OFF
                   </span>
                 )}
-                <img 
-                  src={currentImage} 
-                  alt={selectedProduct.name}
-                  className="w-full h-full object-contain filter drop-shadow-md"
-                />
               </div>
 
               {/* Thumbnails if multiple */}
@@ -110,11 +151,11 @@ export default function ProductModal() {
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}
-                      className={`w-16 h-16 rounded-xl overflow-hidden border-2 bg-slate-50 p-1 shrink-0 transition ${
+                      className={`w-16 h-16 rounded-xl overflow-hidden border-2 bg-slate-50 shrink-0 transition ${
                         activeImage === idx ? 'border-amber-500 shadow-md scale-105' : 'border-slate-200 opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-contain" />
+                      <img src={img} alt="" className="w-full h-full object-cover object-center" />
                     </button>
                   ))}
                 </div>
@@ -223,6 +264,12 @@ export default function ProductModal() {
                 </div>
               )}
 
+              {/* Personalization Studio for Wedding & Custom Keepsakes */}
+              <PersonalizationStudio 
+                product={selectedProduct} 
+                onChange={setCustomization} 
+              />
+
               {/* Quantity & CTAs */}
               <div className="pt-3 border-t border-slate-200 space-y-3">
                 <div className="flex items-center gap-3">
@@ -261,7 +308,7 @@ export default function ProductModal() {
 
                 {/* Ask on WhatsApp */}
                 <a
-                  href={getProductOrderWhatsAppUrl(selectedProduct, 1, selectedSize, settings.whatsapp)}
+                  href={getProductOrderWhatsAppUrl(selectedProduct, qty, selectedSize, settings.whatsapp, customization)}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-2.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 font-semibold text-xs transition flex items-center justify-center gap-2"

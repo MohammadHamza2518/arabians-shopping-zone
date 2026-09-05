@@ -24,8 +24,8 @@ import { getGeneralSupportWhatsAppUrl } from '../utils/whatsapp';
 
 export default function Footer() {
   const location = useLocation();
-  const isCleanPage = location.pathname === '/track' || location.pathname === '/checkout';
-  const { settings, categories, showToast } = useStore();
+  const isCleanPage = location.pathname === '/track' || location.pathname === '/checkout' || location.pathname === '/distributor';
+  const { settings, categories, showToast, reviewStats } = useStore();
   const [vipPhone, setVipPhone] = useState('');
   const [vipSubmitted, setVipSubmitted] = useState(false);
 
@@ -44,13 +44,36 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative bg-[#02130e] text-white overflow-hidden border-t border-amber-500/30 pt-12 pb-24 md:pb-12">
+    <footer className="relative bg-[#02130e] text-white overflow-hidden pb-24 md:pb-12">
       
+      {/* 0. Architectural Transition Curve (Ivory Page into Royal Emerald Footer) */}
+      <div className="relative w-full overflow-hidden bg-[#faf8f5] select-none pointer-events-none leading-none">
+        <svg 
+          viewBox="0 0 1440 60" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="w-full h-6 sm:h-10 block"
+          preserveAspectRatio="none"
+        >
+          {/* Fill matching footer background */}
+          <path 
+            d="M0,0 C360,55 1080,55 1440,0 L1440,60 L0,60 Z" 
+            fill="#02130e"
+          />
+          {/* Subtle golden trim line following the curve */}
+          <path 
+            d="M0,0 C360,55 1080,55 1440,0" 
+            stroke="rgba(245, 158, 11, 0.45)" 
+            strokeWidth="1.5"
+          />
+        </svg>
+      </div>
+
       {/* Decorative Architectural Islamic Geometric Accent */}
       <div className="absolute inset-0 opacity-[0.025] pointer-events-none bg-[radial-gradient(#d4af37_1.5px,transparent_1.5px)] [background-size:28px_28px]"></div>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-amber-500/5 blur-3xl pointer-events-none rounded-full"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 space-y-12">
         
         {/* 1. UNIQUE TOP SHOWCASE: The "Arabians Royal Circle" VIP & Dealership Pavilion (Hidden on dedicated pages like Track & Checkout) */}
         {!isCleanPage && (
@@ -131,7 +154,15 @@ export default function Footer() {
           
           {/* Block 1: Brand Essence & Physical Store Crest (4 cols) */}
           <div className="lg:col-span-4 space-y-4 text-center sm:text-left">
-            <Link to="/" className="inline-flex items-center gap-4 group">
+            <Link 
+              to="/" 
+              onClick={() => {
+                if (location.pathname === '/') {
+                  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                }
+              }}
+              className="inline-flex items-center gap-4 group"
+            >
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-[#02130e] border-2 border-amber-400 shadow-gold shrink-0 flex items-center justify-center ring-2 ring-amber-400/60 ring-offset-2 ring-offset-[#02130e] group-hover:scale-105 transition-transform duration-300">
                 <img src="/assets/logo/logo_main.png" alt="Arabians Logo" className="w-full h-full object-contain rounded-full" />
               </div>
@@ -316,7 +347,7 @@ export default function Footer() {
               <li>
                 <Link to="/reviews" className="text-emerald-200/80 hover:text-amber-300 transition flex items-center justify-between py-1 border-b border-emerald-900/40 group">
                   <span>Verified Customer Reviews</span>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">328+ Real</span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">{reviewStats?.total || 328}+ Real</span>
                 </Link>
               </li>
               <li>
@@ -325,10 +356,17 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/store" className="text-emerald-200/80 hover:text-amber-300 transition flex items-center justify-between py-1 border-b border-emerald-900/40 group">
+                  <span>Visit Our Shop</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold">Google Maps</span>
+                </Link>
+              </li>
+              <li>
                 <Link to="/distributor" className="text-emerald-200/80 hover:text-amber-300 transition block py-1 border-b border-emerald-900/40">
                   B2B Wholesale Portal
                 </Link>
               </li>
+
               <li>
                 <a 
                   href={settings.instagramUrl} 

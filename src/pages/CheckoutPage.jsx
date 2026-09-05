@@ -24,10 +24,12 @@ export default function CheckoutPage() {
     cart, 
     cartTotal, 
     cartCount, 
-    updateQuantity, 
+    cartSubtotal,
+    deliveryFee,
+    updateCartQuantity, 
     removeFromCart, 
     clearCart,
-    couponCode,
+    appliedCoupon,
     couponDiscount,
     applyCoupon,
     removeCoupon,
@@ -35,6 +37,10 @@ export default function CheckoutPage() {
     settings,
     showToast
   } = useStore();
+
+  const couponCode = appliedCoupon?.code || '';
+  const shippingCharges = deliveryFee;
+  const finalTotal = cartTotal;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -64,8 +70,6 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, []);
 
-  const shippingCharges = cartTotal >= 999 || cart.length === 0 ? 0 : 70;
-  const finalTotal = Math.max(0, cartTotal - couponDiscount + shippingCharges);
 
   const handleApplyCoupon = async (codeToApply) => {
     const code = typeof codeToApply === 'string' ? codeToApply : couponInput;
@@ -92,19 +96,38 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
+      const fullAddress = `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`;
+      const customerData = {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: fullAddress,
+        street: formData.address,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode
+      };
       const orderPayload = {
+        customer: customerData,
         customerName: formData.name,
         phone: formData.phone,
         email: formData.email,
-        address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`,
-        items: cart.map(i => ({
-          id: i.id,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-          selectedSize: i.selectedSize || null,
-          image: i.image
-        })),
+        address: fullAddress,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        items: cart.map(i => {
+          const p = i.product || i;
+          return {
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            quantity: i.quantity,
+            selectedSize: i.variant || null,
+            customization: i.customization || null,
+            image: p.image
+          };
+        }),
         subtotal: cartTotal,
         discount: couponDiscount,
         couponCode: couponCode || null,
@@ -128,7 +151,7 @@ export default function CheckoutPage() {
           const waUrl = getCartOrderWhatsAppUrl({
             orderId: res.order?.id,
             customer: {
-              name: formData.fullName,
+              name: formData.fullName || formData.name,
               phone: formData.phone,
               address: formData.address,
               city: formData.city,
@@ -139,7 +162,8 @@ export default function CheckoutPage() {
               name: i.product?.name,
               price: i.product?.price,
               quantity: i.quantity,
-              selectedSize: i.selectedSize
+              selectedSize: i.variant || i.selectedSize,
+              customization: i.customization || null
             })),
             total: finalTotal,
             paymentMethod: 'WhatsApp Direct Order'
@@ -213,9 +237,21 @@ export default function CheckoutPage() {
           </div>
 
           <div className="text-xs space-y-2 text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <div><strong className="text-slate-900">Deliver To:</strong> {placedOrderInfo.customerName || placedOrderInfo.customer?.name} ({placedOrderInfo.phone || placedOrderInfo.customer?.phone})</div>
-            <div><strong className="text-slate-900">Address:</strong> {placedOrderInfo.address || (placedOrderInfo.customer ? `${placedOrderInfo.customer.address}, ${placedOrderInfo.customer.city}` : '')}</div>
-            <div><strong className="text-slate-900">Payment Preference:</strong> <span className="uppercase font-bold text-amber-800">{placedOrderInfo.paymentMode || placedOrderInfo.paymentMethod || 'COD'}</span></div>
+            <div>
+              <strong className="text-slate-900">Deliver To:</strong>{' '}
+              {placedOrderInfo.customerName || placedOrderInfo.customer?.name || formData.name}{' '}
+              ({placedOrderInfo.phone || placedOrderInfo.customer?.phone || formData.phone})
+            </div>
+            <div>
+              <strong className="text-slate-900">Address:</strong>{' '}
+              {placedOrderInfo.address || (placedOrderInfo.customer?.address ? placedOrderInfo.customer.address : `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`)}
+            </div>
+            <div>
+              <strong className="text-slate-900">Payment Preference:</strong>{' '}
+              <span className="uppercase font-bold text-amber-800">
+                {placedOrderInfo.paymentMode || placedOrderInfo.paymentMethod || paymentMode || 'COD'}
+              </span>
+            </div>
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-3">
@@ -472,42 +508,61 @@ export default function CheckoutPage() {
 
               {/* Item List */}
               <div className="max-h-60 overflow-y-auto space-y-3 pr-1">
-                {cart.map((item) => (
-                  <div key={item.cartItemId} className="flex items-center gap-3 text-xs">
-                    <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-contain bg-slate-50 border border-slate-200 p-1 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-slate-900 truncate">{item.name}</div>
-                      {item.selectedSize && (
-                        <div className="text-[11px] text-slate-500">Size: {item.selectedSize}</div>
-                      )}
-                      <div className="text-amber-800 font-semibold">₹{item.price} × {item.quantity}</div>
+                {cart.map((item, idx) => {
+                  const prod = item.product || item;
+                  const itemKey = `${prod.id || idx}-${item.variant || 'std'}-${idx}`;
+                  return (
+                    <div key={itemKey} className="flex items-start gap-3 text-xs border-b border-slate-100 pb-2.5 last:border-0 last:pb-0">
+                      <img src={prod.image} alt="" className="w-12 h-12 rounded-xl object-contain bg-slate-50 border border-slate-200 p-1 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-900 truncate">{prod.name}</div>
+                        {item.variant && item.variant !== 'standard' && (
+                          <div className="text-[11px] text-slate-500">Option: {item.variant}</div>
+                        )}
+                        {item.customization && (
+                          <div className="mt-1 p-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-950">
+                            <span className="font-bold text-amber-900 block">👑 Personalization:</span>
+                            {item.customization.shareLaterOnWhatsApp ? (
+                              <span className="text-emerald-800">Will share details on WhatsApp</span>
+                            ) : item.customization.isWedding ? (
+                              <span>
+                                {item.customization.groomName || 'Dulha'} ❤️ {item.customization.brideName || 'Dulhan'}
+                                {item.customization.eventDate && ` • ${item.customization.eventDate}`}
+                              </span>
+                            ) : (
+                              <span>{item.customization.customText}</span>
+                            )}
+                          </div>
+                        )}
+                        <div className="text-amber-800 font-semibold mt-0.5">₹{prod.price} × {item.quantity}</div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0 mt-1">
+                        <button
+                          type="button"
+                          onClick={() => updateCartQuantity(prod.id, item.variant || 'standard', -1, item.customization)}
+                          className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold hover:bg-slate-200 cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <span className="w-5 text-center font-bold text-xs">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateCartQuantity(prod.id, item.variant || 'standard', 1, item.customization)}
+                          className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold hover:bg-slate-200 cursor-pointer"
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(prod.id, item.variant || 'standard', item.customization)}
+                          className="p-1 text-slate-400 hover:text-rose-600 ml-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
-                        className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold"
-                      >
-                        -
-                      </button>
-                      <span className="w-5 text-center font-bold text-xs">{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
-                        className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.cartItemId)}
-                        className="p-1 text-slate-400 hover:text-rose-600 ml-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Coupon Engine */}

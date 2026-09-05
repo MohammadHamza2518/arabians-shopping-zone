@@ -12,6 +12,7 @@ import {
   Award,
   CheckCircle2
 } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
 const HERO_SLIDES = [
   {
@@ -24,7 +25,7 @@ const HERO_SLIDES = [
     mrp: "₹2,299",
     ctaText: "Shop Men's Thobes",
     ctaLink: "/shop?category=wearing",
-    image: "/assets/studio/mens_white_thobe.jpg"
+    image: "/assets/studio/mens_thobe_banner_43.jpg"
   },
   {
     id: 'talbina',
@@ -36,7 +37,7 @@ const HERO_SLIDES = [
     mrp: "₹449",
     ctaText: "Order Sunnah Talbina",
     ctaLink: "/product/talbina-vanilla",
-    image: "/assets/talbina/talbina_vanilla_dryfruits.png"
+    image: "/assets/talbina/talbina_banner_43.jpg"
   },
   {
     id: 'oud',
@@ -48,7 +49,7 @@ const HERO_SLIDES = [
     mrp: "₹999",
     ctaText: "Discover Pure Oud",
     ctaLink: "/shop?category=fragrance",
-    image: "/assets/studio/dehnul_oud_pure.jpg"
+    image: "/assets/studio/dehnul_oud_banner_43.jpg"
   },
   {
     id: 'wedding',
@@ -60,11 +61,12 @@ const HERO_SLIDES = [
     mrp: "₹1,499",
     ctaText: "View Nikah Collection",
     ctaLink: "/shop?category=wedding",
-    image: "/assets/studio/nikah_nama_booklet.jpg"
+    image: "/assets/studio/nikah_nama_banner_43.jpg"
   }
 ];
 
 export default function Hero() {
+  const { reviewStats } = useStore();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Preload hero slide images
@@ -88,70 +90,77 @@ export default function Hero() {
   const slide = HERO_SLIDES[currentSlide];
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-b from-[#fbf9f4] via-[#f7f3e8] to-[#faf8f5] py-6 sm:py-12 border-b border-amber-900/10">
+    <div className="relative overflow-hidden bg-gradient-to-b from-[#fbf9f4] via-[#f7f3e8] to-[#faf8f5] py-4 sm:py-8 border-b border-amber-900/10">
       
       {/* Subtle Islamic Ambient Motif */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#032219_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
         {/* Main Editorial Hero Card */}
-        <div className="relative rounded-3xl bg-white border border-amber-900/15 p-5 sm:p-10 lg:p-12 shadow-xl overflow-hidden">
+        <div className="relative rounded-2xl sm:rounded-3xl bg-white border border-amber-900/15 p-4 sm:p-6 lg:p-10 shadow-lg sm:shadow-xl overflow-hidden">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-10 items-center">
             
-            {/* Left Column: Typography & CTAs */}
-            <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left z-10">
+            {/* Mobile-Only: Large Prominent Product Showcase (Shown first on phone screens!) */}
+            <div className="lg:hidden">
+              <div className="relative w-full aspect-[4/3] sm:h-80 rounded-2xl bg-gradient-to-tr from-amber-50/90 via-white to-emerald-50/90 border border-amber-900/15 shadow-md flex items-center justify-center overflow-hidden group">
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="w-full h-full object-cover filter drop-shadow-md transition-transform duration-500 group-hover:scale-105"
+                />
+                
+                {/* Floating Top Badge */}
+                <div className="absolute top-3 left-3 bg-white/95 border border-amber-500/30 px-3 py-1 rounded-full shadow-sm text-[11px] font-bold text-amber-950 flex items-center gap-1.5 backdrop-blur-xs">
+                  <span>{slide.badge}</span>
+                </div>
+
+                {/* Floating Bottom Badge */}
+                <div className="absolute bottom-3 right-3 bg-white/95 border border-amber-500/40 px-3 py-1 rounded-full shadow text-[10px] font-bold text-[#032219] flex items-center gap-1.5 backdrop-blur-xs">
+                  <Award className="w-3.5 h-3.5 text-amber-600" />
+                  <span>100% Authentic Sunnah</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Left / Text Column: Typography & CTAs */}
+            <div className="lg:col-span-7 space-y-3 sm:space-y-4 text-center lg:text-left z-10">
               
-              {/* Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-950 text-xs font-bold shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              {/* Desktop-Only Badge */}
+              <div className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-950 text-xs font-bold shadow-xs">
                 <span>{slide.badge}</span>
               </div>
 
               {/* Slide Title */}
-              <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#032219]">
+              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black tracking-tight leading-tight text-[#032219]">
                 {slide.title}
               </h1>
 
-              {/* Mobile-Only Prominent Product Image (Instantly visible on phone screens!) */}
-              <div className="lg:hidden my-3 flex items-center justify-center">
-                <div className="relative w-48 h-48 sm:w-60 sm:h-60 rounded-2xl p-2.5 bg-gradient-to-tr from-amber-50/90 via-white to-emerald-50/90 border border-amber-900/15 shadow-lg flex items-center justify-center">
-                  <img
-                    src={slide.image}
-                    alt={slide.title}
-                    className="w-full h-full object-contain rounded-xl filter drop-shadow-md"
-                  />
-                  <div className="absolute -bottom-2.5 bg-white border border-amber-500/40 px-2.5 py-1 rounded-full shadow text-[10px] font-bold text-[#032219] flex items-center gap-1">
-                    <Award className="w-3 h-3 text-amber-600" />
-                    <span>100% Authentic Sunnah</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Subtitle */}
-              <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed line-clamp-3 sm:line-clamp-none">
+              <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed">
                 {slide.subtitle}
               </p>
 
-              {/* Highlight Tag & Pricing Pill */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-0.5">
-                <span className="py-1 px-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              {/* Pricing & Benefit Bar */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-100/80 border border-amber-300 text-amber-950 text-sm sm:text-base font-bold font-serif shadow-xs">
+                  <span>{slide.price}</span>
+                  <span className="line-through text-slate-400 font-sans text-xs font-normal ml-0.5">{slide.mrp}</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{slide.highlight}</span>
-                </span>
-                <span className="py-1 px-3 rounded-lg bg-amber-100/70 border border-amber-300 text-amber-950 text-xs font-bold font-serif">
-                  {slide.price} <span className="line-through text-slate-400 font-normal ml-1">{slide.mrp}</span>
-                </span>
+                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-2.5 sm:gap-3 pt-2">
                 <Link
                   to={slide.ctaLink}
-                  className="w-full sm:w-auto px-6 py-3 sm:py-3.5 rounded-xl bg-[#032219] text-amber-300 font-bold text-xs sm:text-sm hover:bg-[#063e2e] shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+                  className="px-6 py-3.5 rounded-xl bg-[#032219] text-amber-300 font-bold text-xs sm:text-sm hover:bg-[#063e2e] shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 text-center"
                 >
                   <ShoppingBag className="w-4 h-4 text-amber-400" />
                   <span>{slide.ctaText}</span>
@@ -160,7 +169,7 @@ export default function Hero() {
 
                 <Link
                   to="/distributor"
-                  className="w-full sm:w-auto px-5 py-2.5 sm:py-3.5 rounded-xl bg-amber-50 text-amber-950 border border-amber-300 hover:bg-amber-100 font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5"
+                  className="px-5 py-3 rounded-xl bg-amber-50/80 hover:bg-amber-100 text-amber-950 border border-amber-300/80 font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-center active:scale-95"
                 >
                   <span>🤝 Wholesale Dealership</span>
                 </Link>
@@ -168,16 +177,16 @@ export default function Hero() {
 
             </div>
 
-            {/* Right Column: Hero Studio Image with 3D Pop Frame (Desktop View) */}
+            {/* Desktop-Only Right Column: Hero Studio Image with Large High-Res Frame */}
             <div className="hidden lg:flex lg:col-span-5 items-center justify-center relative">
-              <div className="relative w-56 h-56 sm:w-76 sm:h-76 lg:w-92 lg:h-92 rounded-3xl p-3 bg-gradient-to-tr from-amber-50 via-white to-emerald-50 border border-amber-900/15 shadow-xl flex items-center justify-center group">
+              <div className="relative w-full h-[380px] xl:h-[430px] rounded-3xl bg-gradient-to-tr from-amber-50 via-white to-emerald-50 border border-amber-900/15 shadow-xl flex items-center justify-center overflow-hidden group">
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full h-full object-contain rounded-2xl filter drop-shadow-xl transition-all duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover filter drop-shadow-2xl transition-all duration-700 group-hover:scale-105"
                 />
 
-                <div className="absolute -bottom-3 -right-2 bg-white/95 border border-amber-500/40 px-3 py-1.5 rounded-xl shadow-lg backdrop-blur-md text-[11px] font-bold text-[#032219] flex items-center gap-1.5">
+                <div className="absolute bottom-3 right-3 bg-white/95 border border-amber-500/40 px-3.5 py-1.5 rounded-xl shadow-lg backdrop-blur-md text-xs font-bold text-[#032219] flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-amber-600" />
                   <span>100% Authentic Sunnah</span>
                 </div>
@@ -187,37 +196,42 @@ export default function Hero() {
           </div>
 
           {/* Slider Navigation Arrows & Indicator Dots */}
-          <div className="flex items-center justify-between pt-5 sm:pt-6 mt-5 sm:mt-6 border-t border-slate-100 text-xs">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-slate-100 text-xs">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {HERO_SLIDES.map((s, idx) => (
                 <button
                   key={s.id}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`h-2 rounded-full transition-all ${
-                    currentSlide === idx ? 'w-8 bg-amber-600' : 'w-2 bg-slate-300 hover:bg-slate-400'
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    currentSlide === idx 
+                      ? 'w-7 sm:w-9 bg-gradient-to-r from-amber-500 to-amber-600 shadow-xs' 
+                      : 'w-2 bg-amber-950/15 hover:bg-amber-950/30'
                   }`}
                   aria-label={`Slide ${idx + 1}`}
                 />
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-                className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 flex items-center justify-center transition"
-                aria-label="Previous Slide"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-[11px] font-mono text-slate-500 font-bold">
-                0{currentSlide + 1} / 0{HERO_SLIDES.length}
+            {/* Luxury Navigation Capsule */}
+            <div className="flex items-center gap-1.5 bg-amber-50/70 border border-amber-900/15 rounded-full p-1 pl-3 shadow-xs">
+              <span className="text-xs font-sans font-semibold tracking-wider text-slate-600 select-none mr-1">
+                <span className="text-[#032219] font-black">0{currentSlide + 1}</span>
+                <span className="text-amber-900/30 mx-1.5 font-normal">/</span>
+                <span className="text-slate-400 font-medium">0{HERO_SLIDES.length}</span>
               </span>
               <button
+                onClick={() => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-amber-900/15 text-[#032219] hover:bg-[#032219] hover:text-amber-300 hover:border-[#032219] shadow-xs flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </button>
+              <button
                 onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
-                className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 flex items-center justify-center transition"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-amber-900/15 text-[#032219] hover:bg-[#032219] hover:text-amber-300 hover:border-[#032219] shadow-xs flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
                 aria-label="Next Slide"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
@@ -251,7 +265,7 @@ export default function Hero() {
               <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
             </div>
             <div>
-              <div className="font-bold text-slate-900">4.9/5 Verified Ratings</div>
+              <div className="font-bold text-slate-900">{reviewStats?.average || '4.9'}/5 Verified Ratings</div>
               <div className="text-[10px] text-slate-500">3,400+ Muslim Families</div>
             </div>
           </div>
