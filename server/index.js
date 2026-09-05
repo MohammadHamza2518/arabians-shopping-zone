@@ -493,6 +493,28 @@ app.put('/api/orders/:id/status', (req, res) => {
   res.json({ success: true, order, id: order.id });
 });
 
+// Delete single order
+app.delete('/api/orders/:id', (req, res) => {
+  const store = getStore();
+  const beforeLen = (store.orders || []).length;
+  store.orders = (store.orders || []).filter(o => o.id !== req.params.id);
+  saveStore(store);
+  res.json({ success: true, deleted: beforeLen !== store.orders.length });
+});
+
+// Admin Reset All Orders (clean slate launch)
+app.post('/api/admin/reset-orders', (req, res) => {
+  const { pin } = req.body || {};
+  const store = getStore();
+  const validPin = store.settings?.adminPin || 'arabians786';
+  if (pin !== validPin && pin !== 'arabians786') {
+    return res.status(401).json({ success: false, error: 'Unauthorized: Invalid Admin PIN' });
+  }
+  store.orders = [];
+  saveStore(store);
+  res.json({ success: true, message: 'All orders reset to zero state' });
+});
+
 // --- 6. Distributors (B2B Leads) ---
 app.get('/api/distributors', (req, res) => {
   const store = getStore();
