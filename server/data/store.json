@@ -1,225 +1,4 @@
 {
-  "settings": {
-    "storeName": "Arabians Shopping Zone",
-    "tagline": "Authentic Sunnah Foods, Royal Arabic Attire & Luxury Fragrances",
-    "phone": "+91 92360 28318",
-    "callNumber": "+91 92360 28318",
-    "whatsapp": "917233862626",
-    "whatsappDisplay": "+91 72338 62626",
-    "email": "arabiansshoppingzone@gmail.com",
-    "googleMapsUrl": "https://share.google/PEgVk9ck06u9M8PA9",
-    "instagramUrl": "https://www.instagram.com/arabians_shopping_zone",
-    "instagramHandle": "@arabians_shopping_zone",
-    "announcement": "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
-    "adminPin": "arabians786",
-    "currency": "₹",
-    "freeShippingThreshold": 999,
-    "standardShippingFee": 70,
-    "flashSale": {
-      "enabled": true,
-      "badge": "Special Sunnah Blessing Deal",
-      "headline": "Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD",
-      "subtitle": "Direct from our market studio. Sealed with tamper-proof halal guarantee.",
-      "couponCode": "ARABIAN10"
-    },
-    "jummahBundle": {
-      "enabled": true,
-      "badge": "Jummah Sunnah Mubarak Set • 1-Click Combo",
-      "title": "The Complete Sunnah Jummah Wardrobe Kit",
-      "subtitle": "Revive the pristine Sunnah of Friday prayers in one complete set: a pristine tailored Saudi thobe, handcrafted Turkish velvet cap, and aged alcohol-free Cambodian oud.",
-      "comboPrice": 2299,
-      "originalPrice": 2797
-    }
-  },
-  "categories": [
-    {
-      "id": "wearing",
-      "name": "Men's Wear & Royal Attire",
-      "subtitle": "Saudi & Emirati Thobes, Amama, Rumal, Caps, Bisht & Groom Turbans",
-      "icon": "Shirt",
-      "badge": "Royal Collection",
-      "image": "/assets/studio/mens_white_thobe.jpg",
-      "subcategories": [
-        {
-          "id": "thobes",
-          "name": "Thobes / Jubba"
-        },
-        {
-          "id": "amama",
-          "name": "Amama Shareef"
-        },
-        {
-          "id": "rumal",
-          "name": "Arabians Rumal / Shemagh"
-        },
-        {
-          "id": "caps",
-          "name": "Islamic Cap Collection"
-        },
-        {
-          "id": "bisht",
-          "name": "Arabic Bisht / Qubba"
-        },
-        {
-          "id": "turban",
-          "name": "Wedding Turban / Pagdi"
-        }
-      ],
-      "shortName": "Men's Wear"
-    },
-    {
-      "id": "health",
-      "name": "Healthy & Sunnah Foods",
-      "subtitle": "Arabians Talbina, Royal Honey Dryfruit Mix & 100% Pure Raw Sidr Honey",
-      "icon": "HeartPulse",
-      "badge": "Sunnah Wellness",
-      "image": "/assets/products/honey_dryfruits_premium.jpg",
-      "subcategories": [
-        {
-          "id": "talbina",
-          "name": "Arabians Talbina"
-        },
-        {
-          "id": "honey-mix",
-          "name": "Honey Mix Dry Fruits"
-        },
-        {
-          "id": "pure-honey",
-          "name": "Real Pure Honey"
-        }
-      ],
-      "shortName": "Healthy"
-    },
-    {
-      "id": "fragrance",
-      "name": "Fragrance, Oud & Attar",
-      "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
-      "icon": "Sparkles",
-      "badge": "Pure Alcohol-Free",
-      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
-      "subcategories": [
-        {
-          "id": "perfume",
-          "name": "Arabians Perfume"
-        },
-        {
-          "id": "attar",
-          "name": "Pure Attars"
-        },
-        {
-          "id": "bakhoor",
-          "name": "Arabians Bakhoor"
-        },
-        {
-          "id": "burner",
-          "name": "Bakhoor Burners"
-        },
-        {
-          "id": "roomspray",
-          "name": "Room Spray"
-        },
-        {
-          "id": "bodyspray",
-          "name": "Body Spray"
-        },
-        {
-          "id": "essential-oil",
-          "name": "Essential Oils"
-        },
-        {
-          "id": "oudwood",
-          "name": "Real Oud Wood"
-        },
-        {
-          "id": "dehnuloud",
-          "name": "Dehnul Oud"
-        },
-        {
-          "id": "carperfume",
-          "name": "Car Perfume"
-        }
-      ],
-      "shortName": "Fragrance"
-    },
-    {
-      "id": "decor",
-      "name": "Islamic Home Decor",
-      "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
-      "icon": "Clock",
-      "badge": "Handcrafted Luxury",
-      "image": "/assets/products/resin_wall_clock_emerald.jpg",
-      "subcategories": [
-        {
-          "id": "acrylic-tugra",
-          "name": "Acrylic Tugra Frame"
-        },
-        {
-          "id": "acrylic-clock",
-          "name": "Acrylic Wall Clocks"
-        },
-        {
-          "id": "resin-clock",
-          "name": "Resin Wall Clock"
-        },
-        {
-          "id": "resin-tugre",
-          "name": "Resin Tugre"
-        },
-        {
-          "id": "acrylic-accessories",
-          "name": "Acrylic Accessories"
-        }
-      ],
-      "shortName": "Home Decor"
-    },
-    {
-      "id": "wedding",
-      "name": "Muslim Wedding Products",
-      "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
-      "icon": "BookOpen",
-      "badge": "Sunnah Nikah",
-      "image": "/assets/products/nikah_nama_booklet_royal.jpg",
-      "subcategories": [
-        {
-          "id": "nikah-booklet",
-          "name": "Nikah Nama Booklet"
-        },
-        {
-          "id": "booklet-box",
-          "name": "Booklet Box"
-        },
-        {
-          "id": "nikah-pen",
-          "name": "Nikah Pen"
-        },
-        {
-          "id": "thumb-board",
-          "name": "Nikah Thumb Board"
-        },
-        {
-          "id": "nikah-mirror",
-          "name": "Nikah Mirror (Arsi)"
-        },
-        {
-          "id": "nikah-dupatta",
-          "name": "Nikah Dupatta"
-        },
-        {
-          "id": "nikah-sehra",
-          "name": "Nikah Sehra"
-        },
-        {
-          "id": "haq-mehar",
-          "name": "Haq Mehar Box"
-        },
-        {
-          "id": "all-wedding",
-          "name": "All Wedding Hampers"
-        }
-      ],
-      "shortName": "Muslim Wedding"
-    }
-  ],
   "products": [
     {
       "id": "thobe-saudi-classic-white",
@@ -2149,6 +1928,195 @@
         "16 Inch Quran",
         "Royal Quran"
       ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "wearing",
+      "name": "Men's Wear & Royal Attire",
+      "subtitle": "Saudi & Emirati Thobes, Amama, Rumal, Caps, Bisht & Groom Turbans",
+      "icon": "Shirt",
+      "badge": "Royal Collection",
+      "image": "/assets/studio/mens_white_thobe.jpg",
+      "subcategories": [
+        {
+          "id": "thobes",
+          "name": "Thobes / Jubba"
+        },
+        {
+          "id": "amama",
+          "name": "Amama Shareef"
+        },
+        {
+          "id": "rumal",
+          "name": "Arabians Rumal / Shemagh"
+        },
+        {
+          "id": "caps",
+          "name": "Islamic Cap Collection"
+        },
+        {
+          "id": "bisht",
+          "name": "Arabic Bisht / Qubba"
+        },
+        {
+          "id": "turban",
+          "name": "Wedding Turban / Pagdi"
+        }
+      ],
+      "shortName": "Men's Wear"
+    },
+    {
+      "id": "health",
+      "name": "Healthy & Sunnah Foods",
+      "subtitle": "Arabians Talbina, Royal Honey Dryfruit Mix & 100% Pure Raw Sidr Honey",
+      "icon": "HeartPulse",
+      "badge": "Sunnah Wellness",
+      "image": "/assets/products/honey_dryfruits_premium.jpg",
+      "subcategories": [
+        {
+          "id": "talbina",
+          "name": "Arabians Talbina"
+        },
+        {
+          "id": "honey-mix",
+          "name": "Honey Mix Dry Fruits"
+        },
+        {
+          "id": "pure-honey",
+          "name": "Real Pure Honey"
+        }
+      ],
+      "shortName": "Healthy"
+    },
+    {
+      "id": "fragrance",
+      "name": "Fragrance, Oud & Attar",
+      "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
+      "icon": "Sparkles",
+      "badge": "Pure Alcohol-Free",
+      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
+      "subcategories": [
+        {
+          "id": "perfume",
+          "name": "Arabians Perfume"
+        },
+        {
+          "id": "attar",
+          "name": "Pure Attars"
+        },
+        {
+          "id": "bakhoor",
+          "name": "Arabians Bakhoor"
+        },
+        {
+          "id": "burner",
+          "name": "Bakhoor Burners"
+        },
+        {
+          "id": "roomspray",
+          "name": "Room Spray"
+        },
+        {
+          "id": "bodyspray",
+          "name": "Body Spray"
+        },
+        {
+          "id": "essential-oil",
+          "name": "Essential Oils"
+        },
+        {
+          "id": "oudwood",
+          "name": "Real Oud Wood"
+        },
+        {
+          "id": "dehnuloud",
+          "name": "Dehnul Oud"
+        },
+        {
+          "id": "carperfume",
+          "name": "Car Perfume"
+        }
+      ],
+      "shortName": "Fragrance"
+    },
+    {
+      "id": "decor",
+      "name": "Islamic Home Decor",
+      "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
+      "icon": "Clock",
+      "badge": "Handcrafted Luxury",
+      "image": "/assets/products/resin_wall_clock_emerald.jpg",
+      "subcategories": [
+        {
+          "id": "acrylic-tugra",
+          "name": "Acrylic Tugra Frame"
+        },
+        {
+          "id": "acrylic-clock",
+          "name": "Acrylic Wall Clocks"
+        },
+        {
+          "id": "resin-clock",
+          "name": "Resin Wall Clock"
+        },
+        {
+          "id": "resin-tugre",
+          "name": "Resin Tugre"
+        },
+        {
+          "id": "acrylic-accessories",
+          "name": "Acrylic Accessories"
+        }
+      ],
+      "shortName": "Home Decor"
+    },
+    {
+      "id": "wedding",
+      "name": "Muslim Wedding Products",
+      "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
+      "icon": "BookOpen",
+      "badge": "Sunnah Nikah",
+      "image": "/assets/products/nikah_nama_booklet_royal.jpg",
+      "subcategories": [
+        {
+          "id": "nikah-booklet",
+          "name": "Nikah Nama Booklet"
+        },
+        {
+          "id": "booklet-box",
+          "name": "Booklet Box"
+        },
+        {
+          "id": "nikah-pen",
+          "name": "Nikah Pen"
+        },
+        {
+          "id": "thumb-board",
+          "name": "Nikah Thumb Board"
+        },
+        {
+          "id": "nikah-mirror",
+          "name": "Nikah Mirror (Arsi)"
+        },
+        {
+          "id": "nikah-dupatta",
+          "name": "Nikah Dupatta"
+        },
+        {
+          "id": "nikah-sehra",
+          "name": "Nikah Sehra"
+        },
+        {
+          "id": "haq-mehar",
+          "name": "Haq Mehar Box"
+        },
+        {
+          "id": "all-wedding",
+          "name": "All Wedding Hampers"
+        }
+      ],
+      "shortName": "Muslim Wedding"
     }
   ],
   "reviews": [
@@ -7729,92 +7697,6 @@
       "helpful": 30
     }
   ],
-  "reels": [
-    {
-      "id": "reel-1",
-      "title": "Viral Amama Sharif Tying Tutorial 👑",
-      "views": "20M",
-      "likes": "180.7K",
-      "videoUrl": "/assets/reels/real_amama_tutorial.mp4",
-      "thumbnail": "/assets/reels/real_amama_tutorial.jpg",
-      "instagramUrl": "https://www.instagram.com/reel/DVVt2k7ERwZ/",
-      "category": "wearing",
-      "categoryName": "Attire & Caps",
-      "productId": "amama-shareef-madani",
-      "productName": "Traditional Green Amama Shareef (7 Meters)",
-      "productPrice": "₹599"
-    },
-    {
-      "id": "reel-2",
-      "title": "Special Designer Cap for 12 Rabi-ul-Awal 👑✨",
-      "views": "2.8M",
-      "likes": "142.5K",
-      "videoUrl": "/assets/reels/real_viral_28m.mp4",
-      "thumbnail": "/assets/reels/real_viral_28m.jpg",
-      "instagramUrl": "https://www.instagram.com/reel/DNvW2rM0kQV/",
-      "category": "wearing",
-      "categoryName": "Caps & Attire",
-      "productId": "islamic-cap-collection",
-      "productName": "Handcrafted Turkish Velvet & Omani Cap Set",
-      "productPrice": "₹449"
-    },
-    {
-      "id": "reel-3",
-      "title": "BIG QURAAN SET 16 inch 😍 | GIFT & WEDDING ❤️",
-      "views": "1.1M",
-      "likes": "92.4K",
-      "videoUrl": "/assets/reels/real_quran_set.mp4",
-      "thumbnail": "/assets/reels/real_quran_set.jpg",
-      "instagramUrl": "https://www.instagram.com/reel/DI6jN-5hW82/",
-      "category": "wedding",
-      "categoryName": "Wedding Gifts",
-      "productId": "big-quraan-set-16-inch",
-      "productName": "Royal Velvet & Acrylic Big Quraan Set (16 Inch)",
-      "productPrice": "₹2499"
-    },
-    {
-      "id": "reel-4",
-      "title": "SYRIAN QUBBA AVAILABLE AT ARABIANS 🛍️",
-      "views": "354K",
-      "likes": "18.8K",
-      "videoUrl": "/assets/reels/real_syrian_qubba.mp4",
-      "thumbnail": "/assets/reels/real_syrian_qubba.jpg",
-      "instagramUrl": "https://www.instagram.com/reel/DSC5bawjdBm/",
-      "category": "wearing",
-      "categoryName": "Royal Bisht",
-      "productId": "royal-arabic-bisht",
-      "productName": "Royal Arabian Bisht / Syrian Qubba (Gold Zari)",
-      "productPrice": "₹3499"
-    },
-    {
-      "id": "reel-5",
-      "title": "Arabian's Mosaic Aroma Lamp & Bakhoor Burner ✨",
-      "views": "3.9K",
-      "likes": "1.5K",
-      "videoUrl": "/assets/reels/real_aroma_lamp.mp4",
-      "thumbnail": "/assets/reels/real_aroma_lamp.jpg",
-      "instagramUrl": "https://www.instagram.com/reel/Dcnx6dJKfJM/",
-      "category": "fragrance",
-      "categoryName": "Aroma & Bakhoor",
-      "productId": "arabian-bakhoor-burner-combo",
-      "productName": "Arabian Royal Bakhoor & Electric Mabkhara Set",
-      "productPrice": "₹1299"
-    },
-    {
-      "id": "reel-6",
-      "title": "Arabian Talbeena — Sunnat Ka Asli Taste & Health 🥣",
-      "views": "3.4K",
-      "likes": "1.1K",
-      "videoUrl": "/assets/reels/real_talbeena_sunnah.mp4",
-      "thumbnail": "/assets/reels/real_talbeena_sunnah.jpg",
-      "instagramUrl": "https://www.instagram.com/reel/DcvNdPIRqm6/",
-      "category": "health",
-      "categoryName": "Sunnah Talbeena",
-      "productId": "talbina-milk-mawa",
-      "productName": "Arabian's Talbeena Milk Mawa Flavour",
-      "productPrice": "₹349"
-    }
-  ],
   "orders": [],
   "distributors": [
     {
@@ -7946,5 +7828,37 @@
       "description": "Flat ₹150 Off for new shoppers",
       "active": true
     }
-  ]
+  ],
+  "settings": {
+    "storeName": "Arabians Shopping Zone",
+    "tagline": "Authentic Sunnah Foods, Royal Arabic Attire & Luxury Fragrances",
+    "phone": "+91 92360 28318",
+    "callNumber": "+91 92360 28318",
+    "whatsapp": "917233862626",
+    "whatsappDisplay": "+91 72338 62626",
+    "email": "arabiansshoppingzone@gmail.com",
+    "googleMapsUrl": "https://share.google/PEgVk9ck06u9M8PA9",
+    "instagramUrl": "https://www.instagram.com/arabians_shopping_zone",
+    "instagramHandle": "@arabians_shopping_zone",
+    "announcement": "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
+    "adminPin": "arabians786",
+    "currency": "₹",
+    "freeShippingThreshold": 999,
+    "standardShippingFee": 70,
+    "flashSale": {
+      "enabled": true,
+      "badge": "Special Sunnah Blessing Deal",
+      "headline": "Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD",
+      "subtitle": "Direct from our market studio. Sealed with tamper-proof halal guarantee.",
+      "couponCode": "ARABIAN10"
+    },
+    "jummahBundle": {
+      "enabled": true,
+      "badge": "Jummah Sunnah Mubarak Set • 1-Click Combo",
+      "title": "The Complete Sunnah Jummah Wardrobe Kit",
+      "subtitle": "Revive the pristine Sunnah of Friday prayers in one complete set: a pristine tailored Saudi thobe, handcrafted Turkish velvet cap, and aged alcohol-free Cambodian oud.",
+      "comboPrice": 2299,
+      "originalPrice": 2797
+    }
+  }
 }
