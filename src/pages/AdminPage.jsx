@@ -45,6 +45,7 @@ import {
   Gem,
   Scroll,
   Star,
+  Compass,
   Image as ImageIcon
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';

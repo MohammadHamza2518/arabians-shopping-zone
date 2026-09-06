@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useConversation } from '@elevenlabs/react';
+import { useConversation, ConversationProvider } from '@elevenlabs/react';
 import { 
   Phone, 
   PhoneCall, 
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
-export default function AiVoiceAssistant() {
+function AiVoiceAssistantContent() {
   const { addToCart, showToast } = useStore();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -580,5 +580,13 @@ export default function AiVoiceAssistant() {
         </div>
       )}
     </>
+  );
+}
+
+export default function AiVoiceAssistant() {
+  return (
+    <ConversationProvider>
+      <AiVoiceAssistantContent />
+    </ConversationProvider>
   );
 }
