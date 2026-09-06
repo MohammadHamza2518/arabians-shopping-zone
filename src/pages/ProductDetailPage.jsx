@@ -43,9 +43,10 @@ export default function ProductDetailPage() {
     if (product) {
       setSelectedImage(product.image);
       setHasDetailImgError(false);
-      const defaultFit = product.imageFit === 'contain'
-        ? 'object-contain p-4'
-        : (product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+      const isWearing = product.category === 'wearing';
+      const defaultFit = product.imageFit === 'cover'
+        ? (isWearing ? 'object-cover object-top' : 'object-cover object-center')
+        : (isWearing ? 'object-cover object-top' : 'object-contain p-4 sm:p-6');
       setDetailImgClass(defaultFit);
       if (product.sizes && product.sizes.length > 0) {
         setSelectedSize(product.sizes[0]);
@@ -54,8 +55,13 @@ export default function ProductDetailPage() {
   }, [id, product]);
 
   const handleDetailImageLoad = (e) => {
-    if (product?.imageFit && product?.imageFit !== 'auto') {
-      if (product.imageFit === 'contain') setDetailImgClass('object-contain p-4');
+    const isWearing = product?.category === 'wearing';
+    if (product?.imageFit === 'cover') {
+      setDetailImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
+      return;
+    }
+    if (product?.imageFit === 'contain' || !isWearing) {
+      setDetailImgClass('object-contain p-4 sm:p-6');
       return;
     }
     const { naturalWidth, naturalHeight } = e.target;

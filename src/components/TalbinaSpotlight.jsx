@@ -51,7 +51,7 @@ export default function TalbinaSpotlight() {
   };
 
   return (
-    <section id="talbina-spotlight" className="py-12 sm:py-16 bg-[#f7f4ed] border-b border-amber-900/10">
+    <section id="talbina-spotlight" className="py-12 sm:py-16 bg-[#f7f4ed] border-b border-amber-900/10 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
@@ -105,19 +105,19 @@ export default function TalbinaSpotlight() {
                 <span>{activeProduct.badge || "100% Pure Sunnah Food"}</span>
               </span>
               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] sm:text-[11px] font-black px-3 py-1 rounded-full">
-                {activeProduct.netWeight}
+                {activeProduct.netWeight || "400 Gram"}
               </span>
             </div>
 
             <Link
               to={`/product/${activeProduct.id}`}
-              className="w-full max-w-[300px] sm:max-w-xs aspect-square rounded-2xl overflow-hidden shadow-lg border border-amber-900/10 bg-white relative flex items-center justify-center cursor-pointer group"
+              className="w-full max-w-[320px] aspect-square rounded-2xl overflow-hidden bg-white/95 border border-amber-900/10 shadow-sm relative flex items-center justify-center cursor-pointer group p-2.5 sm:p-3"
             >
               <img 
                 key={activeProduct.id}
                 src={activeProduct.image} 
                 alt={activeProduct.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter drop-shadow-md"
+                className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
               />
             </Link>
 

@@ -8,41 +8,40 @@ export default function ProductCard({ product }) {
   const { addToCart, toggleWishlist, wishlist } = useStore();
   const isWishlisted = wishlist.includes(product.id);
 
-  // Determine initial fit: support explicit product.imageFit === 'contain', otherwise full-bleed cover
-  const initialFit = product.imageFit === 'contain'
-    ? 'object-contain p-2'
-    : (product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+  // Determine initial fit:
+  // 'wearing' category (thobes/models) uses full-bleed object-cover object-top.
+  // All packaged goods (health, fragrance, decor, wedding) use object-contain with gentle padding so NO product is cropped!
+  const isWearing = product.category === 'wearing';
+  const getFitClass = () => {
+    if (product.imageFit === 'cover') return isWearing ? 'object-cover object-top' : 'object-cover object-center';
+    if (product.imageFit === 'contain') return 'object-contain p-2.5 sm:p-3';
+    return isWearing ? 'object-cover object-top' : 'object-contain p-2.5 sm:p-3';
+  };
 
-  const [imgClass, setImgClass] = useState(initialFit);
+  const [imgClass, setImgClass] = useState(getFitClass);
   const [hasImgError, setHasImgError] = useState(false);
 
-  // React immediately when admin updates or uploads a new image/fit
   useEffect(() => {
     setHasImgError(false);
-    if (product.imageFit === 'contain') {
-      setImgClass('object-contain p-2');
-    } else if (product.imageFit === 'cover') {
-      setImgClass(product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
-    } else {
-      setImgClass(product.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
-    }
+    setImgClass(getFitClass());
   }, [product.image, product.imageFit, product.category]);
 
   const discountPercent = product.mrp && product.price && Number(product.mrp) > Number(product.price)
     ? Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100) 
     : 0;
 
-  // Smart aspect-ratio detector: automatically fits ANY uploaded image into the 1:1 luxury frame
   const handleImageLoad = (e) => {
-    if (product.imageFit && product.imageFit !== 'auto') {
-      if (product.imageFit === 'contain') setImgClass('object-contain p-2');
+    if (product.imageFit === 'cover') {
+      setImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
+      return;
+    }
+    if (product.imageFit === 'contain' || !isWearing) {
+      setImgClass('object-contain p-2.5 sm:p-3');
       return;
     }
     const { naturalWidth, naturalHeight } = e.target;
     if (naturalWidth && naturalHeight) {
       const ratio = naturalWidth / naturalHeight;
-      // If tall portrait (ratio < 0.85, like thobe models), align top so head & chest stay centered
-      // If square or wide (ratio >= 0.85), align center to showcase full product edge-to-edge
       if (ratio < 0.85) {
         setImgClass('object-cover object-top');
       } else {
@@ -62,7 +61,7 @@ export default function ProductCard({ product }) {
       {/* Clickable Image & Badges - Uniform 1:1 Luxury Studio Square Frame */}
       <Link 
         to={`/product/${product.id}`} 
-        className="relative aspect-square bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] overflow-hidden block cursor-pointer select-none"
+        className="relative aspect-square bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] overflow-hidden flex items-center justify-center cursor-pointer select-none"
       >
         
         {/* Discount Badge */}

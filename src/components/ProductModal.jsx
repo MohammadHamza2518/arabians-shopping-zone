@@ -46,15 +46,26 @@ export default function ProductModal() {
 
   useEffect(() => {
     setHasModalImgError(false);
-    if (selectedProduct?.imageFit === 'contain') {
-      setModalImgClass('object-contain p-2');
+    const isWearing = selectedProduct?.category === 'wearing';
+    if (selectedProduct?.imageFit === 'cover') {
+      setModalImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
+    } else if (selectedProduct?.imageFit === 'contain' || !isWearing) {
+      setModalImgClass('object-contain p-3 sm:p-4');
     } else {
-      setModalImgClass(selectedProduct?.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center');
+      setModalImgClass('object-cover object-top');
     }
   }, [currentImage, selectedProduct]);
 
   const handleModalImageLoad = (e) => {
-    if (selectedProduct?.imageFit === 'contain') return;
+    const isWearing = selectedProduct?.category === 'wearing';
+    if (selectedProduct?.imageFit === 'cover') {
+      setModalImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
+      return;
+    }
+    if (selectedProduct?.imageFit === 'contain' || !isWearing) {
+      setModalImgClass('object-contain p-3 sm:p-4');
+      return;
+    }
     const { naturalWidth, naturalHeight } = e.target;
     if (naturalWidth && naturalHeight) {
       const ratio = naturalWidth / naturalHeight;

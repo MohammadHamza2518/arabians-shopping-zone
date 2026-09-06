@@ -620,6 +620,7 @@ export const initialData = {
       "rating": 5,
       "reviewsCount": 142,
       "badge": "Flagship Bestseller",
+      "netWeight": "400 Gram",
       "stock": 85,
       "image": "/assets/talbina/talbina_vanilla_dryfruits.jpg",
       "gallery": [
@@ -649,6 +650,7 @@ export const initialData = {
       "rating": 4.9,
       "reviewsCount": 98,
       "badge": "Creamy Rich",
+      "netWeight": "400 Gram",
       "stock": 65,
       "image": "/assets/talbina/talbina_milk_mawa.jpg",
       "gallery": [
@@ -677,6 +679,7 @@ export const initialData = {
       "rating": 4.9,
       "reviewsCount": 112,
       "badge": "Kids Special",
+      "netWeight": "400 Gram",
       "stock": 50,
       "image": "/assets/talbina/talbina_chocolate_kids.jpg",
       "gallery": [
@@ -706,6 +709,7 @@ export const initialData = {
       "rating": 4.8,
       "reviewsCount": 84,
       "badge": "Gentle Formula",
+      "netWeight": "400 Gram",
       "stock": 45,
       "image": "/assets/talbina/talbina_baby_barley.jpg",
       "gallery": [
@@ -735,6 +739,7 @@ export const initialData = {
       "rating": 5,
       "reviewsCount": 167,
       "badge": "Royal Ajwa Blend",
+      "netWeight": "400 Gram",
       "stock": 60,
       "image": "/assets/talbina/talbina_dry_dates_vanilla.jpg",
       "gallery": [
@@ -764,6 +769,7 @@ export const initialData = {
       "rating": 5,
       "reviewsCount": 112,
       "badge": "100% Raw Sidr",
+      "netWeight": "500 Gram",
       "stock": 60,
       "image": "/assets/products/honey_dryfruits_premium.jpg",
       "gallery": [
@@ -792,6 +798,7 @@ export const initialData = {
       "rating": 4.9,
       "reviewsCount": 67,
       "badge": "Kashmiri Saffron",
+      "netWeight": "450 Gram",
       "stock": 35,
       "image": "/assets/products/honey_dryfruits_premium.jpg",
       "gallery": [
@@ -820,6 +827,7 @@ export const initialData = {
       "rating": 5,
       "reviewsCount": 156,
       "badge": "100% Pure Raw",
+      "netWeight": "500 Gram",
       "stock": 75,
       "image": "/assets/products/raw_sidr_honey_pure.jpg",
       "gallery": [
@@ -849,6 +857,7 @@ export const initialData = {
       "rating": 5,
       "reviewsCount": 78,
       "badge": "Yemen Do'ani Reserve",
+      "netWeight": "250 Gram",
       "stock": 25,
       "image": "/assets/products/yemen_doani_honey.jpg",
       "gallery": [

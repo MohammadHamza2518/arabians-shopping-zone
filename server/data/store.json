@@ -419,7 +419,8 @@
         "Sunnah Food",
         "Vanilla",
         "Dry Fruits"
-      ]
+      ],
+      "netWeight": "400 Gram"
     },
     {
       "id": "talbina-milk-mawa",
@@ -447,7 +448,8 @@
         "Milk Mawa",
         "Barley Porridge",
         "Healthy Breakfast"
-      ]
+      ],
+      "netWeight": "400 Gram"
     },
     {
       "id": "talbina-chocolate",
@@ -476,7 +478,8 @@
         "Chocolate",
         "Brain Nutrition",
         "Sunnah Food"
-      ]
+      ],
+      "netWeight": "400 Gram"
     },
     {
       "id": "talbina-baby-barley",
@@ -505,7 +508,8 @@
         "Barley",
         "Easy Digestion",
         "Sunnah Food"
-      ]
+      ],
+      "netWeight": "400 Gram"
     },
     {
       "id": "talbina-dry-dates",
@@ -534,7 +538,8 @@
         "Khajoor",
         "Natural Iron",
         "Sunnah Food"
-      ]
+      ],
+      "netWeight": "400 Gram"
     },
     {
       "id": "honey-mix-dryfruits-premium",
@@ -562,7 +567,8 @@
         "Sidr Honey",
         "Mamra Almonds",
         "Sunnah Superfood"
-      ]
+      ],
+      "netWeight": "500 Gram"
     },
     {
       "id": "honey-mix-saffron-kashmiri",
@@ -590,7 +596,8 @@
         "Kashmiri Honey",
         "Dryfruit Jar",
         "Vitality Honey"
-      ]
+      ],
+      "netWeight": "450 Gram"
     },
     {
       "id": "honey-pure-raw-sidr",
@@ -619,7 +626,8 @@
         "Beri Honey",
         "Pure Honey",
         "Unpasteurized"
-      ]
+      ],
+      "netWeight": "500 Gram"
     },
     {
       "id": "honey-yemen-doani-wild",
@@ -647,7 +655,8 @@
         "Doani Sidr",
         "Luxury Honey",
         "Wadi Doan"
-      ]
+      ],
+      "netWeight": "250 Gram"
     },
     {
       "id": "perfume-arabian-night-royal-oud",
