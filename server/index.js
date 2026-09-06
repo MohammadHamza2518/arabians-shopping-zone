@@ -83,6 +83,7 @@ async function initMongoDB() {
         products: cloudStore.products || memoryStore.products,
         categories: cloudStore.categories || memoryStore.categories,
         reviews: cloudStore.reviews || memoryStore.reviews,
+        reels: (cloudStore.reels && cloudStore.reels.length > 0) ? cloudStore.reels : (memoryStore.reels || initialData.reels || []),
         orders: cloudStore.orders || memoryStore.orders || [],
         distributors: cloudStore.distributors || memoryStore.distributors || [],
         coupons: cloudStore.coupons || memoryStore.coupons || [],

@@ -154,8 +154,96 @@ function ReelCard({ reel }) {
   );
 }
 
+const DEFAULT_REELS = [
+  {
+    id: "reel-1",
+    title: "Viral Amama Sharif Tying Tutorial 👑",
+    views: "20M",
+    likes: "180.7K",
+    videoUrl: "/assets/reels/real_amama_tutorial.mp4",
+    thumbnail: "/assets/reels/real_amama_tutorial.jpg",
+    instagramUrl: "https://www.instagram.com/reel/DVVt2k7ERwZ/",
+    category: "wearing",
+    categoryName: "Attire & Caps",
+    productId: "amama-shareef-madani",
+    productName: "Traditional Green Amama Shareef (7 Meters)",
+    productPrice: "₹599"
+  },
+  {
+    id: "reel-2",
+    title: "Special Designer Cap for 12 Rabi-ul-Awal 👑✨",
+    views: "2.8M",
+    likes: "142.5K",
+    videoUrl: "/assets/reels/real_viral_28m.mp4",
+    thumbnail: "/assets/reels/real_viral_28m.jpg",
+    instagramUrl: "https://www.instagram.com/reel/DNvW2rM0kQV/",
+    category: "wearing",
+    categoryName: "Caps & Attire",
+    productId: "islamic-cap-collection",
+    productName: "Handcrafted Turkish Velvet & Omani Cap Set",
+    productPrice: "₹449"
+  },
+  {
+    id: "reel-3",
+    title: "BIG QURAAN SET 16 inch 😍 | GIFT & WEDDING ❤️",
+    views: "1.1M",
+    likes: "92.4K",
+    videoUrl: "/assets/reels/real_quran_set.mp4",
+    thumbnail: "/assets/reels/real_quran_set.jpg",
+    instagramUrl: "https://www.instagram.com/reel/DI6jN-5hW82/",
+    category: "wedding",
+    categoryName: "Wedding Gifts",
+    productId: "big-quraan-set-16-inch",
+    productName: "Royal Velvet & Acrylic Big Quraan Set (16 Inch)",
+    productPrice: "₹2499"
+  },
+  {
+    id: "reel-4",
+    title: "SYRIAN QUBBA AVAILABLE AT ARABIANS 🛍️",
+    views: "354K",
+    likes: "18.8K",
+    videoUrl: "/assets/reels/real_syrian_qubba.mp4",
+    thumbnail: "/assets/reels/real_syrian_qubba.jpg",
+    instagramUrl: "https://www.instagram.com/reel/DSC5bawjdBm/",
+    category: "wearing",
+    categoryName: "Royal Bisht",
+    productId: "royal-arabic-bisht",
+    productName: "Royal Arabian Bisht / Syrian Qubba (Gold Zari)",
+    productPrice: "₹3499"
+  },
+  {
+    id: "reel-5",
+    title: "Arabian's Mosaic Aroma Lamp & Bakhoor Burner ✨",
+    views: "3.9K",
+    likes: "1.5K",
+    videoUrl: "/assets/reels/real_aroma_lamp.mp4",
+    thumbnail: "/assets/reels/real_aroma_lamp.jpg",
+    instagramUrl: "https://www.instagram.com/reel/Dcnx6dJKfJM/",
+    category: "fragrance",
+    categoryName: "Aroma & Bakhoor",
+    productId: "arabian-bakhoor-burner-combo",
+    productName: "Arabian Royal Bakhoor & Electric Mabkhara Set",
+    productPrice: "₹1299"
+  },
+  {
+    id: "reel-6",
+    title: "Arabian Talbeena — Sunnat Ka Asli Taste & Health 🥣",
+    views: "3.4K",
+    likes: "1.1K",
+    videoUrl: "/assets/reels/real_talbeena_sunnah.mp4",
+    thumbnail: "/assets/reels/real_talbeena_sunnah.jpg",
+    instagramUrl: "https://www.instagram.com/reel/DcvNdPIRqm6/",
+    category: "health",
+    categoryName: "Sunnah Talbeena",
+    productId: "talbina-milk-mawa",
+    productName: "Arabian's Talbeena Milk Mawa Flavour",
+    productPrice: "₹349"
+  }
+];
+
 export default function ReelsShowcase() {
-  const { reels, products, setSelectedProduct, activeReel, setActiveReel, settings } = useStore();
+  const { reels: storeReels, products, setSelectedProduct, activeReel, setActiveReel, settings } = useStore();
+  const reels = (storeReels && storeReels.length > 0) ? storeReels : DEFAULT_REELS;
   const [modalMuted, setModalMuted] = useState(false);
   const [likedReels, setLikedReels] = useState(['reel-1', 'reel-2']);
   const [currentReelIndex, setCurrentReelIndex] = useState(0);
