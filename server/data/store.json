@@ -450,6 +450,93 @@
       ]
     },
     {
+      "id": "talbina-chocolate",
+      "name": "Arabian's Talbeena For Kids (Chocolate Flavour - 1+ Years - 400g)",
+      "category": "health",
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 4.9,
+      "reviewsCount": 112,
+      "badge": "Kids Special",
+      "stock": 50,
+      "image": "/assets/talbina/talbina_chocolate_kids.jpg",
+      "gallery": [
+        "/assets/talbina/talbina_chocolate_kids.jpg"
+      ],
+      "description": "Specially formulated for toddlers and growing children aged 1 year plus. Made with natural Dutch cocoa, stone-ground sprouted barley, essential micronutrients and pulverized dry fruits for sharp memory, energy and immunity.",
+      "benefits": [
+        "Yummy chocolate taste that kids drink happily without fuss",
+        "Promotes brain development and bone density in growing children",
+        "Free from preservatives, artificial colors or excess refined sucrose"
+      ],
+      "tags": [
+        "Talbina",
+        "Kids 1+ Years",
+        "Chocolate",
+        "Brain Nutrition",
+        "Sunnah Food"
+      ]
+    },
+    {
+      "id": "talbina-baby-barley",
+      "name": "Arabian's Talbeena Baby Cereal With Barley (3+ Years - 400g)",
+      "category": "health",
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 4.8,
+      "reviewsCount": 84,
+      "badge": "Gentle Formula",
+      "stock": 45,
+      "image": "/assets/talbina/talbina_baby_barley.jpg",
+      "gallery": [
+        "/assets/talbina/talbina_baby_barley.jpg"
+      ],
+      "description": "Ultra-fine, gentle barley cereal designed for delicate stomachs. Fortified with essential vitamins, iron, and fiber to support digestion and steady growth.",
+      "benefits": [
+        "Easy to digest and soothing on delicate stomachs",
+        "Natural dietary fiber prevents constipation and indigestion",
+        "100% natural, lab-tested hygienic Sunnah cereal"
+      ],
+      "tags": [
+        "Talbina",
+        "Baby Cereal",
+        "Barley",
+        "Easy Digestion",
+        "Sunnah Food"
+      ]
+    },
+    {
+      "id": "talbina-dry-dates",
+      "name": "Arabian's Talbeena With Dry Dates & Vanilla Flavour - 400g",
+      "category": "health",
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 5,
+      "reviewsCount": 167,
+      "badge": "Royal Ajwa Blend",
+      "stock": 60,
+      "image": "/assets/talbina/talbina_dry_dates_vanilla.jpg",
+      "gallery": [
+        "/assets/talbina/talbina_dry_dates_vanilla.jpg"
+      ],
+      "description": "The ultimate Sunnah pairing of pure dried dates (Chhuhare) with roasted stone-ground barley and aromatic vanilla. Rich in iron, natural energy, and antioxidants for peak vitality.",
+      "benefits": [
+        "Infused with nutrient-dense dates for natural sweetness and hemoglobin support",
+        "Sustained all-day energy release without sugar crashes",
+        "Supports cardiovascular, digestive, and nervous system wellness"
+      ],
+      "tags": [
+        "Talbina",
+        "Dry Dates",
+        "Khajoor",
+        "Natural Iron",
+        "Sunnah Food"
+      ]
+    },
+    {
       "id": "honey-mix-dryfruits-premium",
       "name": "Arabians Royal Sidr Honey Mix with 7 Roasted Dry Fruits (500g Glass Jar)",
       "category": "health",

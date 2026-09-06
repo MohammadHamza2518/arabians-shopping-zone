@@ -32,194 +32,194 @@ export const initialData = {
     }
   },
   "categories": [
-  {
-    "id": "wearing",
-    "name": "Men's Wear & Royal Attire",
-    "subtitle": "Saudi & Emirati Thobes, Amama, Rumal, Caps, Bisht & Groom Turbans",
-    "icon": "Shirt",
-    "badge": "Royal Collection",
-    "image": "/assets/studio/mens_white_thobe.jpg",
-    "subcategories": [
-      {
-        "id": "thobes",
-        "name": "Thobes / Jubba"
-      },
-      {
-        "id": "amama",
-        "name": "Amama Shareef"
-      },
-      {
-        "id": "rumal",
-        "name": "Arabians Rumal / Shemagh"
-      },
-      {
-        "id": "caps",
-        "name": "Islamic Cap Collection"
-      },
-      {
-        "id": "bisht",
-        "name": "Arabic Bisht / Qubba"
-      },
-      {
-        "id": "turban",
-        "name": "Wedding Turban / Pagdi"
-      }
-    ],
-    "shortName": "Men's Wear"
-  },
-  {
-    "id": "health",
-    "name": "Healthy & Sunnah Foods",
-    "subtitle": "Arabians Talbina, Royal Honey Dryfruit Mix & 100% Pure Raw Sidr Honey",
-    "icon": "HeartPulse",
-    "badge": "Sunnah Wellness",
-    "image": "/assets/products/honey_dryfruits_premium.jpg",
-    "subcategories": [
-      {
-        "id": "talbina",
-        "name": "Arabians Talbina"
-      },
-      {
-        "id": "honey-mix",
-        "name": "Honey Mix Dry Fruits"
-      },
-      {
-        "id": "pure-honey",
-        "name": "Real Pure Honey"
-      }
-    ],
-    "shortName": "Healthy"
-  },
-  {
-    "id": "fragrance",
-    "name": "Fragrance, Oud & Attar",
-    "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
-    "icon": "Sparkles",
-    "badge": "Pure Alcohol-Free",
-    "image": "/assets/products/arabian_perfume_royal_oud.jpg",
-    "subcategories": [
-      {
-        "id": "perfume",
-        "name": "Arabians Perfume"
-      },
-      {
-        "id": "attar",
-        "name": "Pure Attars"
-      },
-      {
-        "id": "bakhoor",
-        "name": "Arabians Bakhoor"
-      },
-      {
-        "id": "burner",
-        "name": "Bakhoor Burners"
-      },
-      {
-        "id": "roomspray",
-        "name": "Room Spray"
-      },
-      {
-        "id": "bodyspray",
-        "name": "Body Spray"
-      },
-      {
-        "id": "essential-oil",
-        "name": "Essential Oils"
-      },
-      {
-        "id": "oudwood",
-        "name": "Real Oud Wood"
-      },
-      {
-        "id": "dehnuloud",
-        "name": "Dehnul Oud"
-      },
-      {
-        "id": "carperfume",
-        "name": "Car Perfume"
-      }
-    ],
-    "shortName": "Fragrance"
-  },
-  {
-    "id": "decor",
-    "name": "Islamic Home Decor",
-    "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
-    "icon": "Clock",
-    "badge": "Handcrafted Luxury",
-    "image": "/assets/products/resin_wall_clock_emerald.jpg",
-    "subcategories": [
-      {
-        "id": "acrylic-tugra",
-        "name": "Acrylic Tugra Frame"
-      },
-      {
-        "id": "acrylic-clock",
-        "name": "Acrylic Wall Clocks"
-      },
-      {
-        "id": "resin-clock",
-        "name": "Resin Wall Clock"
-      },
-      {
-        "id": "resin-tugre",
-        "name": "Resin Tugre"
-      },
-      {
-        "id": "acrylic-accessories",
-        "name": "Acrylic Accessories"
-      }
-    ],
-    "shortName": "Home Decor"
-  },
-  {
-    "id": "wedding",
-    "name": "Muslim Wedding Products",
-    "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
-    "icon": "BookOpen",
-    "badge": "Sunnah Nikah",
-    "image": "/assets/products/nikah_nama_booklet_royal.jpg",
-    "subcategories": [
-      {
-        "id": "nikah-booklet",
-        "name": "Nikah Nama Booklet"
-      },
-      {
-        "id": "booklet-box",
-        "name": "Booklet Box"
-      },
-      {
-        "id": "nikah-pen",
-        "name": "Nikah Pen"
-      },
-      {
-        "id": "thumb-board",
-        "name": "Nikah Thumb Board"
-      },
-      {
-        "id": "nikah-mirror",
-        "name": "Nikah Mirror (Arsi)"
-      },
-      {
-        "id": "nikah-dupatta",
-        "name": "Nikah Dupatta"
-      },
-      {
-        "id": "nikah-sehra",
-        "name": "Nikah Sehra"
-      },
-      {
-        "id": "haq-mehar",
-        "name": "Haq Mehar Box"
-      },
-      {
-        "id": "all-wedding",
-        "name": "All Wedding Hampers"
-      }
-    ],
-    "shortName": "Muslim Wedding"
-  }
-],
+    {
+      "id": "wearing",
+      "name": "Men's Wear & Royal Attire",
+      "subtitle": "Saudi & Emirati Thobes, Amama, Rumal, Caps, Bisht & Groom Turbans",
+      "icon": "Shirt",
+      "badge": "Royal Collection",
+      "image": "/assets/studio/mens_white_thobe.jpg",
+      "subcategories": [
+        {
+          "id": "thobes",
+          "name": "Thobes / Jubba"
+        },
+        {
+          "id": "amama",
+          "name": "Amama Shareef"
+        },
+        {
+          "id": "rumal",
+          "name": "Arabians Rumal / Shemagh"
+        },
+        {
+          "id": "caps",
+          "name": "Islamic Cap Collection"
+        },
+        {
+          "id": "bisht",
+          "name": "Arabic Bisht / Qubba"
+        },
+        {
+          "id": "turban",
+          "name": "Wedding Turban / Pagdi"
+        }
+      ],
+      "shortName": "Men's Wear"
+    },
+    {
+      "id": "health",
+      "name": "Healthy & Sunnah Foods",
+      "subtitle": "Arabians Talbina, Royal Honey Dryfruit Mix & 100% Pure Raw Sidr Honey",
+      "icon": "HeartPulse",
+      "badge": "Sunnah Wellness",
+      "image": "/assets/products/honey_dryfruits_premium.jpg",
+      "subcategories": [
+        {
+          "id": "talbina",
+          "name": "Arabians Talbina"
+        },
+        {
+          "id": "honey-mix",
+          "name": "Honey Mix Dry Fruits"
+        },
+        {
+          "id": "pure-honey",
+          "name": "Real Pure Honey"
+        }
+      ],
+      "shortName": "Healthy"
+    },
+    {
+      "id": "fragrance",
+      "name": "Fragrance, Oud & Attar",
+      "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
+      "icon": "Sparkles",
+      "badge": "Pure Alcohol-Free",
+      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
+      "subcategories": [
+        {
+          "id": "perfume",
+          "name": "Arabians Perfume"
+        },
+        {
+          "id": "attar",
+          "name": "Pure Attars"
+        },
+        {
+          "id": "bakhoor",
+          "name": "Arabians Bakhoor"
+        },
+        {
+          "id": "burner",
+          "name": "Bakhoor Burners"
+        },
+        {
+          "id": "roomspray",
+          "name": "Room Spray"
+        },
+        {
+          "id": "bodyspray",
+          "name": "Body Spray"
+        },
+        {
+          "id": "essential-oil",
+          "name": "Essential Oils"
+        },
+        {
+          "id": "oudwood",
+          "name": "Real Oud Wood"
+        },
+        {
+          "id": "dehnuloud",
+          "name": "Dehnul Oud"
+        },
+        {
+          "id": "carperfume",
+          "name": "Car Perfume"
+        }
+      ],
+      "shortName": "Fragrance"
+    },
+    {
+      "id": "decor",
+      "name": "Islamic Home Decor",
+      "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
+      "icon": "Clock",
+      "badge": "Handcrafted Luxury",
+      "image": "/assets/products/resin_wall_clock_emerald.jpg",
+      "subcategories": [
+        {
+          "id": "acrylic-tugra",
+          "name": "Acrylic Tugra Frame"
+        },
+        {
+          "id": "acrylic-clock",
+          "name": "Acrylic Wall Clocks"
+        },
+        {
+          "id": "resin-clock",
+          "name": "Resin Wall Clock"
+        },
+        {
+          "id": "resin-tugre",
+          "name": "Resin Tugre"
+        },
+        {
+          "id": "acrylic-accessories",
+          "name": "Acrylic Accessories"
+        }
+      ],
+      "shortName": "Home Decor"
+    },
+    {
+      "id": "wedding",
+      "name": "Muslim Wedding Products",
+      "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
+      "icon": "BookOpen",
+      "badge": "Sunnah Nikah",
+      "image": "/assets/products/nikah_nama_booklet_royal.jpg",
+      "subcategories": [
+        {
+          "id": "nikah-booklet",
+          "name": "Nikah Nama Booklet"
+        },
+        {
+          "id": "booklet-box",
+          "name": "Booklet Box"
+        },
+        {
+          "id": "nikah-pen",
+          "name": "Nikah Pen"
+        },
+        {
+          "id": "thumb-board",
+          "name": "Nikah Thumb Board"
+        },
+        {
+          "id": "nikah-mirror",
+          "name": "Nikah Mirror (Arsi)"
+        },
+        {
+          "id": "nikah-dupatta",
+          "name": "Nikah Dupatta"
+        },
+        {
+          "id": "nikah-sehra",
+          "name": "Nikah Sehra"
+        },
+        {
+          "id": "haq-mehar",
+          "name": "Haq Mehar Box"
+        },
+        {
+          "id": "all-wedding",
+          "name": "All Wedding Hampers"
+        }
+      ],
+      "shortName": "Muslim Wedding"
+    }
+  ],
   "products": [
     {
       "id": "thobe-saudi-classic-white",
@@ -665,6 +665,93 @@ export const initialData = {
         "Milk Mawa",
         "Barley Porridge",
         "Healthy Breakfast"
+      ]
+    },
+    {
+      "id": "talbina-chocolate",
+      "name": "Arabian's Talbeena For Kids (Chocolate Flavour - 1+ Years - 400g)",
+      "category": "health",
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 4.9,
+      "reviewsCount": 112,
+      "badge": "Kids Special",
+      "stock": 50,
+      "image": "/assets/talbina/talbina_chocolate_kids.jpg",
+      "gallery": [
+        "/assets/talbina/talbina_chocolate_kids.jpg"
+      ],
+      "description": "Specially formulated for toddlers and growing children aged 1 year plus. Made with natural Dutch cocoa, stone-ground sprouted barley, essential micronutrients and pulverized dry fruits for sharp memory, energy and immunity.",
+      "benefits": [
+        "Yummy chocolate taste that kids drink happily without fuss",
+        "Promotes brain development and bone density in growing children",
+        "Free from preservatives, artificial colors or excess refined sucrose"
+      ],
+      "tags": [
+        "Talbina",
+        "Kids 1+ Years",
+        "Chocolate",
+        "Brain Nutrition",
+        "Sunnah Food"
+      ]
+    },
+    {
+      "id": "talbina-baby-barley",
+      "name": "Arabian's Talbeena Baby Cereal With Barley (3+ Years - 400g)",
+      "category": "health",
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 4.8,
+      "reviewsCount": 84,
+      "badge": "Gentle Formula",
+      "stock": 45,
+      "image": "/assets/talbina/talbina_baby_barley.jpg",
+      "gallery": [
+        "/assets/talbina/talbina_baby_barley.jpg"
+      ],
+      "description": "Ultra-fine, gentle barley cereal designed for delicate stomachs. Fortified with essential vitamins, iron, and fiber to support digestion and steady growth.",
+      "benefits": [
+        "Easy to digest and soothing on delicate stomachs",
+        "Natural dietary fiber prevents constipation and indigestion",
+        "100% natural, lab-tested hygienic Sunnah cereal"
+      ],
+      "tags": [
+        "Talbina",
+        "Baby Cereal",
+        "Barley",
+        "Easy Digestion",
+        "Sunnah Food"
+      ]
+    },
+    {
+      "id": "talbina-dry-dates",
+      "name": "Arabian's Talbeena With Dry Dates & Vanilla Flavour - 400g",
+      "category": "health",
+      "subcategory": "talbina",
+      "price": 399,
+      "mrp": 499,
+      "rating": 5,
+      "reviewsCount": 167,
+      "badge": "Royal Ajwa Blend",
+      "stock": 60,
+      "image": "/assets/talbina/talbina_dry_dates_vanilla.jpg",
+      "gallery": [
+        "/assets/talbina/talbina_dry_dates_vanilla.jpg"
+      ],
+      "description": "The ultimate Sunnah pairing of pure dried dates (Chhuhare) with roasted stone-ground barley and aromatic vanilla. Rich in iron, natural energy, and antioxidants for peak vitality.",
+      "benefits": [
+        "Infused with nutrient-dense dates for natural sweetness and hemoglobin support",
+        "Sustained all-day energy release without sugar crashes",
+        "Supports cardiovascular, digestive, and nervous system wellness"
+      ],
+      "tags": [
+        "Talbina",
+        "Dry Dates",
+        "Khajoor",
+        "Natural Iron",
+        "Sunnah Food"
       ]
     },
     {

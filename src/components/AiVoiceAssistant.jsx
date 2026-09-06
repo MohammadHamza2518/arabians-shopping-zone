@@ -211,8 +211,8 @@ function AiVoiceAssistantContent() {
 
   return (
     <>
-      {/* 🌟 1. Floating Royal Trigger Button */}
-      <div className="fixed bottom-20 right-4 z-40 flex flex-col items-end gap-2 sm:bottom-6 sm:right-6">
+      {/* 🌟 1. Floating Royal Trigger Button (Bottom-Left so it NEVER overlaps with WhatsApp on bottom-right) */}
+      <div className="fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40 flex flex-col items-start gap-2">
         {!isOpen && (
           <div className="animate-bounce bg-slate-950/90 text-[#f5d77f] text-[11px] font-bold px-3 py-1 rounded-full shadow-lg border border-amber-500/40 backdrop-blur flex items-center gap-1.5 pointer-events-none">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
@@ -244,7 +244,7 @@ function AiVoiceAssistantContent() {
 
       {/* 🌟 2. Interactive Voice & Chat Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-end sm:justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="w-full sm:max-w-md h-[90vh] sm:h-[650px] bg-[#06140e] border border-amber-500/40 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
             
             {/* Header */}
