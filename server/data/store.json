@@ -7697,7 +7697,71 @@
       "helpful": 30
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "ASZ-5239",
+      "date": "2026-09-06 15:24",
+      "createdAt": "2026-09-06 15:24",
+      "customer": {
+        "city": "Bareilly",
+        "name": "Hamza Bhai Test",
+        "phone": "9876543210",
+        "pincode": "243001",
+        "email": "test@arabians.shop",
+        "state": "Uttar Pradesh",
+        "address": "Civil Lines"
+      },
+      "customerName": "Hamza Bhai Test",
+      "phone": "9876543210",
+      "email": "test@arabians.shop",
+      "address": "Civil Lines, Bareilly, Uttar Pradesh, 243001",
+      "items": [
+        {
+          "price": 349,
+          "quantity": 1,
+          "name": "Arabian's Talbeena Milk Mawa"
+        }
+      ],
+      "subtotal": 0,
+      "discount": 0,
+      "couponCode": "",
+      "deliveryFee": 0,
+      "total": 349,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "BlueDart Express",
+      "trackingNumber": "BD99887766",
+      "trackingId": "BD99887766",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 15:24",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 15:24",
+          "done": true
+        },
+        {
+          "status": "Dispatched via BlueDart Express",
+          "time": "06 Sept, 15:24",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    }
+  ],
   "distributors": [
     {
       "id": "DIST-525",

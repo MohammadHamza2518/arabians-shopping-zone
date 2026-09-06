@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
+import AiVoiceAssistant from './components/AiVoiceAssistant';
 import ScrollToTop from './components/ScrollToTop';
 
 // Dedicated Full Pages
@@ -103,6 +104,9 @@ function AppContent() {
 
       {/* Floating 24/7 WhatsApp Quick Assistant */}
       <FloatingWhatsApp />
+
+      {/* Voice & Chat AI Assistant (Brother Bilal with 6-Key Pool) */}
+      {!isAdminRoute && <AiVoiceAssistant />}
 
       {/* Mobile Sticky Navigation */}
       <MobileBottomNav />

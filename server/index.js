@@ -9,6 +9,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
 import { initialData } from './data/initialData.js';
+import { getSignedUrlWithFailover, getPoolStatus, handleTextQuery } from './aiService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -879,6 +880,33 @@ app.get('/sitemap.xml', (req, res) => {
   xml += `</urlset>`;
   res.type('application/xml');
   res.send(xml);
+});
+
+// --- 8. AI Voice & Chat Assistant (Brother Bilal with 6-Key Pool & Auto-Failover) ---
+app.get('/api/ai-agent/session', async (req, res) => {
+  try {
+    const session = await getSignedUrlWithFailover();
+    res.json(session);
+  } catch (err) {
+    console.error("AI Agent Session Error:", err.message);
+    res.status(503).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/ai-agent/chat', (req, res) => {
+  try {
+    const store = getStore();
+    const { query } = req.body || {};
+    const reply = handleTextQuery(query, store.products || []);
+    res.json(reply);
+  } catch (err) {
+    console.error("AI Chat Error:", err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/ai-agent/status', (req, res) => {
+  res.json(getPoolStatus());
 });
 
 // Health check
