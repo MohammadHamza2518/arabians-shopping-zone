@@ -1,9 +1,13 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { MongoClient } from 'mongodb';
 import { initialData } from './data/initialData.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,14 +31,21 @@ app.use('/uploads', express.static(uploadsDir));
 app.use('/assets', express.static(path.join(rootDir, 'public', 'assets')));
 app.use('/assets', express.static(path.join(rootDir, 'dist', 'assets')));
 
-// Storage file path
+// Storage file path (local disk backup)
 const storePath = path.join(__dirname, 'data', 'store.json');
 
-// Initialize or load data store
-function getStore() {
+// ==================== MONGODB CLOUD DATABASE INTEGRATION ====================
+let mongoClient = null;
+let mongoDb = null;
+let isMongoConnected = false;
+
+// Active memory store (instant millisecond latency)
+let memoryStore = null;
+
+function loadLocalStore() {
   if (!fs.existsSync(storePath)) {
     fs.writeFileSync(storePath, JSON.stringify(initialData, null, 2));
-    return initialData;
+    return JSON.parse(JSON.stringify(initialData));
   }
   try {
     const raw = fs.readFileSync(storePath, 'utf8');
@@ -42,21 +53,96 @@ function getStore() {
   } catch (e) {
     console.error("Error reading store.json, resetting to initialData", e);
     fs.writeFileSync(storePath, JSON.stringify(initialData, null, 2));
-    return initialData;
+    return JSON.parse(JSON.stringify(initialData));
   }
 }
 
+memoryStore = loadLocalStore();
+
+async function initMongoDB() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri || !uri.trim()) {
+    console.log("ℹ️  MONGODB_URI not detected. Running in Local JSON Persistence mode.");
+    return;
+  }
+
+  try {
+    console.log("🔄 Connecting to MongoDB Atlas Cloud Database...");
+    mongoClient = new MongoClient(uri.trim());
+    await mongoClient.connect();
+    mongoDb = mongoClient.db('arabians_shopping_zone');
+    isMongoConnected = true;
+    console.log("✅ Successfully connected to MongoDB Atlas Cloud Database!");
+
+    // Check if cloud document exists
+    const cloudStore = await mongoDb.collection('app_store').findOne({ _id: 'main_store' });
+    if (cloudStore && cloudStore.products && cloudStore.products.length > 0) {
+      console.log(`📦 Loaded ${cloudStore.products.length} products & ${cloudStore.orders?.length || 0} orders from MongoDB Cloud!`);
+      memoryStore = {
+        products: cloudStore.products || memoryStore.products,
+        categories: cloudStore.categories || memoryStore.categories,
+        reviews: cloudStore.reviews || memoryStore.reviews,
+        orders: cloudStore.orders || memoryStore.orders || [],
+        distributors: cloudStore.distributors || memoryStore.distributors || [],
+        coupons: cloudStore.coupons || memoryStore.coupons || [],
+        settings: cloudStore.settings || memoryStore.settings
+      };
+      // Backup to local file
+      fs.writeFileSync(storePath, JSON.stringify(memoryStore, null, 2));
+    } else {
+      console.log("🚀 Initializing empty MongoDB Cloud with current store data...");
+      await mongoDb.collection('app_store').updateOne(
+        { _id: 'main_store' },
+        { $set: { ...memoryStore, updatedAt: new Date() } },
+        { upsert: true }
+      );
+      console.log("✅ Initial store data seeded into MongoDB Cloud successfully!");
+    }
+  } catch (err) {
+    console.error("⚠️ MongoDB connection error:", err.message);
+    console.log("🔄 Seamless fallback: continuing with local persistence.");
+    isMongoConnected = false;
+  }
+}
+
+initMongoDB();
+
+// Initialize or load data store
+function getStore() {
+  if (!memoryStore) {
+    memoryStore = loadLocalStore();
+  }
+  return memoryStore;
+}
+
 function saveStore(data) {
+  memoryStore = data;
+
+  // 1. Local disk backup with safe atomic rename
   try {
     const tmpPath = storePath + '.tmp';
     fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8');
     fs.renameSync(tmpPath, storePath);
-    // Maintain automatic safe rolling backup
     const backupPath = path.join(__dirname, 'data', 'store.auto_backup.json');
     fs.copyFileSync(storePath, backupPath);
   } catch (err) {
     console.error("Atomic save failed, falling back to direct write:", err);
-    fs.writeFileSync(storePath, JSON.stringify(data, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(storePath, JSON.stringify(data, null, 2), 'utf8');
+    } catch (e) {
+      console.error("Local write error:", e);
+    }
+  }
+
+  // 2. Real-time MongoDB Cloud Database Synchronization
+  if (isMongoConnected && mongoDb) {
+    mongoDb.collection('app_store').updateOne(
+      { _id: 'main_store' },
+      { $set: { ...data, updatedAt: new Date() } },
+      { upsert: true }
+    ).catch(err => {
+      console.error("⚠️ Failed to sync to MongoDB Cloud:", err.message);
+    });
   }
 }
 
@@ -117,7 +203,17 @@ app.get('/api/products/:id', (req, res) => {
 app.post('/api/products', (req, res) => {
   const store = getStore();
   const subcat = (req.body.subcategory || req.body.subCategory || '').trim();
-  const safeImage = (req.body.image && req.body.image.trim()) ? req.body.image.trim() : '/assets/logo/logo_main.png';
+  
+  // Sanitize and strictly cap gallery to max 3 photos
+  let cleanGallery = [];
+  if (Array.isArray(req.body.gallery)) {
+    cleanGallery = req.body.gallery.filter(u => u && typeof u === 'string' && u.trim() && u !== '/assets/logo/logo_main.png').slice(0, 3);
+  } else if (req.body.image && req.body.image.trim() && req.body.image !== '/assets/logo/logo_main.png') {
+    cleanGallery = [req.body.image.trim()];
+  }
+  const safeImage = cleanGallery[0] || (req.body.image && req.body.image.trim()) || '/assets/logo/logo_main.png';
+  const finalGallery = cleanGallery.length > 0 ? cleanGallery : [safeImage];
+
   const newProduct = {
     id: req.body.id || ('prod-' + Date.now()),
     name: req.body.name || 'Untitled Product',
@@ -132,7 +228,7 @@ app.post('/api/products', (req, res) => {
     badge: (req.body.badge || '').trim(),
     image: safeImage,
     imageFit: req.body.imageFit || 'auto',
-    gallery: (Array.isArray(req.body.gallery) && req.body.gallery.length > 0) ? req.body.gallery : [safeImage],
+    gallery: finalGallery,
     description: req.body.description || '',
     benefits: req.body.benefits || [],
     tags: req.body.tags || []
@@ -150,14 +246,27 @@ app.put('/api/products/:id', (req, res) => {
 
   const incomingSubcat = req.body.subcategory !== undefined ? req.body.subcategory : req.body.subCategory;
   const finalSubcat = incomingSubcat !== undefined ? (incomingSubcat || '').trim() : store.products[idx].subcategory;
-  const incomingImage = req.body.image !== undefined ? (req.body.image && req.body.image.trim() ? req.body.image.trim() : '/assets/logo/logo_main.png') : store.products[idx].image;
+
+  // Sanitize and strictly cap gallery to max 3 photos
+  let cleanGallery;
+  if (Array.isArray(req.body.gallery)) {
+    cleanGallery = req.body.gallery.filter(u => u && typeof u === 'string' && u.trim() && u !== '/assets/logo/logo_main.png').slice(0, 3);
+  } else if (req.body.image !== undefined) {
+    const safeImg = (req.body.image && req.body.image.trim()) || '/assets/logo/logo_main.png';
+    cleanGallery = [safeImg, ...(store.products[idx].gallery?.filter(u => u !== safeImg)?.slice(0, 2) || [])].slice(0, 3);
+  } else {
+    cleanGallery = (store.products[idx].gallery || [store.products[idx].image]).filter(Boolean).slice(0, 3);
+  }
+
+  const safeImage = cleanGallery[0] || (req.body.image && req.body.image.trim()) || store.products[idx].image || '/assets/logo/logo_main.png';
+  const finalGallery = cleanGallery.length > 0 ? cleanGallery : [safeImage];
 
   store.products[idx] = {
     ...store.products[idx],
     ...req.body,
-    image: incomingImage,
+    image: safeImage,
     imageFit: req.body.imageFit || store.products[idx].imageFit || 'auto',
-    gallery: req.body.gallery || (incomingImage ? [incomingImage, ...(store.products[idx].gallery?.slice(1) || [])] : store.products[idx].gallery),
+    gallery: finalGallery,
     subcategory: finalSubcat,
     subCategory: finalSubcat,
     price: req.body.price !== undefined ? Number(req.body.price) : store.products[idx].price,
@@ -378,6 +487,13 @@ app.post('/api/orders', (req, res) => {
 
   store.orders.unshift(newOrder);
   saveStore(store);
+
+  if (isMongoConnected && mongoDb) {
+    mongoDb.collection('orders').insertOne({ ...newOrder, _savedAt: new Date() }).catch(err => {
+      console.error("MongoDB orders insert notice:", err.message);
+    });
+  }
+
   res.status(201).json(newOrder);
 });
 
@@ -679,6 +795,22 @@ app.put('/api/settings', (req, res) => {
   store.settings = { ...store.settings, ...req.body };
   saveStore(store);
   res.json(store.settings);
+});
+
+// --- 9.5 Database Status & Cloud Health ---
+app.get('/api/db-status', (req, res) => {
+  const store = getStore();
+  res.json({
+    status: 'online',
+    mode: isMongoConnected ? 'MongoDB Atlas (Cloud Database)' : 'Local JSON Persistence (store.json)',
+    isMongoConnected,
+    database: isMongoConnected ? 'arabians_shopping_zone' : 'local_file',
+    productsCount: (store.products || []).length,
+    ordersCount: (store.orders || []).length,
+    categoriesCount: (store.categories || []).length,
+    reviewsCount: (store.reviews || []).length,
+    timestamp: new Date()
+  });
 });
 
 // --- 10. SEO: Dynamic Sitemap & Robots.txt ---

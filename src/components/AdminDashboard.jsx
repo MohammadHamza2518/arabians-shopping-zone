@@ -33,7 +33,8 @@ import {
   Flame,
   Scroll,
   Gem,
-  Compass
+  Compass,
+  Star
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
@@ -90,6 +91,8 @@ export default function AdminDashboard() {
   const [isAddMode, setIsAddMode] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [productUrlInput, setProductUrlInput] = useState('');
+  const [previewImageIdx, setPreviewImageIdx] = useState(0);
 
   // Category Edit / Add Modal
   const [editingCategory, setEditingCategory] = useState(null);
@@ -154,34 +157,144 @@ export default function AdminDashboard() {
     }
   };
 
+  const getProductPhotos = (prod) => {
+    if (!prod) return [];
+    if (Array.isArray(prod.gallery) && prod.gallery.length > 0) {
+      const filtered = prod.gallery.filter(u => u && typeof u === 'string' && u.trim() && u !== '/assets/logo/logo_main.png');
+      if (filtered.length > 0) return filtered.slice(0, 3);
+    }
+    if (prod.image && prod.image !== '/assets/logo/logo_main.png') {
+      return [prod.image];
+    }
+    return [];
+  };
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const currentPhotos = getProductPhotos(editingProduct);
+
+    if (currentPhotos.length >= 3) {
+      showToast("Maximum 3 photos allowed! Pehle kisi photo ko remove karein.", "error");
+      e.target.value = '';
+      return;
+    }
+
+    const availableSlots = 3 - currentPhotos.length;
+    const filesToUpload = files.slice(0, availableSlots);
+
+    if (files.length > availableSlots) {
+      showToast(`Sirf ${availableSlots} photo(s) ki jagah bachi hai (Max 3). Pehli ${availableSlots} upload ho rahi hain.`, "info");
+    }
+
+    setUploadingImage(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of filesToUpload) {
+        const form = new FormData();
+        form.append('image', file);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: form
+        });
+        const data = await res.json();
+        if (data.success && (data.url || data.imageUrl)) {
+          uploadedUrls.push(data.url || data.imageUrl);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        const updatedGallery = [...currentPhotos, ...uploadedUrls].slice(0, 3);
+        setEditingProduct(prev => ({
+          ...prev,
+          image: updatedGallery[0],
+          gallery: updatedGallery
+        }));
+        setPreviewImageIdx(0);
+        showToast(`${uploadedUrls.length} photo(s) uploaded successfully! (${updatedGallery.length}/3 photos)`);
+      } else {
+        showToast("Upload failed", "error");
+      }
+    } catch {
+      showToast("Image upload error", "error");
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAddImageUrl = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = productUrlInput.trim();
+    if (!trimmed) {
+      showToast("Please enter an image URL", "error");
+      return;
+    }
+
+    const currentPhotos = getProductPhotos(editingProduct);
+    if (currentPhotos.length >= 3) {
+      showToast("Maximum 3 photos limit reached! 3 se zyda photos nahi dal sakte.", "error");
+      return;
+    }
+
+    const updatedGallery = [...currentPhotos, trimmed].slice(0, 3);
+    setEditingProduct(prev => ({
+      ...prev,
+      image: updatedGallery[0],
+      gallery: updatedGallery
+    }));
+    setProductUrlInput('');
+    setPreviewImageIdx(0);
+    showToast(`Photo added successfully! (${updatedGallery.length}/3 photos)`);
+  };
+
+  const handleRemovePhoto = (indexToRemove) => {
+    const currentPhotos = getProductPhotos(editingProduct);
+    const updatedGallery = currentPhotos.filter((_, idx) => idx !== indexToRemove);
+    setEditingProduct(prev => ({
+      ...prev,
+      image: updatedGallery[0] || '/assets/logo/logo_main.png',
+      gallery: updatedGallery
+    }));
+    setPreviewImageIdx(0);
+    showToast("Photo removed.");
+  };
+
+  const handleSetPrimaryPhoto = (index) => {
+    if (index === 0) return;
+    const currentPhotos = getProductPhotos(editingProduct);
+    const selected = currentPhotos[index];
+    const rest = currentPhotos.filter((_, idx) => idx !== index);
+    const updatedGallery = [selected, ...rest];
+    setEditingProduct(prev => ({
+      ...prev,
+      image: updatedGallery[0],
+      gallery: updatedGallery
+    }));
+    setPreviewImageIdx(0);
+    showToast("Main cover photo updated!");
+  };
+
   // Product Save (Create or Update)
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
-      let finalImageUrl = editingProduct.image;
-
-      // If user uploaded a new image file, upload it first
-      if (imageFile) {
-        setUploadingImage(true);
-        const formData = new FormData();
-        formData.append('image', imageFile);
-
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const uploadData = await uploadRes.json();
-        if (uploadData.success) {
-          finalImageUrl = uploadData.url;
-        }
-        setUploadingImage(false);
+      const photos = getProductPhotos(editingProduct);
+      if (photos.length === 0) {
+        showToast("Kam se kam 1 photo hona zaroori hai!", "error");
+        return;
+      }
+      if (photos.length > 3) {
+        showToast("Ek product me maximum 3 photos hi allow hain!", "error");
+        return;
       }
 
       const subcatValue = (editingProduct.subcategory || editingProduct.subCategory || '').trim();
       const payload = {
         ...editingProduct,
-        image: finalImageUrl,
-        gallery: [finalImageUrl],
+        image: photos[0],
+        gallery: photos.slice(0, 3),
         subcategory: subcatValue,
         subCategory: subcatValue
       };
@@ -1122,112 +1235,211 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Direct Image Upload & Smart Fit Settings */}
-                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block font-bold text-slate-900 text-xs sm:text-sm">
-                      Product Photo & Display Framing
-                    </label>
-                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300/60">
-                      Supports JPG, PNG, WebP
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-start">
-                    {/* Left: Upload and Controls (7 cols) */}
-                    <div className="sm:col-span-7 space-y-2.5">
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-700">1. Upload Image from Mobile/PC</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              setImageFile(e.target.files[0]);
-                            }
-                          }}
-                          className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#032219] file:text-amber-300 hover:file:bg-[#063e2e] file:cursor-pointer"
-                        />
-                      </div>
+                {/* Product Photos (Strictly 1 to 3 Photos Allowed) */}
+                {(() => {
+                  const activePhotos = getProductPhotos(editingProduct);
+                  const remainingSlots = 3 - activePhotos.length;
+                  const currentPreviewUrl = activePhotos[previewImageIdx] || activePhotos[0] || '/assets/logo/logo_main.png';
 
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-700">2. Or Paste Image URL</label>
-                        <input
-                          type="text"
-                          placeholder="https://... or /assets/products/..."
-                          value={editingProduct.image || ''}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                        />
-                      </div>
-
-                      {/* Image Framing / Fit Selector */}
-                      <div className="pt-1">
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          3. Frame Fit Mode (Prevents Awkward Cropping)
-                        </label>
-                        <select
-                          value={editingProduct.imageFit || 'auto'}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, imageFit: e.target.value })}
-                          className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                        >
-                          <option value="auto">✨ Smart Auto-Fit (Preserves clothing & square bottles)</option>
-                          <option value="contain">📦 Fit Full Product (100% visible, zero cropping)</option>
-                          <option value="cover">👑 Fill Frame (Portrait fashion mode)</option>
-                        </select>
-                        <p className="text-[10px] text-slate-500 mt-1 leading-tight">
-                          • <b>Smart Auto</b>: automatically detects whether image is portrait or square.<br />
-                          • <b>Fit Full</b>: ensures 100% of wide/square items are shown with zero edges cut.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Right: Live Storefront Card Preview (5 cols) */}
-                    <div className="sm:col-span-5 bg-white rounded-2xl p-2.5 border border-amber-300/80 shadow-sm flex flex-col items-center">
-                      <div className="w-full flex items-center justify-between mb-1.5 px-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-900">
-                          Live Storefront Preview
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-400">
-                          1:1 Square Frame
+                  return (
+                    <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <label className="block font-bold text-slate-900 text-xs sm:text-sm">
+                            Product Photos ({activePhotos.length}/3)
+                          </label>
+                          <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                            activePhotos.length === 3 
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                              : activePhotos.length > 0
+                              ? 'bg-amber-100 text-amber-900 border-amber-300'
+                              : 'bg-rose-100 text-rose-800 border-rose-300'
+                          }`}>
+                            {activePhotos.length === 3 ? '✅ Max Limit Reached (3/3 Photos)' : `${remainingSlots} slot${remainingSlots > 1 ? 's' : ''} available`}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-semibold">
+                          Min 1 photo • Max 3 photos
                         </span>
                       </div>
 
-                      {/* Mini Card Viewport */}
-                      <div className="w-full max-w-[170px] aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f4f1ea] border border-slate-200 relative flex items-center justify-center shadow-inner">
-                        {editingProduct.mrp > editingProduct.price && (
-                          <div className="absolute top-1.5 left-1.5 bg-rose-600 text-white font-black text-[8px] px-1.5 py-0.5 rounded-full z-10">
-                            {Math.round(((editingProduct.mrp - editingProduct.price) / editingProduct.mrp) * 100)}% OFF
+                      {/* 3 Visual Photo Slots */}
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {[0, 1, 2].map((slotIdx) => {
+                          const photoUrl = activePhotos[slotIdx];
+                          const isCover = slotIdx === 0;
+                          const isPreviewing = previewImageIdx === slotIdx;
+
+                          return (
+                            <div 
+                              key={slotIdx}
+                              className={`relative rounded-2xl border p-2 flex flex-col justify-between transition ${
+                                photoUrl 
+                                  ? (isPreviewing ? 'border-amber-500 bg-amber-100/60 shadow-sm' : 'border-slate-200 bg-white')
+                                  : 'border-dashed border-slate-300 bg-slate-50 text-slate-400'
+                              }`}
+                            >
+                              {/* Slot Header */}
+                              <div className="w-full flex items-center justify-between mb-1.5 px-0.5">
+                                <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
+                                  isCover ? 'text-amber-800' : 'text-slate-500'
+                                }`}>
+                                  {isCover ? '⭐ Cover Photo' : `Photo ${slotIdx + 1}`}
+                                </span>
+                                {photoUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePhoto(slotIdx)}
+                                    className="p-1 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition"
+                                    title="Delete this photo"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Slot Viewport */}
+                              <div 
+                                onClick={() => photoUrl && setPreviewImageIdx(slotIdx)}
+                                className="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 relative flex items-center justify-center cursor-pointer group border border-slate-200"
+                              >
+                                {photoUrl ? (
+                                  <>
+                                    <img 
+                                      src={photoUrl} 
+                                      alt={`Slot ${slotIdx + 1}`} 
+                                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                    />
+                                    {!isCover && (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleSetPrimaryPhoto(slotIdx); }}
+                                        className="absolute inset-x-1 bottom-1 py-1 rounded-lg bg-black/80 hover:bg-amber-500 hover:text-black text-amber-300 text-[9px] font-black transition opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 shadow"
+                                      >
+                                        ⭐ Make Cover
+                                      </button>
+                                    )}
+                                    {isPreviewing && (
+                                      <span className="absolute top-1 left-1 bg-amber-500 text-black text-[8px] font-black px-1.5 py-0.5 rounded shadow">
+                                        Viewing
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div className="flex flex-col items-center justify-center p-2 text-center text-slate-400">
+                                    <Plus className="w-4 h-4 mb-0.5 text-slate-400" />
+                                    <span className="text-[9px] font-bold leading-tight">
+                                      {isCover ? 'Cover Photo (Required)' : 'Optional'}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Upload & Add Controls (Capped at 3 Photos strictly) */}
+                      {activePhotos.length < 3 ? (
+                        <div className="space-y-2 pt-2 border-t border-amber-200/60">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {/* Upload from Device */}
+                            <div>
+                              <label className="w-full py-2.5 px-3 rounded-xl border border-dashed border-amber-400 hover:border-amber-600 bg-white hover:bg-amber-50/50 flex items-center justify-center gap-2 cursor-pointer text-amber-900 text-xs font-bold transition">
+                                <Upload className="w-3.5 h-3.5 text-amber-600" />
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  multiple 
+                                  onChange={handleImageUpload} 
+                                  className="hidden" 
+                                  disabled={uploadingImage}
+                                />
+                                <span>
+                                  {uploadingImage ? 'Uploading Image(s)...' : `Upload Device File (${remainingSlots} slot${remainingSlots > 1 ? 's' : ''} left)`}
+                                </span>
+                              </label>
+                            </div>
+
+                            {/* Or Paste URL */}
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                placeholder="Paste image URL (https://...)"
+                                value={productUrlInput}
+                                onChange={(e) => setProductUrlInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddImageUrl(); } }}
+                                className="flex-1 px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleAddImageUrl}
+                                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-amber-300 font-bold text-xs transition shrink-0"
+                              >
+                                + Add
+                              </button>
+                            </div>
                           </div>
-                        )}
-                        <img 
-                          key={imageFile ? imageFile.name : editingProduct.image}
-                          src={imageFile ? URL.createObjectURL(imageFile) : (editingProduct.image || '/assets/logo/logo_main.png')} 
-                          alt="" 
-                          onLoad={(e) => {
-                            if (editingProduct.imageFit === 'contain') return;
-                            const { naturalWidth, naturalHeight } = e.target;
-                            if (naturalWidth && naturalHeight) {
-                              const ratio = naturalWidth / naturalHeight;
-                              e.target.className = `w-full h-full object-cover ${ratio < 0.85 ? 'object-top' : 'object-center'}`;
-                            }
-                          }}
-                          className={`w-full h-full ${
-                            editingProduct.imageFit === 'contain' 
-                              ? 'object-contain p-2' 
-                              : (editingProduct.category === 'wearing' ? 'object-cover object-top' : 'object-cover object-center')
-                          }`}
-                        />
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            💡 <b>Rules:</b> Ek product me 1, 2 ya maximum 3 photos dal sakte hain. 3 se zyda photos allowed nahi hain. Photo 1 storefront par Cover Photo rahegi.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                          <div className="flex items-center gap-2 text-emerald-800 font-bold text-[11px]">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span>Maximum 3 Photos limit reached (3/3). 3 se zyda photos nahi daali ja sakti.</span>
+                          </div>
+                          <span className="text-[10px] text-slate-500">
+                            Nayi photo dalne ke liye kisi photo ko delete karein.
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Display Frame Mode & Live Preview Viewport */}
+                      <div className="pt-2 border-t border-amber-200/60 grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center">
+                        <div className="sm:col-span-7 space-y-1">
+                          <label className="block text-[11px] font-bold text-slate-700">
+                            Storefront Frame Fit (Crop Prevention)
+                          </label>
+                          <select
+                            value={editingProduct.imageFit || 'auto'}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, imageFit: e.target.value })}
+                            className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                          >
+                            <option value="auto">✨ Smart Auto-Fit (Preserves clothing & square bottles)</option>
+                            <option value="contain">📦 Fit Full Product (100% visible, zero cropping)</option>
+                            <option value="cover">👑 Fill Frame (Portrait fashion mode)</option>
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-5 bg-white rounded-xl p-2.5 border border-slate-200 shadow-sm flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <span className="block text-[9px] font-black uppercase tracking-wider text-amber-900">
+                              Live Preview
+                            </span>
+                            <span className="block text-[10px] text-slate-700 font-semibold truncate">
+                              {activePhotos[previewImageIdx] ? (previewImageIdx === 0 ? 'Cover Photo' : `Photo ${previewImageIdx + 1}`) : 'No Photo'}
+                            </span>
+                            <span className="block text-[9px] text-slate-400">1:1 Square Frame</span>
+                          </div>
+                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative shrink-0 flex items-center justify-center">
+                            <img 
+                              src={currentPreviewUrl} 
+                              alt="Preview" 
+                              className={`w-full h-full ${
+                                editingProduct.imageFit === 'contain' 
+                                  ? 'object-contain p-1' 
+                                  : 'object-cover'
+                              }`}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-700 mt-1.5 text-center truncate max-w-[170px]">
-                        {editingProduct.name || 'Product Title'}
-                      </span>
-                      <span className="text-[10px] font-mono font-black text-amber-900">
-                        ₹{editingProduct.price || 0}
-                      </span>
+
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Description:</label>
