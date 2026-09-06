@@ -111,13 +111,13 @@ export default function TalbinaSpotlight() {
 
             <Link
               to={`/product/${activeProduct.id}`}
-              className="w-full max-w-[320px] aspect-square rounded-2xl overflow-hidden bg-white/95 border border-amber-900/10 shadow-sm relative flex items-center justify-center cursor-pointer group p-2.5 sm:p-3"
+              className="w-full max-w-[330px] aspect-square rounded-2xl overflow-hidden border border-amber-900/15 shadow-md relative block cursor-pointer group bg-[#f5f1e8]"
             >
               <img 
                 key={activeProduct.id}
                 src={activeProduct.image} 
                 alt={activeProduct.name}
-                className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </Link>
 

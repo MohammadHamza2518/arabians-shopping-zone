@@ -44,7 +44,8 @@ export default function ProductDetailPage() {
       setSelectedImage(product.image);
       setHasDetailImgError(false);
       const isWearing = product.category === 'wearing';
-      const defaultFit = product.imageFit === 'cover'
+      const isTalbina = product.subcategory === 'talbina';
+      const defaultFit = (product.imageFit === 'cover' || isTalbina)
         ? (isWearing ? 'object-cover object-top' : 'object-cover object-center')
         : (isWearing ? 'object-cover object-top' : 'object-contain p-4 sm:p-6');
       setDetailImgClass(defaultFit);
@@ -56,7 +57,8 @@ export default function ProductDetailPage() {
 
   const handleDetailImageLoad = (e) => {
     const isWearing = product?.category === 'wearing';
-    if (product?.imageFit === 'cover') {
+    const isTalbina = product?.subcategory === 'talbina';
+    if (product?.imageFit === 'cover' || isTalbina) {
       setDetailImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
       return;
     }

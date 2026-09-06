@@ -12,8 +12,9 @@ export default function ProductCard({ product }) {
   // 'wearing' category (thobes/models) uses full-bleed object-cover object-top.
   // All packaged goods (health, fragrance, decor, wedding) use object-contain with gentle padding so NO product is cropped!
   const isWearing = product.category === 'wearing';
+  const isTalbina = product.subcategory === 'talbina';
   const getFitClass = () => {
-    if (product.imageFit === 'cover') return isWearing ? 'object-cover object-top' : 'object-cover object-center';
+    if (product.imageFit === 'cover' || isTalbina) return isWearing ? 'object-cover object-top' : 'object-cover object-center';
     if (product.imageFit === 'contain') return 'object-contain p-2.5 sm:p-3';
     return isWearing ? 'object-cover object-top' : 'object-contain p-2.5 sm:p-3';
   };
@@ -24,14 +25,14 @@ export default function ProductCard({ product }) {
   useEffect(() => {
     setHasImgError(false);
     setImgClass(getFitClass());
-  }, [product.image, product.imageFit, product.category]);
+  }, [product.image, product.imageFit, product.category, product.subcategory]);
 
   const discountPercent = product.mrp && product.price && Number(product.mrp) > Number(product.price)
     ? Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100) 
     : 0;
 
   const handleImageLoad = (e) => {
-    if (product.imageFit === 'cover') {
+    if (product.imageFit === 'cover' || isTalbina) {
       setImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
       return;
     }
