@@ -211,10 +211,10 @@ function AiVoiceAssistantContent() {
 
   return (
     <>
-      {/* 🌟 1. Floating Royal Trigger Button (Bottom-Left so it NEVER overlaps with WhatsApp on bottom-right) */}
-      <div className="fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40 flex flex-col items-start gap-2">
+      {/* 🌟 1. Floating Royal Trigger Button (Bottom-Left: sleek non-intrusive circle on phone, full banner on desktop) */}
+      <div className="fixed bottom-20 md:bottom-6 left-3 sm:left-6 z-40 flex flex-col items-start gap-2">
         {!isOpen && (
-          <div className="animate-bounce bg-slate-950/90 text-[#f5d77f] text-[11px] font-bold px-3 py-1 rounded-full shadow-lg border border-amber-500/40 backdrop-blur flex items-center gap-1.5 pointer-events-none">
+          <div className="hidden sm:flex animate-bounce bg-slate-950/90 text-[#f5d77f] text-[11px] font-bold px-3 py-1 rounded-full shadow-lg border border-amber-500/40 backdrop-blur items-center gap-1.5 pointer-events-none">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
             Call Bilal Bhai (Live AI)
           </div>
@@ -223,16 +223,21 @@ function AiVoiceAssistantContent() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Arabians Voice AI Assistant"
-          className="group relative flex items-center gap-2.5 px-4 py-3.5 rounded-full bg-gradient-to-r from-[#072418] via-[#0d3b27] to-[#04160e] text-white shadow-2xl border border-[#d4af37]/60 hover:border-[#f7e7a7] hover:scale-105 active:scale-95 transition-all duration-300"
+          className="group relative flex items-center justify-center p-3 sm:px-4 sm:py-3.5 rounded-full bg-gradient-to-r from-[#072418] via-[#0d3b27] to-[#04160e] text-white shadow-2xl border border-[#d4af37]/70 hover:border-[#f7e7a7] hover:scale-105 active:scale-95 transition-all duration-300"
         >
           {/* Animated Gold Aura Ring */}
           <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-400/20 via-emerald-400/20 to-amber-500/20 blur-sm group-hover:blur group-hover:opacity-100 transition duration-500"></span>
 
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black shadow-inner">
-            {isOpen ? <X className="w-5 h-5" /> : <PhoneCall className="w-4 h-4 animate-pulse" />}
+          {/* Mobile Phone 'AI' Tag */}
+          <span className="sm:hidden absolute -top-1 -right-1 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[9px] px-1.5 py-0.5 rounded-full border border-[#04160e] shadow-md">
+            AI
+          </span>
+
+          <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black shadow-inner shrink-0">
+            {isOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <PhoneCall className="w-4 h-4 animate-pulse" />}
           </div>
 
-          <div className="relative text-left pr-1 hidden xs:block">
+          <div className="relative text-left pr-1 hidden sm:block">
             <div className="text-[12px] font-serif font-black tracking-wide text-amber-200 flex items-center gap-1">
               <span>Bilal Bhai</span>
               <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-sans font-bold px-1.5 py-0.2 rounded border border-emerald-500/30 uppercase">Voice AI</span>
@@ -242,11 +247,14 @@ function AiVoiceAssistantContent() {
         </button>
       </div>
 
-      {/* 🌟 2. Interactive Voice & Chat Modal */}
+      {/* 🌟 2. Interactive Voice & Chat Modal (Native Mobile Bottom Sheet) */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full sm:max-w-md h-[90vh] sm:h-[650px] bg-[#06140e] border border-amber-500/40 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
+          <div className="w-full sm:max-w-md h-[88dvh] sm:h-[650px] max-h-[92dvh] bg-[#06140e] border-t sm:border border-amber-500/40 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
             
+            {/* Mobile Bottom Sheet Grab Indicator */}
+            <div className="sm:hidden w-12 h-1 bg-white/20 rounded-full mx-auto mt-2 -mb-1 shrink-0"></div>
+
             {/* Header */}
             <div className="relative px-5 py-4 bg-gradient-to-r from-[#092218] via-[#0d3324] to-[#06160f] border-b border-amber-500/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
