@@ -20,7 +20,7 @@ import InstagramIcon from './InstagramIcon';
 import { useStore } from '../context/StoreContext';
 
 // Single Running Reel Card Component - Completely Unobstructed & Crystal Clear
-function ReelCard({ reel }) {
+function ReelCard({ reel, onSelect }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
@@ -57,7 +57,8 @@ function ReelCard({ reel }) {
     }
   };
 
-  const handleOpenInstagram = () => {
+  const handleOpenInstagram = (e) => {
+    e.stopPropagation();
     const url = reel.instagramUrl || 'https://www.instagram.com/arabians_shopping_zone/';
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -70,12 +71,20 @@ function ReelCard({ reel }) {
 
   return (
     <div 
-      onClick={handleOpenInstagram}
+      onClick={() => onSelect && onSelect(reel)}
       className="group relative w-[165px] sm:w-[190px] md:w-auto shrink-0 aspect-[9/16] rounded-3xl overflow-hidden bg-slate-950 border-2 border-emerald-700/60 hover:border-amber-400 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-amber-500/20 select-none"
-      title="Tap video to open on Instagram • Click 'Shop' for category collection"
+      title="Tap to watch full video • Click 'Shop' for category collection"
     >
-      {/* Background Live Running Video - 100% Brightness, Full Clarity */}
-      {!hasError ? (
+      {/* Background HD Poster - Always rendered so zero black screen or loading flicker */}
+      <img 
+        src={reel.thumbnail} 
+        alt={reel.title}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+      />
+
+      {/* Background Live Running Video - Plays seamlessly on top of poster */}
+      {!hasError && reel.videoUrl && (
         <video
           ref={videoRef}
           src={reel.videoUrl}
@@ -83,14 +92,8 @@ function ReelCard({ reel }) {
           loop
           muted={isMuted}
           playsInline
-          preload="none"
+          preload="metadata"
           onError={() => setHasError(true)}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-      ) : (
-        <img 
-          src={reel.thumbnail} 
-          alt={reel.title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
       )}
@@ -125,6 +128,13 @@ function ReelCard({ reel }) {
         </button>
       </div>
 
+      {/* Center Subtle Play Indicator */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition duration-300">
+        <div className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-amber-400/60 flex items-center justify-center shadow-xl scale-90 group-hover:scale-100 transition">
+          <Play className="w-5 h-5 fill-amber-400 text-amber-400 ml-0.5" />
+        </div>
+      </div>
+
       {/* Bottom Title & Compact Category Shop Action */}
       <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
         <p className="text-[11px] sm:text-xs font-bold text-white line-clamp-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] leading-tight mb-1.5">
@@ -132,7 +142,11 @@ function ReelCard({ reel }) {
         </p>
 
         <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-white/15">
-          <div className="flex items-center gap-1 text-[10px] text-amber-300 font-bold opacity-90 truncate">
+          <div 
+            onClick={handleOpenInstagram}
+            className="flex items-center gap-1 text-[10px] text-amber-300 font-bold opacity-90 truncate hover:text-amber-200 cursor-pointer"
+            title="Open on Instagram"
+          >
             <InstagramIcon className="w-3 h-3 text-amber-400 shrink-0" />
             <span className="tracking-tight text-[9px] sm:text-[10px] truncate">@arabians</span>
           </div>
@@ -395,6 +409,7 @@ export default function ReelsShowcase() {
             <ReelCard
               key={reel.id}
               reel={reel}
+              onSelect={(r) => setActiveReel(r)}
             />
           ))}
         </div>
@@ -543,15 +558,39 @@ export default function ReelsShowcase() {
                 {activeReel.title}
               </p>
 
+              {/* Featured Product Quick Buy Banner */}
+              {activeReel.productId && (
+                <div 
+                  onClick={() => handleShopReelProduct(activeReel.productId)}
+                  className="flex items-center justify-between p-2.5 rounded-2xl bg-black/75 backdrop-blur-md border border-amber-400/40 hover:border-amber-400 cursor-pointer transition shadow-lg group"
+                >
+                  <div className="truncate mr-2">
+                    <div className="text-[11px] font-bold text-white truncate group-hover:text-amber-300 transition">
+                      {activeReel.productName || 'Featured Collection'}
+                    </div>
+                    <div className="text-[10px] text-amber-400 font-extrabold">
+                      {activeReel.productPrice}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-[10px] font-black flex items-center gap-1 shrink-0 shadow active:scale-95 transition"
+                  >
+                    <ShoppingBag className="w-3 h-3" />
+                    <span>Buy Now</span>
+                  </button>
+                </div>
+              )}
+
               {/* Direct Instagram Action Button */}
               <a
                 href={activeReel.instagramUrl || "https://www.instagram.com/arabians_shopping_zone/"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#f09433] via-[#e6683c] via-[#dc2743] to-[#cc2366] text-white font-black text-xs sm:text-sm hover:brightness-110 active:scale-95 transition shadow-xl flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#f09433] via-[#e6683c] via-[#dc2743] to-[#cc2366] text-white font-black text-xs hover:brightness-110 active:scale-95 transition shadow-xl flex items-center justify-center gap-2"
               >
                 <InstagramIcon className="w-4 h-4 text-white" />
-                <span>View Full Reel on Instagram</span>
+                <span>Watch on Instagram</span>
               </a>
             </div>
 
