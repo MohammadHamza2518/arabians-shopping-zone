@@ -915,6 +915,35 @@ app.get('/api/health', (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+app.get('/api/debug-assets', (req, res) => {
+  try {
+    const pubAssets = path.join(rootDir, 'public', 'assets');
+    const distAssets = path.join(rootDir, 'dist', 'assets');
+    const pubExists = fs.existsSync(pubAssets);
+    const pubFolders = pubExists ? fs.readdirSync(pubAssets) : [];
+    const reelsPath = path.join(pubAssets, 'reels');
+    const reelsExists = fs.existsSync(reelsPath);
+    const reelsFiles = reelsExists ? fs.readdirSync(reelsPath) : [];
+    const distReelsPath = path.join(distAssets, 'reels');
+    const distReelsExists = fs.existsSync(distReelsPath);
+    const distReelsFiles = distReelsExists ? fs.readdirSync(distReelsPath) : [];
+    res.json({
+      rootDir,
+      pubAssets,
+      pubExists,
+      pubFolders,
+      reelsPath,
+      reelsExists,
+      reelsFiles,
+      distAssets,
+      distReelsExists,
+      distReelsFiles
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Serve production build if exists
 const distDir = path.join(rootDir, 'dist');
 if (fs.existsSync(distDir)) {
