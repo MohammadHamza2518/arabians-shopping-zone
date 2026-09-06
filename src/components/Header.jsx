@@ -286,6 +286,17 @@ export default function Header() {
               <span className="hidden sm:inline">Visit Store</span>
             </Link>
 
+            {/* Bilal AI Voice Assistant Trigger */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950 via-[#032219] to-emerald-950 text-amber-300 border border-amber-400/40 hover:border-amber-300 text-xs font-bold shadow-sm active:scale-95 transition"
+              title="Speak with Brother Bilal (Store AI Voice Advisor)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
+              <span className="hidden sm:inline">Bilal AI</span>
+            </button>
+
             {/* Cart & Checkout */}
             <Link
               to="/checkout"

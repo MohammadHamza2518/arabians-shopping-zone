@@ -49,8 +49,36 @@ function AiVoiceAssistantContent() {
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const chatEndRef = useRef(null);
   const timerIntervalRef = useRef(null);
+
+  // Auto-hide floating button on scroll down to avoid disturbing content viewing
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      if (current > lastScrollY.current && current > 90) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      lastScrollY.current = current;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Listen for global open-ai-assistant event (e.g. from Header)
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setIsDismissed(false);
+    };
+    window.addEventListener('open-ai-assistant', handleOpen);
+    return () => window.removeEventListener('open-ai-assistant', handleOpen);
+  }, []);
 
   // ElevenLabs Conversation Hook
   const conversation = useConversation({
@@ -211,41 +239,76 @@ function AiVoiceAssistantContent() {
 
   return (
     <>
-      {/* 🌟 1. Floating Royal Trigger Button (Bottom-Left: sleek non-intrusive circle on phone, full banner on desktop) */}
-      <div className="fixed bottom-20 md:bottom-6 left-3 sm:left-6 z-40 flex flex-col items-start gap-2">
-        {!isOpen && (
-          <div className="hidden sm:flex animate-bounce bg-slate-950/90 text-[#f5d77f] text-[11px] font-bold px-3 py-1 rounded-full shadow-lg border border-amber-500/40 backdrop-blur items-center gap-1.5 pointer-events-none">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            Call Bilal Bhai (Live AI)
-          </div>
-        )}
-
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Arabians Voice AI Assistant"
-          className="group relative flex items-center justify-center p-3 sm:px-4 sm:py-3.5 rounded-full bg-gradient-to-r from-[#072418] via-[#0d3b27] to-[#04160e] text-white shadow-2xl border border-[#d4af37]/70 hover:border-[#f7e7a7] hover:scale-105 active:scale-95 transition-all duration-300"
+      {/* 🌟 1. Floating Royal Trigger Button (Right side, stacked above WhatsApp, auto-hiding on scroll, dismissable) */}
+      {!isOpen && !isDismissed && (
+        <div 
+          className={`fixed bottom-34 sm:bottom-24 right-3 sm:right-6 z-40 transition-all duration-300 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-14 opacity-0 pointer-events-none'
+          }`}
         >
-          {/* Animated Gold Aura Ring */}
-          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-400/20 via-emerald-400/20 to-amber-500/20 blur-sm group-hover:blur group-hover:opacity-100 transition duration-500"></span>
+          <div
+            onClick={() => setIsOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label="Speak with Bilal Bhai - Live Voice AI Advisor"
+            className="group relative flex items-center gap-2 pl-2.5 pr-2 py-1.5 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-r from-[#021812]/95 via-[#04241b]/95 to-[#021812]/95 backdrop-blur-md text-white shadow-2xl border border-amber-400/60 hover:border-amber-300 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer select-none"
+            title="Call Bilal Bhai • Live Sunnah & Store AI Advisor"
+          >
+            {/* Subtle gold glow behind pill */}
+            <span className="absolute -inset-0.5 rounded-full bg-amber-400/20 blur-sm group-hover:opacity-100 transition duration-300 opacity-60"></span>
 
-          {/* Mobile Phone 'AI' Tag */}
-          <span className="sm:hidden absolute -top-1 -right-1 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[9px] px-1.5 py-0.5 rounded-full border border-[#04160e] shadow-md">
-            AI
-          </span>
+            {/* Live Ping Indicator */}
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
 
-          <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black shadow-inner shrink-0">
-            {isOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <PhoneCall className="w-4 h-4 animate-pulse" />}
-          </div>
-
-          <div className="relative text-left pr-1 hidden sm:block">
-            <div className="text-[12px] font-serif font-black tracking-wide text-amber-200 flex items-center gap-1">
-              <span>Bilal Bhai</span>
-              <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-sans font-bold px-1.5 py-0.2 rounded border border-emerald-500/30 uppercase">Voice AI</span>
+            {/* Sleek Gold Sparkle Circle */}
+            <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow shrink-0">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-slate-950 text-slate-950" />
             </div>
-            <div className="text-[10px] text-slate-300 font-medium">Sunnah & Store Advisor</div>
+
+            {/* Text Info */}
+            <div className="relative flex flex-col text-left leading-tight pr-0.5">
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] sm:text-xs font-bold text-amber-200 tracking-tight">Bilal AI</span>
+                <span className="text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  Voice
+                </span>
+              </div>
+              <span className="text-[9px] text-slate-300 hidden sm:inline font-medium">Store Advisor</span>
+            </div>
+
+            {/* Dismiss X Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDismissed(true);
+              }}
+              className="relative w-4 h-4 rounded-full text-slate-400 hover:text-white flex items-center justify-center hover:bg-white/15 transition ml-0.5"
+              title="Minimize button"
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
           </div>
+        </div>
+      )}
+
+      {/* Discreet Minimized Tab if user dismissed it */}
+      {!isOpen && isDismissed && (
+        <button
+          type="button"
+          onClick={() => setIsDismissed(false)}
+          className={`fixed bottom-36 right-0 z-40 px-2 py-1.5 rounded-l-full bg-[#021812]/90 backdrop-blur-md border-y border-l border-amber-400/60 shadow-lg text-amber-300 hover:pr-3 transition-all duration-300 flex items-center gap-1 text-[10px] font-bold ${
+            isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+          }`}
+          title="Open Bilal AI Advisor"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+          <span>AI</span>
         </button>
-      </div>
+      )}
 
       {/* 🌟 2. Interactive Voice & Chat Modal (Native Mobile Bottom Sheet) */}
       {isOpen && (
