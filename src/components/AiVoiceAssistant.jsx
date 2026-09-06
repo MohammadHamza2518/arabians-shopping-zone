@@ -239,10 +239,10 @@ function AiVoiceAssistantContent() {
 
   return (
     <>
-      {/* 🌟 1. Floating Royal Trigger Button (Right side, stacked above WhatsApp, auto-hiding on scroll, dismissable) */}
+      {/* 🌟 1. Floating Royal Trigger Button (Right side, stacked cleanly above WhatsApp, auto-hiding on scroll, dismissable) */}
       {!isOpen && !isDismissed && (
         <div 
-          className={`fixed bottom-34 sm:bottom-24 right-3 sm:right-6 z-40 transition-all duration-300 ${
+          className={`fixed bottom-36 md:bottom-6 right-4 md:right-24 z-40 transition-all duration-300 ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-14 opacity-0 pointer-events-none'
           }`}
         >
