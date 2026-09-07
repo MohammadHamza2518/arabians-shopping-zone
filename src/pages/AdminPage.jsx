@@ -22,6 +22,8 @@ import {
   Filter, 
   Tag,
   ExternalLink,
+  Send,
+  Download,
   Menu,
   X,
   Shield,
@@ -94,6 +96,14 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [trackingInputs, setTrackingInputs] = useState({});
   const [activeInvoiceOrder, setActiveInvoiceOrder] = useState(null);
+
+  // Shipmozo Delivery Integration State
+  const [pushingMozoId, setPushingMozoId] = useState(null);
+  const [autoAssigningMozoId, setAutoAssigningMozoId] = useState(null);
+  const [mozoModalOrder, setMozoModalOrder] = useState(null);
+  const [mozoWeight, setMozoWeight] = useState(500);
+  const [mozoWarehouse, setMozoWarehouse] = useState('66952');
+  const [mozoStatus, setMozoStatus] = useState(null);
 
   // Products filters & modal state
   const [productSearch, setProductSearch] = useState('');
@@ -191,6 +201,31 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchAdminData();
+
+      // Auto-poll orders every 12 seconds so new orders show up live without refreshing!
+      const pollTimer = setInterval(() => {
+        fetch('/api/orders')
+          .then(r => r.json())
+          .then(freshOrders => {
+            if (Array.isArray(freshOrders)) {
+              setOrders(prev => {
+                if (prev.length > 0 && freshOrders.length > prev.length) {
+                  showToast(`🔔 New Order Received: ${freshOrders[0]?.id}!`);
+                }
+                return freshOrders;
+              });
+            }
+          })
+          .catch(() => {});
+      }, 12000);
+
+      // Fetch Shipmozo connection status & warehouse info
+      fetch('/api/shipmozo/status')
+        .then(r => r.json())
+        .then(st => setMozoStatus(st))
+        .catch(() => {});
+
+      return () => clearInterval(pollTimer);
     }
   }, [isAuthenticated]);
 
@@ -274,6 +309,94 @@ export default function AdminPage() {
     } else {
       showToast("No customer phone number available for WhatsApp", "error");
     }
+  };
+
+  // Shipmozo Official Delivery Dispatch Handlers
+  const handlePushToShipmozo = async (order, customWeight = 500, warehouseId = '66952') => {
+    setPushingMozoId(order.id);
+    try {
+      const res = await fetch(`/api/shipmozo/push-order/${order.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          weight: customWeight,
+          warehouseId: warehouseId
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`🚀 Order ${order.id} pushed to Shipmozo! Visible in Shipmozo panel.`);
+        setMozoModalOrder(null);
+        fetchAdminData();
+      } else {
+        showToast(data.message || "Failed to push order to Shipmozo", "error");
+      }
+    } catch (err) {
+      showToast("Error connecting to Shipmozo server: " + err.message, "error");
+    } finally {
+      setPushingMozoId(null);
+    }
+  };
+
+  const handleAutoAssignMozo = async (order) => {
+    setAutoAssigningMozoId(order.id);
+    try {
+      const res = await fetch(`/api/shipmozo/auto-assign/${order.id}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`🚚 Courier Assigned: ${data.courier} | AWB: ${data.awb}`);
+        fetchAdminData();
+      } else {
+        showToast(data.message || "Failed to auto-assign courier in Shipmozo", "error");
+      }
+    } catch (err) {
+      showToast("Error assigning courier: " + err.message, "error");
+    } finally {
+      setAutoAssigningMozoId(null);
+    }
+  };
+
+  const handleExportShipmozoCsv = () => {
+    if (!orders.length) {
+      showToast("No orders available to export", "error");
+      return;
+    }
+    const headers = [
+      "Order ID", "Order Date", "Customer Name", "Customer Phone", "Customer Email",
+      "Address", "City", "State", "Pincode", "Payment Type", "COD Amount", "Weight (Grams)", "Warehouse ID"
+    ];
+    const rows = orders.map(o => {
+      const c = o.customer || {};
+      const fullAddr = (o.address || c.address || '').replace(/"/g, '""');
+      const isCod = (o.paymentMode || o.paymentMethod || 'COD').toUpperCase() === 'COD';
+      return [
+        `"${o.id}"`,
+        `"${(o.date || o.createdAt || '').slice(0, 10)}"`,
+        `"${(o.customerName || c.name || 'Customer').replace(/"/g, '""')}"`,
+        `"${(o.phone || c.phone || '7233862626').replace(/[^0-9]/g, '').slice(-10)}"`,
+        `"${o.email || c.email || 'arabianshoppingzone26@gmail.com'}"`,
+        `"${fullAddr}"`,
+        `"${c.city || 'Kanpur'}"`,
+        `"${c.state || 'Uttar Pradesh'}"`,
+        `"${c.pincode || '208001'}"`,
+        `"${isCod ? 'COD' : 'PREPAID'}"`,
+        `"${isCod ? o.total : '0'}"`,
+        `"500"`,
+        `"66952"`
+      ].join(',');
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Shipmozo_Orders_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("📥 Exported CSV file formatted for Shipmozo Bulk Import!");
   };
 
   const handleSaveSettings = async (e) => {
@@ -1363,21 +1486,46 @@ export default function AdminPage() {
               />
             </div>
 
-            {/* Status Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs">
-              {['all', 'Confirmed', 'Dispatched', 'In Transit', 'Delivered', 'Cancelled'].map(st => (
-                <button
-                  key={st}
-                  onClick={() => setStatusFilter(st)}
-                  className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition ${
-                    statusFilter === st
-                      ? 'bg-amber-500 text-slate-950 shadow'
-                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
-                  }`}
+            {/* Status Filter Pills & Shipmozo Action */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                {['all', 'Confirmed', 'Dispatched', 'In Transit', 'Delivered', 'Cancelled'].map(st => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition ${
+                      statusFilter === st
+                        ? 'bg-amber-500 text-slate-950 shadow'
+                        : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                    }`}
+                  >
+                    {st === 'all' ? 'All Orders' : st}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href="https://panel.shipmozo.com/orders/new"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-700 hover:brightness-110 text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition"
+                  title="Open live Shipmozo orders dashboard"
                 >
-                  {st === 'all' ? 'All Orders' : st}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Open Shipmozo</span>
+                  <span className="sm:hidden">Mozo</span>
+                </a>
+
+                <button
+                  onClick={handleExportShipmozoCsv}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition"
+                  title="Export orders as CSV for Shipmozo Bulk Import"
+                >
+                  <Download className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Bulk CSV</span>
                 </button>
-              ))}
+              </div>
             </div>
           </div>
 
@@ -1441,6 +1589,49 @@ export default function AdminPage() {
                         <Printer className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Print Slip</span>
                       </button>
+
+                      {/* SHIPMOZO DIRECT DELIVERY DISPATCH BUTTONS */}
+                      {!ord.shipmozoPushed ? (
+                        <button
+                          onClick={() => setMozoModalOrder(ord)}
+                          disabled={pushingMozoId === ord.id}
+                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 via-sky-600 to-blue-700 hover:brightness-110 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-sky-500/25 active:scale-95 transition"
+                          title="Push this order directly into Shipmozo delivery platform"
+                        >
+                          {pushingMozoId === ord.id ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Send className="w-3.5 h-3.5" />
+                          )}
+                          <span>{pushingMozoId === ord.id ? 'Pushing...' : '📦 Push to Shipmozo'}</span>
+                        </button>
+                      ) : (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="px-2.5 py-1 rounded-xl bg-sky-950/80 border border-sky-500/40 text-sky-300 font-bold text-[11px] flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-sky-400" />
+                            <span>Pushed to Mozo ({ord.shipmozoOrderId || ord.id})</span>
+                          </span>
+                          <a
+                            href="https://panel.shipmozo.com/orders/new"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 text-[11px] font-bold flex items-center gap-1 border border-slate-700 transition"
+                          >
+                            <ExternalLink className="w-3 h-3" /> View in Mozo
+                          </a>
+                          {!ord.trackingId && (
+                            <button
+                              onClick={() => handleAutoAssignMozo(ord)}
+                              disabled={autoAssigningMozoId === ord.id}
+                              className="px-2.5 py-1 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-700/50 text-emerald-300 text-[11px] font-bold flex items-center gap-1 transition"
+                              title="Auto-Assign Courier & Generate AWB in Shipmozo"
+                            >
+                              <Truck className="w-3 h-3" />
+                              <span>{autoAssigningMozoId === ord.id ? 'Assigning...' : 'Auto AWB'}</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2206,6 +2397,55 @@ export default function AdminPage() {
                     className="w-full px-3.5 py-2.5 rounded-2xl bg-[#0c1620] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* SECTION 6: SHIPMOZO LOGISTICS AUTOMATION */}
+            <div className="p-5 rounded-2xl bg-[#070d12] border border-sky-500/30 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sky-400 font-bold uppercase tracking-wider text-xs">
+                  <Truck className="w-4 h-4 text-sky-400" />
+                  <span>Shipmozo Logistics Integration (Official AI Shipping Partner)</span>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-black flex items-center gap-1.5 w-fit">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Connected: FARHAN ATTARI (7233862626)
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Seamlessly integrated with Shipmozo Delivery Platform. Orders placed on the website can be pushed directly to your Shipmozo account in 1 click to book couriers (Delhivery, BlueDart, DTDC, Xpressbees) and print shipping labels.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="bg-[#0b141d] p-4 rounded-xl border border-slate-800 space-y-1.5">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Connected Merchant</span>
+                  <div className="font-bold text-white text-sm">FARHAN ATTARI</div>
+                  <div className="text-slate-300">Registered Phone: <span className="font-mono text-amber-400 font-bold">7233862626</span></div>
+                  <div className="text-slate-400 text-[11px]">API Key: <span className="font-mono text-slate-300">0v4yAXfMhw58l6FPs7SK</span></div>
+                </div>
+
+                <div className="bg-[#0b141d] p-4 rounded-xl border border-slate-800 space-y-1.5">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Active Pickup Warehouse</span>
+                  <div className="font-bold text-white text-sm">ARABIANS SHOPPING ZONE</div>
+                  <div className="text-slate-300 text-[11px]">88/485 OPPOSITE SHIFA EYE HOSPITAL, DALEL PURWA CHAURAHA</div>
+                  <div className="text-emerald-400 font-bold text-[11px]">Kanpur, Uttar Pradesh - 208001 (Warehouse ID: 66952)</div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800 text-xs">
+                <a
+                  href="https://panel.shipmozo.com/orders/new"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-700 hover:brightness-110 text-white font-bold flex items-center gap-1.5 transition shadow-sm"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Shipmozo Merchant Panel (panel.shipmozo.com)</span>
+                </a>
+                <span className="text-slate-400 text-[11px]">
+                  Recharge wallet & track courier dispatches in Shipmozo
+                </span>
               </div>
             </div>
 
@@ -3127,6 +3367,129 @@ export default function AdminPage() {
         {/* Footer Blessing */}
         <div className="text-center pt-4 border-t border-slate-100 text-[11px] text-slate-400">
           JazakAllah Khair for your trust & purchase! • Arabians Shopping Zone
+        </div>
+
+      </div>
+    </div>
+  )}
+
+  {/* ========================================================================= */}
+  {/* MODAL 5: SHIPMOZO DIRECT DELIVERY DISPATCH MODAL                          */}
+  {/* ========================================================================= */}
+  {mozoModalOrder && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="bg-[#0b1520] rounded-3xl p-5 sm:p-7 max-w-xl w-full my-auto border border-sky-500/40 shadow-2xl text-slate-100 space-y-5">
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white flex items-center justify-center font-black shadow-md shadow-sky-500/20">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-serif font-black text-base sm:text-lg text-white">
+                Push Order to Shipmozo
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Order <span className="font-mono text-amber-400 font-bold">{mozoModalOrder.id}</span> will be dispatched to your Shipmozo account.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMozoModalOrder(null)}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Customer & Delivery Summary Card */}
+        <div className="p-4 rounded-2xl bg-[#060c12] border border-slate-800 space-y-2 text-xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-white text-sm">
+              {mozoModalOrder.customerName || mozoModalOrder.customer?.name || 'Customer'}
+            </span>
+            <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+              (mozoModalOrder.paymentMode || mozoModalOrder.paymentMethod || 'COD').toUpperCase() === 'COD'
+                ? 'bg-amber-950 text-amber-300 border border-amber-700/60'
+                : 'bg-emerald-950 text-emerald-300 border border-emerald-700/60'
+            }`}>
+              {mozoModalOrder.paymentMode || mozoModalOrder.paymentMethod || 'COD'} • ₹{mozoModalOrder.total}
+            </span>
+          </div>
+
+          <div className="text-slate-300 flex items-center gap-1 font-mono">
+            <Phone className="w-3 h-3 text-amber-400" />
+            <span>{mozoModalOrder.phone || mozoModalOrder.customer?.phone || 'No phone'}</span>
+          </div>
+
+          <div className="text-slate-400 pt-1 leading-relaxed border-t border-slate-800/80">
+            {mozoModalOrder.address || (mozoModalOrder.customer ? [mozoModalOrder.customer.address, mozoModalOrder.customer.city, mozoModalOrder.customer.state, mozoModalOrder.customer.pincode].filter(Boolean).join(', ') : 'No address provided')}
+          </div>
+
+          <div className="text-[11px] text-slate-400 pt-1">
+            <strong className="text-slate-200">Items:</strong> {mozoModalOrder.items ? mozoModalOrder.items.map(i => `${i.name} (×${i.quantity})`).join(', ') : '1 item'}
+          </div>
+        </div>
+
+        {/* Parcel Parameters */}
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label className="block font-bold text-slate-200 mb-1 text-[11px]">
+              Parcel Weight (Grams)
+            </label>
+            <input
+              type="number"
+              value={mozoWeight}
+              onChange={(e) => setMozoWeight(Number(e.target.value))}
+              placeholder="500"
+              className="w-full px-3 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-xs focus:outline-none focus:ring-1 focus:ring-sky-500"
+            />
+            <span className="text-[10px] text-slate-500 mt-0.5 block">Default: 500g (0.5 kg)</span>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-200 mb-1 text-[11px]">
+              Pickup Warehouse
+            </label>
+            <select
+              value={mozoWarehouse}
+              onChange={(e) => setMozoWarehouse(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-sky-500"
+            >
+              <option value="66952">ARABIANS SHOPPING ZONE (Kanpur 208001)</option>
+              <option value="100325">ARABIANS TALBINA (Kanpur 208021)</option>
+            </select>
+            <span className="text-[10px] text-emerald-400 mt-0.5 block">Active pickup location</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
+          <button
+            type="button"
+            disabled={pushingMozoId === mozoModalOrder.id}
+            onClick={() => handlePushToShipmozo(mozoModalOrder, mozoWeight, mozoWarehouse)}
+            className="w-full sm:flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 via-sky-600 to-blue-700 hover:brightness-110 text-white font-black text-xs tracking-wide shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2 active:scale-98 transition"
+          >
+            {pushingMozoId === mozoModalOrder.id ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-white" />
+            ) : (
+              <Send className="w-4 h-4 text-white" />
+            )}
+            <span>
+              {pushingMozoId === mozoModalOrder.id ? 'Pushing to Shipmozo API...' : '🚀 Confirm & Push to Shipmozo'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMozoModalOrder(null)}
+            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+          >
+            Cancel
+          </button>
         </div>
 
       </div>

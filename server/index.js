@@ -49,7 +49,21 @@ function loadLocalStore() {
   }
   try {
     const raw = fs.readFileSync(storePath, 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.settings) parsed.settings = {};
+    if (!parsed.settings.shipmozo) {
+      parsed.settings.shipmozo = {
+        enabled: true,
+        apiUrl: 'https://shipping-api.com/app/api/v1',
+        publicKey: '0v4yAXfMhw58l6FPs7SK',
+        privateKey: 'KvtEVuqHsAULo6kJNMDy',
+        warehouseId: '66952',
+        warehouseName: 'ARABIANS SHOPPING ZONE (Dalel Purwa Chauraha, Kanpur 208001)',
+        merchantName: 'FARHAN ATTARI',
+        merchantPhone: '7233862626'
+      };
+    }
+    return parsed;
   } catch (e) {
     console.error("Error reading store.json, resetting to initialData", e);
     fs.writeFileSync(storePath, JSON.stringify(initialData, null, 2));
@@ -673,6 +687,248 @@ app.post('/api/admin/reset-orders', (req, res) => {
   store.orders = [];
   saveStore(store);
   res.json({ success: true, message: 'All orders reset to zero state' });
+});
+
+// =========================================================================
+// SHIPMOZO LOGISTICS INTEGRATION (Official API & Real-time Order Dispatch)
+// =========================================================================
+const SHIPMOZO_CONFIG = {
+  enabled: true,
+  apiUrl: 'https://shipping-api.com/app/api/v1',
+  publicKey: process.env.SHIPMOZO_PUBLIC_KEY || '0v4yAXfMhw58l6FPs7SK',
+  privateKey: process.env.SHIPMOZO_PRIVATE_KEY || 'KvtEVuqHsAULo6kJNMDy',
+  warehouseId: '66952',
+  warehouseName: 'ARABIANS SHOPPING ZONE (Dalel Purwa Chauraha, Kanpur 208001)',
+  merchantName: 'FARHAN ATTARI',
+  merchantPhone: '7233862626',
+  defaultWeight: 500,
+  defaultLength: 15,
+  defaultWidth: 10,
+  defaultHeight: 5
+};
+
+function getShipmozoSettings() {
+  const store = getStore();
+  return {
+    ...SHIPMOZO_CONFIG,
+    ...(store.settings?.shipmozo || {})
+  };
+}
+
+// 1. Get Shipmozo connection status and registered warehouses
+app.get('/api/shipmozo/status', async (req, res) => {
+  const cfg = getShipmozoSettings();
+  try {
+    const whRes = await fetch(`${cfg.apiUrl}/get-warehouses`, {
+      method: 'GET',
+      headers: {
+        'public-key': cfg.publicKey,
+        'private-key': cfg.privateKey,
+        'Accept': 'application/json'
+      }
+    });
+    const whData = await whRes.json();
+    const warehouses = whData.result === '1' ? (whData.data || []) : [];
+    res.json({
+      connected: whData.result === '1',
+      merchantName: cfg.merchantName,
+      merchantPhone: cfg.merchantPhone,
+      activeWarehouseId: cfg.warehouseId,
+      warehouseName: cfg.warehouseName,
+      publicKey: cfg.publicKey,
+      warehouses
+    });
+  } catch (err) {
+    res.json({
+      connected: false,
+      error: err.message,
+      publicKey: cfg.publicKey,
+      warehouses: []
+    });
+  }
+});
+
+// 2. Push an Order directly into Shipmozo Delivery Platform
+app.post('/api/shipmozo/push-order/:orderId', async (req, res) => {
+  const store = getStore();
+  const order = store.orders.find(o => o.id === req.params.orderId);
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+  const cfg = getShipmozoSettings();
+  if (!cfg.publicKey || !cfg.privateKey) {
+    return res.status(400).json({ success: false, message: 'Shipmozo API keys are missing in settings' });
+  }
+
+  try {
+    const customerObj = order.customer || {};
+    const fullAddress = order.address || customerObj.address || '';
+    
+    // Extract pincode with regex or from customer object
+    const pinMatch = fullAddress.match(/\b([1-9][0-9]{5})\b/);
+    const pinCode = customerObj.pincode || (pinMatch ? pinMatch[1] : '208001');
+
+    // Clean address parts
+    let addressLine1 = customerObj.address || fullAddress;
+    let addressLine2 = customerObj.address2 || '';
+    let city = customerObj.city || '';
+    let state = customerObj.state || '';
+
+    if (!city || !state) {
+      const parts = fullAddress.split(',').map(p => p.trim()).filter(Boolean);
+      if (parts.length >= 3) {
+        state = state || parts[parts.length - 2] || 'Uttar Pradesh';
+        city = city || parts[parts.length - 3] || 'Kanpur';
+        addressLine1 = parts.slice(0, Math.max(1, parts.length - 3)).join(', ');
+      }
+    }
+    if (!city) city = 'Kanpur';
+    if (!state) state = 'Uttar Pradesh';
+    if (addressLine1.length < 5) addressLine1 = fullAddress || 'Near Main Market';
+
+    // Format products for Shipmozo
+    const productDetail = (order.items && order.items.length > 0 ? order.items : [
+      { name: 'Islamic Sunnah Lifestyle Item', price: order.total || 999, quantity: 1 }
+    ]).map(it => ({
+      name: (it.name || 'Sunnah Lifestyle Product').slice(0, 50),
+      sku_number: (it.id || it.sku || 'ASZ-ITEM').slice(0, 30),
+      quantity: Number(it.quantity) || 1,
+      discount: 0,
+      hsn: '',
+      unit_price: Number(it.price) || Number(order.total) || 100,
+      product_category: 'Clothing / Health / Lifestyle'
+    }));
+
+    const isCod = (order.paymentMode || order.paymentMethod || 'COD').toUpperCase() === 'COD';
+    const totalWeight = req.body.weight ? Number(req.body.weight) : cfg.defaultWeight;
+    const warehouseId = req.body.warehouseId || cfg.warehouseId || '66952';
+
+    const payload = {
+      order_id: order.id,
+      order_date: (order.date || order.createdAt || new Date().toISOString()).slice(0, 10),
+      consignee_name: (order.customerName || customerObj.name || 'Customer').slice(0, 50),
+      consignee_phone: (order.phone || customerObj.phone || '7233862626').replace(/[^0-9]/g, '').slice(-10),
+      consignee_alternate_phone: '',
+      consignee_email: order.email || customerObj.email || 'arabianshoppingzone26@gmail.com',
+      consignee_address_line_one: addressLine1.slice(0, 95),
+      consignee_address_line_two: addressLine2.slice(0, 95),
+      consignee_pin_code: pinCode,
+      consignee_city: city,
+      consignee_state: state,
+      product_detail: productDetail,
+      payment_type: isCod ? 'COD' : 'PREPAID',
+      cod_amount: isCod ? String(order.total || 0) : '0',
+      shipping_charges: '0',
+      weight: String(totalWeight),
+      length: String(req.body.length || cfg.defaultLength),
+      width: String(req.body.width || cfg.defaultWidth),
+      height: String(req.body.height || cfg.defaultHeight),
+      warehouse_id: String(warehouseId)
+    };
+
+    const pushRes = await fetch(`${cfg.apiUrl}/push-order`, {
+      method: 'POST',
+      headers: {
+        'public-key': cfg.publicKey,
+        'private-key': cfg.privateKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const pushData = await pushRes.json();
+    if (pushData.result === '1' || pushData.result === 1) {
+      const shipmozoOrderId = pushData.data?.order_id || order.id;
+      const refId = pushData.data?.refrence_id || order.id;
+
+      order.shipmozoPushed = true;
+      order.shipmozoOrderId = shipmozoOrderId;
+      order.shipmozoReferenceId = refId;
+      order.shipmozoPushedAt = new Date().toISOString();
+      order.courier = 'Shipmozo Express Logistics';
+      order.status = 'Dispatched';
+
+      if (!order.timeline || !Array.isArray(order.timeline)) {
+        order.timeline = [];
+      }
+      const nowFormatted = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      order.timeline.push({
+        status: `Dispatched to Shipmozo (Ref: ${shipmozoOrderId})`,
+        time: nowFormatted,
+        done: true
+      });
+
+      saveStore(store);
+      return res.json({
+        success: true,
+        message: `Order ${order.id} pushed to Shipmozo successfully!`,
+        shipmozoOrderId,
+        order
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: pushData.message || 'Shipmozo rejected order',
+        details: pushData
+      });
+    }
+  } catch (err) {
+    console.error('Shipmozo push error:', err);
+    return res.status(500).json({ success: false, message: 'Server error pushing to Shipmozo: ' + err.message });
+  }
+});
+
+// 3. Auto-Assign Courier in Shipmozo
+app.post('/api/shipmozo/auto-assign/:orderId', async (req, res) => {
+  const store = getStore();
+  const order = store.orders.find(o => o.id === req.params.orderId);
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+  const cfg = getShipmozoSettings();
+  const shipmozoId = order.shipmozoOrderId || order.id;
+
+  try {
+    const assignRes = await fetch(`${cfg.apiUrl}/auto-assign-order`, {
+      method: 'POST',
+      headers: {
+        'public-key': cfg.publicKey,
+        'private-key': cfg.privateKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ order_id: shipmozoId })
+    });
+
+    const assignData = await assignRes.json();
+    if (assignData.result === '1' || assignData.result === 1) {
+      const awb = assignData.data?.awb_number;
+      const courier = assignData.data?.courier_company || 'Shipmozo Partner';
+
+      if (awb) {
+        order.trackingId = awb;
+        order.trackingNumber = awb;
+      }
+      if (courier) order.courier = courier;
+      order.status = 'In Transit';
+
+      saveStore(store);
+      return res.json({
+        success: true,
+        message: `Courier assigned: ${courier} | AWB: ${awb || 'Generated'}`,
+        awb,
+        courier,
+        order
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: assignData.message || 'Failed to auto-assign courier in Shipmozo',
+        details: assignData
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // --- 6. Distributors (B2B Leads) ---
