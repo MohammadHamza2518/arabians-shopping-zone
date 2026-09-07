@@ -74,7 +74,7 @@ export default function ContactPage() {
 
         {/* 2. Direct Calling Helpline */}
         <a
-          href="tel:+919236028318"
+          href="tel:+917233862626"
           className="p-5 rounded-3xl bg-emerald-900 text-white border border-emerald-700 hover:bg-emerald-800 transition space-y-3 block shadow-sm"
         >
           <div className="w-11 h-11 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-md">
@@ -82,7 +82,7 @@ export default function ContactPage() {
           </div>
           <div>
             <h3 className="font-serif font-bold text-base text-white">Call Helpline</h3>
-            <p className="text-xs text-amber-300 font-mono font-bold mt-0.5">+91 92360 28318</p>
+            <p className="text-xs text-amber-300 font-mono font-bold mt-0.5">+91 72338 62626</p>
             <span className="inline-block mt-2 text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
               Call Direct • 10AM-9PM
             </span>

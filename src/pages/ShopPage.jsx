@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
 import { useStore } from '../context/StoreContext';
+import { searchProducts } from '../utils/searchEngine';
 import { 
   Sparkles, 
   SlidersHorizontal, 
@@ -65,7 +66,8 @@ const CATEGORY_ICONS = {
   health: SunnahFoodIcon,
   fragrance: ArabianOudIcon,
   decor: IslamicDecorIcon,
-  wedding: NikahWeddingIcon
+  wedding: NikahWeddingIcon,
+  skincare: Sparkles
 };
 
 const SUBCATEGORY_ICONS = {
@@ -110,7 +112,14 @@ const SUBCATEGORY_ICONS = {
   'nikah-dupatta': NikahWeddingIcon,
   'nikah-sehra': Flower2,
   'haq-mehar': Gift,
-  'all-wedding': NikahWeddingIcon
+  'all-wedding': NikahWeddingIcon,
+
+  // Skincare
+  'face-care': Sparkles,
+  'organic-soaps': Droplets,
+  'beard-hair-oil': Droplets,
+  'rose-water': Droplets,
+  'body-lotions': Sparkles
 };
 
 const SORT_OPTIONS = [
@@ -199,7 +208,12 @@ export default function ShopPage() {
   const minPriceParam = searchParams.get('minPrice');
 
   const filteredProducts = useMemo(() => {
-    return products
+    let pool = products;
+    if (searchQuery && searchQuery.trim()) {
+      pool = searchProducts(products, searchQuery);
+    }
+
+    return pool
       .filter((p) => {
         const pCat = (p.category || '').toLowerCase().trim();
         const selCat = (selectedCategory || 'all').toLowerCase().trim();
@@ -209,30 +223,11 @@ export default function ShopPage() {
         const selSub = (selectedSubcategory || 'all').toLowerCase().trim();
         const matchesSub = selSub === 'all' || pSub === selSub;
 
-        const query = searchQuery.trim().toLowerCase();
-        const tagsStr = Array.isArray(p.tags) 
-          ? p.tags.join(' ').toLowerCase() 
-          : (typeof p.tags === 'string' ? p.tags.toLowerCase() : '');
-        const benefitsStr = Array.isArray(p.benefits)
-          ? p.benefits.join(' ').toLowerCase()
-          : (typeof p.benefits === 'string' ? p.benefits.toLowerCase() : '');
-
-        const matchesQuery = 
-          !query ||
-          (p.name && p.name.toLowerCase().includes(query)) ||
-          (p.description && p.description.toLowerCase().includes(query)) ||
-          (p.category && p.category.toLowerCase().includes(query)) ||
-          (pSub && pSub.includes(query)) ||
-          (p.badge && p.badge.toLowerCase().includes(query)) ||
-          tagsStr.includes(query) ||
-          benefitsStr.includes(query) ||
-          (p.price !== undefined && String(p.price).includes(query));
-        
         const priceNum = Number(p.price) || 0;
         const matchesMaxPrice = !maxPriceParam || (priceNum <= Number(maxPriceParam));
         const matchesMinPrice = !minPriceParam || (priceNum >= Number(minPriceParam));
 
-        return matchesCat && matchesSub && matchesQuery && matchesMaxPrice && matchesMinPrice;
+        return matchesCat && matchesSub && matchesMaxPrice && matchesMinPrice;
       })
       .sort((a, b) => {
         const priceA = Number(a.price) || 0;
@@ -252,7 +247,7 @@ export default function ShopPage() {
           }
           return (Number(b.reviewsCount) || 0) - (Number(a.reviewsCount) || 0);
         }
-        return 0; // Default curated order
+        return 0; // Maintain smart search relevance ranking
       });
   }, [products, selectedCategory, selectedSubcategory, searchQuery, sortBy, maxPriceParam, minPriceParam]);
 
@@ -276,6 +271,7 @@ export default function ShopPage() {
     if (selectedCategory === 'decor') return "Transform your home with 3D gold mirror acrylic Ayatul Kursi Tugra wall art, resin geode silent sweep clocks, and handcrafted Quran rehal stands.";
     if (selectedCategory === 'fragrance') return "Discover pure aged Dehnul Oud, royal concentrated attars, Arabian bakhoor muattar, and electric brass mabkhara burners.";
     if (selectedCategory === 'health') return "Authentic Sunnah Talbina packed with roasted dry fruits and 100% pure raw Sidr honey for vital energy and holistic wellbeing.";
+    if (selectedCategory === 'skincare') return "Explore organic herbal soaps, pure Kalonji oil, nourishing face serums, and pure Arq-e-Gulab for natural Sunnah skin care.";
     return "Browse Arabians Shopping Zone complete catalog of royal Islamic lifestyle products, 100% Halal certified with express Pan-India Cash on Delivery.";
   }, [selectedCategory]);
 

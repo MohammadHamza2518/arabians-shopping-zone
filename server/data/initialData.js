@@ -2,8 +2,8 @@ export const initialData = {
   "settings": {
     "storeName": "Arabians Shopping Zone",
     "tagline": "Authentic Sunnah Foods, Royal Arabic Attire & Luxury Fragrances",
-    "phone": "+91 92360 28318",
-    "callNumber": "+91 92360 28318",
+    "phone": "+91 72338 62626",
+    "callNumber": "+91 72338 62626",
     "whatsapp": "917233862626",
     "whatsappDisplay": "+91 72338 62626",
     "email": "arabiansshoppingzone@gmail.com",
@@ -73,7 +73,7 @@ export const initialData = {
       "subtitle": "Arabians Talbina, Royal Honey Dryfruit Mix & 100% Pure Raw Sidr Honey",
       "icon": "HeartPulse",
       "badge": "Sunnah Wellness",
-      "image": "/assets/products/honey_dryfruits_premium.jpg",
+      "image": "/assets/products/talbeena_boxes_group.jpg",
       "subcategories": [
         {
           "id": "talbina",
@@ -96,7 +96,7 @@ export const initialData = {
       "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
       "icon": "Sparkles",
       "badge": "Pure Alcohol-Free",
-      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
+      "image": "/assets/categories/fragrance_mukh_malaki.jpg",
       "subcategories": [
         {
           "id": "perfume",
@@ -147,7 +147,7 @@ export const initialData = {
       "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
       "icon": "Clock",
       "badge": "Handcrafted Luxury",
-      "image": "/assets/products/resin_wall_clock_emerald.jpg",
+      "image": "/assets/categories/decor_bismillah_frame.jpg",
       "subcategories": [
         {
           "id": "acrylic-tugra",
@@ -178,7 +178,7 @@ export const initialData = {
       "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
       "icon": "BookOpen",
       "badge": "Sunnah Nikah",
-      "image": "/assets/products/nikah_nama_booklet_royal.jpg",
+      "image": "/assets/categories/wedding_nikah_frame.jpg",
       "subcategories": [
         {
           "id": "nikah-booklet",
@@ -218,6 +218,37 @@ export const initialData = {
         }
       ],
       "shortName": "Muslim Wedding"
+    },
+    {
+      "id": "skincare",
+      "name": "Natural & Sunnah Skin Care",
+      "subtitle": "Organic Soaps, Pure Kalonji Oil, Face Serums, Rose Water & Herbal Care",
+      "icon": "Sparkles",
+      "badge": "100% Organic",
+      "image": "/assets/products/pure_kalonji_blackseed_oil.jpg",
+      "subcategories": [
+        {
+          "id": "face-care",
+          "name": "Face Care & Serums"
+        },
+        {
+          "id": "organic-soaps",
+          "name": "Organic Herbal Soaps"
+        },
+        {
+          "id": "beard-hair-oil",
+          "name": "Sunnah Hair & Beard Oils"
+        },
+        {
+          "id": "rose-water",
+          "name": "Pure Arq-e-Gulab & Toners"
+        },
+        {
+          "id": "body-lotions",
+          "name": "Natural Body Care"
+        }
+      ],
+      "shortName": "Skin Care"
     }
   ],
   "products": [
@@ -7908,580 +7939,8 @@ export const initialData = {
       "productPrice": "₹349"
     }
   ],
-  "orders": [
-    {
-      "id": "ASZ-7731",
-      "date": "2026-09-03 00:55",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63523727",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:55",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:55",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-2861",
-      "date": "2026-09-03 00:54",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63481548",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:54",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:54",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-4934",
-      "date": "2026-09-03 00:53",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63433496",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-6667",
-      "date": "2026-09-03 00:53",
-      "customer": {
-        "customerName": "Zaid Qureshi",
-        "phone": "9876543210",
-        "email": "",
-        "address": "Flat 301, Madina Residency, Bandra West, Mumbai, Maharashtra - 400050",
-        "items": [
-          {
-            "quantity": 1,
-            "selectedSize": null
-          }
-        ],
-        "subtotal": 419,
-        "discount": 0,
-        "couponCode": null,
-        "shippingCharges": 70,
-        "total": 489,
-        "paymentMode": "cod",
-        "paymentStatus": "Pending Verification"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits)",
-          "price": 349,
-          "quantity": 1,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        }
-      ],
-      "subtotal": 349,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 70,
-      "total": 419,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK63410904",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:53",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-3395",
-      "date": "2026-09-03 00:40",
-      "customer": {
-        "name": "Arshad Khan",
-        "phone": "9988776655",
-        "email": "arshad@test.com",
-        "city": "Lucknow",
-        "state": "Uttar Pradesh",
-        "address": "Hazratganj, Lucknow"
-      },
-      "items": [
-        {
-          "id": "thobe-saudi-classic-white",
-          "name": "Luxury Saudi Cut Pure White Arabian Thobe",
-          "price": 1699,
-          "quantity": 1,
-          "selectedSize": "54 (M)"
-        }
-      ],
-      "subtotal": 1699,
-      "discount": 0,
-      "couponCode": "",
-      "deliveryFee": 0,
-      "total": 1699,
-      "paymentMethod": "COD",
-      "status": "Confirmed",
-      "courier": "Express Courier Network",
-      "trackingNumber": "TRK62651971",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-03 00:40",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-03 00:40",
-          "done": true
-        },
-        {
-          "status": "Packing at Central Warehouse",
-          "time": "In Progress",
-          "done": false
-        },
-        {
-          "status": "Out for Delivery",
-          "time": "Pending",
-          "done": false
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "ASZ-1089",
-      "createdAt": "2026-09-02 18:45",
-      "date": "2026-09-02 18:45",
-      "customerName": "Syed Tariq Hashmi",
-      "phone": "9871234560",
-      "email": "tariq.hashmi@gmail.com",
-      "address": "Flat 402, Al-Madina Heights, Mehdipatnam, Hyderabad, Telangana - 500028",
-      "customer": {
-        "name": "Syed Tariq Hashmi",
-        "phone": "9871234560",
-        "email": "tariq.hashmi@gmail.com",
-        "address": "Flat 402, Al-Madina Heights, Mehdipatnam",
-        "city": "Hyderabad",
-        "state": "Telangana",
-        "pincode": "500028"
-      },
-      "items": [
-        {
-          "id": "talbina-vanilla",
-          "name": "Arabian's Talbeena Vanilla Dry Fruits (250g)",
-          "price": 349,
-          "quantity": 2,
-          "image": "/assets/talbina/talbina_vanilla_dryfruits.png"
-        },
-        {
-          "id": "white-oudh-attar",
-          "name": "Imperial White Oudh Attar (12ml)",
-          "price": 649,
-          "quantity": 1,
-          "image": "/assets/studio/dehnul_oud_pure.jpg"
-        }
-      ],
-      "subtotal": 1347,
-      "discount": 135,
-      "couponCode": "ARABIAN10",
-      "deliveryFee": 0,
-      "total": 1212,
-      "paymentMode": "cod",
-      "status": "Dispatched",
-      "courier": "BlueDart Express",
-      "trackingNumber": "BD982341982IN"
-    },
-    {
-      "id": "ASZ-1088",
-      "createdAt": "2026-09-02 14:20",
-      "date": "2026-09-02 14:20",
-      "customerName": "Irfan Mansoori",
-      "phone": "9123456789",
-      "email": "irfan.mansoori@yahoo.com",
-      "address": "House 12, Gulshan Colony, Zakir Nagar, Okhla, New Delhi, Delhi - 110025",
-      "customer": {
-        "name": "Irfan Mansoori",
-        "phone": "9123456789",
-        "email": "irfan.mansoori@yahoo.com",
-        "address": "House 12, Gulshan Colony, Zakir Nagar, Okhla",
-        "city": "New Delhi",
-        "state": "Delhi",
-        "pincode": "110025"
-      },
-      "items": [
-        {
-          "id": "thobe-al-noor-signature",
-          "name": "Al-Noor Signature Embroidered Thobe",
-          "selectedSize": "56 (L)",
-          "price": 1899,
-          "quantity": 1,
-          "image": "/assets/thobes/thobes__al_noor_design_p1_1.png"
-        }
-      ],
-      "subtotal": 1899,
-      "discount": 190,
-      "couponCode": "ARABIAN10",
-      "deliveryFee": 0,
-      "total": 1709,
-      "paymentMode": "upi",
-      "status": "In Transit",
-      "courier": "Delhivery Air",
-      "trackingNumber": "DLH99238419"
-    },
-    {
-      "id": "ASZ-1087",
-      "createdAt": "2026-09-01 11:15",
-      "date": "2026-09-01 11:15",
-      "customerName": "Farhan Ahmed",
-      "phone": "9845123456",
-      "email": "farhan.ahmed@gmail.com",
-      "address": "7th Cross, Shivaji Nagar, Bangalore, Karnataka - 560051",
-      "customer": {
-        "name": "Farhan Ahmed",
-        "phone": "9845123456",
-        "email": "farhan.ahmed@gmail.com",
-        "address": "7th Cross, Shivaji Nagar",
-        "city": "Bangalore",
-        "state": "Karnataka",
-        "pincode": "560051"
-      },
-      "items": [
-        {
-          "id": "nikah-nama-booklet-luxury",
-          "name": "Luxury Velvet Gold-Foil Nikah Nama Booklet",
-          "price": 1499,
-          "quantity": 1,
-          "image": "/assets/studio/nikah_nama_booklet.jpg"
-        },
-        {
-          "id": "nikah-luxury-pen-box-set",
-          "name": "Royal Crystal & Ostrich Feather Nikah Signing Pen Set",
-          "price": 799,
-          "quantity": 1,
-          "image": "/assets/studio/nikah_nama_booklet.jpg"
-        }
-      ],
-      "subtotal": 2298,
-      "discount": 200,
-      "couponCode": "SUNNAH100",
-      "deliveryFee": 0,
-      "total": 2098,
-      "paymentMode": "upi",
-      "status": "In Transit",
-      "courier": "BlueDart Express Air",
-      "trackingNumber": "BD778899IN",
-      "trackingId": "BD778899IN",
-      "timeline": [
-        {
-          "status": "Order Placed",
-          "time": "2026-09-01 11:15",
-          "done": true
-        },
-        {
-          "status": "Verified & Confirmed",
-          "time": "2026-09-01 11:15",
-          "done": true
-        },
-        {
-          "status": "Dispatched via Express Courier",
-          "time": "Pending",
-          "done": true
-        },
-        {
-          "status": "In Transit to City Hub",
-          "time": "04 Sept, 00:45",
-          "done": true
-        },
-        {
-          "status": "Delivered",
-          "time": "Pending",
-          "done": false
-        }
-      ]
-    }
-  ],
-  "distributors": [
-    {
-      "id": "DIST-525",
-      "name": "Al-Hasan Islamic Mart",
-      "contactPerson": "Mohammad Tariq",
-      "phone": "9876543210",
-      "email": "",
-      "city": "Hyderabad",
-      "state": "Telangana",
-      "currentBusiness": "Retail Store / Islamic Mart",
-      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
-      "interestedProducts": [
-        "Arabians Talbina (All Flavors)",
-        "Designer Saudi & Emirati Thobes",
-        "Islamic Home Decor (Ayat-ul-Kursi Art)"
-      ],
-      "message": "",
-      "status": "New Lead",
-      "date": "2026-09-04"
-    },
-    {
-      "id": "DIST-348",
-      "name": "Al-Hasan Islamic Mart",
-      "contactPerson": "Mohammad Tariq",
-      "phone": "9876543210",
-      "email": "",
-      "city": "Hyderabad",
-      "state": "Telangana",
-      "currentBusiness": "Retail Store / Islamic Mart",
-      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
-      "interestedProducts": [
-        "Arabians Talbina (All Flavors)",
-        "Designer Saudi & Emirati Thobes",
-        "Islamic Home Decor (Ayat-ul-Kursi Art)"
-      ],
-      "message": "",
-      "status": "New Lead",
-      "date": "2026-09-04"
-    },
-    {
-      "id": "DIST-784",
-      "name": "Al-Hasan Islamic Mart",
-      "contactPerson": "Mohammad Tariq",
-      "phone": "9876543210",
-      "email": "",
-      "city": "Hyderabad",
-      "state": "Telangana",
-      "currentBusiness": "Retail Store / Islamic Mart",
-      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
-      "interestedProducts": [
-        "Arabians Talbina (All Flavors)",
-        "Designer Saudi & Emirati Thobes",
-        "Islamic Home Decor (Ayat-ul-Kursi Art)"
-      ],
-      "message": "",
-      "status": "New Lead",
-      "date": "2026-09-04"
-    },
-    {
-      "id": "DIST-101",
-      "businessName": "Al-Huda Islamic Emporium",
-      "ownerName": "Maulana Abdul Wahid",
-      "phone": "9823456780",
-      "email": "alhuda.emporium@gmail.com",
-      "city": "Lucknow",
-      "state": "Uttar Pradesh",
-      "investment": "₹50,000 - ₹1,00,000 (City Stockist)",
-      "categories": [
-        "Arabians Talbina (All Flavors)",
-        "Designer Thobes & Jubbas (Men)"
-      ],
-      "notes": "We have 2 prime stores in Aminabad and Chowk. Monthly demand for Sunnah breakfast is huge.",
-      "status": "Hot Lead"
-    },
-    {
-      "id": "DIST-102",
-      "businessName": "Madina Superstore & Attar House",
-      "ownerName": "Zubair Merchant",
-      "phone": "9812345678",
-      "email": "madina.attar@gmail.com",
-      "city": "Calicut (Kozhikode)",
-      "state": "Kerala",
-      "investment": "₹1,00,000+ (Master District Distributor)",
-      "categories": [
-        "Arabians Talbina (All Flavors)",
-        "Attar & Dehnul Oud (Fragrance)",
-        "Bakhoor & Electric Burners"
-      ],
-      "notes": "Looking for exclusive Malabar district wholesale rights. Immediate warehouse capacity available.",
-      "status": "In Discussion"
-    }
-  ],
+  "orders": [],
+  "distributors": [],
   "coupons": [
     {
       "code": "JUMMAH20",

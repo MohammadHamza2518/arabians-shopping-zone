@@ -37,7 +37,7 @@ export default function StoreLocatorPage() {
   const GOOGLE_MAPS_EMBED = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3576.888!2d75.7873!3d26.9124!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db49b9a85f6db%3A0x93ac85f07b2d4dae!2sArabians%20Shopping%20Zone!5e0!3m2!1sen!2sin!4v1699000000001!5m2!1sen!2sin';
 
   const handleCopyAddress = () => {
-    navigator.clipboard.writeText('Arabians Shopping Zone, Jaipur, Rajasthan, India').then(() => {
+    navigator.clipboard.writeText('Arabians Shopping Zone, Chauraha, 88/485, Dalel Purwa, Opposite Shifa Eye Hospital, Becon Ganj, Mulganj, Kanpur, Uttar Pradesh 208001').then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -46,22 +46,24 @@ export default function StoreLocatorPage() {
   return (
     <div className="min-h-screen bg-[#faf8f5] animate-fadeIn">
       <SEO 
-        title="Visit Our Flagship Store | Arabians Shopping Zone Jaipur & Hyderabad"
-        description="Experience the finest Sunnah lifestyle store in person. Try authentic Saudi Thobes, sample aged pure Dehnul Oud & Attars, and purchase freshly prepared Sprouted Talbina at our flagship boutique."
-        keywords="Arabians Shopping Zone store, islamic shop jaipur, sunnah lifestyle store hyderabad, buy thobe near me, attar shop near me, talbina store near me, islamic wedding store"
-        canonical="https://arabiansshoppingzone.com/store"
+        title="Visit Our Physical Store | Arabians Shopping Zone Kanpur"
+        description="Experience the finest Sunnah lifestyle store in person. Try authentic Saudi Thobes, sample aged pure Dehnul Oud & Attars, and purchase freshly prepared Sprouted Talbina at our flagship boutique in Kanpur (Opposite Shifa Eye Hospital)."
+        keywords="Arabians Shopping Zone store, islamic shop kanpur, sunnah lifestyle store kanpur, buy thobe near me, attar shop near me, talbina store kanpur, mulganj becon ganj"
+        canonical="https://arabiansshoppingzone.shop/store"
         schema={{
           "@context": "https://schema.org",
           "@type": "Store",
-          "name": "Arabians Shopping Zone Flagship Boutique",
+          "name": "Arabians Shopping Zone Boutique",
           "description": "Premium Islamic Lifestyle, Authentic Talbina, Saudi Thobes & Pure Dehnul Oud",
-          "url": "https://arabiansshoppingzone.com/store",
-          "telephone": "+918118837330",
+          "url": "https://arabiansshoppingzone.shop/store",
+          "telephone": "+917233862626",
           "priceRange": "₹₹",
           "address": {
             "@type": "PostalAddress",
-            "addressLocality": "Jaipur",
-            "addressRegion": "Rajasthan",
+            "streetAddress": "Chauraha, 88/485, Dalel Purwa, Opposite Shifa eye hospital, Becon Ganj, Mulganj",
+            "addressLocality": "Kanpur",
+            "addressRegion": "Uttar Pradesh",
+            "postalCode": "208001",
             "addressCountry": "IN"
           },
           "geo": {
@@ -237,8 +239,8 @@ export default function StoreLocatorPage() {
               </div>
               <div className="space-y-2.5">
                 <div className="text-base font-extrabold text-slate-900 font-serif">Arabians Shopping Zone</div>
-                <div className="text-xs text-slate-600 leading-relaxed">
-                  Market Area, Rajasthan, India
+                <div className="text-xs text-slate-700 leading-relaxed font-medium">
+                  Chauraha, 88/485, Dalel Purwa, Opposite Shifa Eye Hospital, Becon Ganj, Mulganj, Kanpur, Uttar Pradesh — 208001
                 </div>
                 <a
                   href={GOOGLE_MAPS_SHARE}
@@ -259,11 +261,11 @@ export default function StoreLocatorPage() {
                 Call Before You Visit
               </div>
               <a
-                href="tel:+919236028318"
+                href="tel:+917233862626"
                 className="flex items-center justify-between p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 group transition"
               >
                 <div>
-                  <div className="text-white font-bold text-sm">+91 92360 28318</div>
+                  <div className="text-white font-bold text-sm">+91 72338 62626</div>
                   <div className="text-emerald-300/60 text-[10px]">Main Helpline - 10AM to 9PM</div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />

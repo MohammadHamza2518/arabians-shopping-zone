@@ -9,7 +9,6 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
 import { initialData } from './data/initialData.js';
-import { getSignedUrlWithFailover, getPoolStatus, handleTextQuery } from './aiService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,6 +88,21 @@ async function initMongoDB() {
         coupons: cloudStore.coupons || memoryStore.coupons || [],
         settings: cloudStore.settings || memoryStore.settings
       };
+      if (memoryStore.categories) {
+        const catImages = {
+          wearing: '/assets/studio/mens_white_thobe.jpg',
+          health: '/assets/products/talbeena_boxes_group.jpg',
+          fragrance: '/assets/categories/fragrance_mukh_malaki.jpg',
+          decor: '/assets/categories/decor_bismillah_frame.jpg',
+          wedding: '/assets/categories/wedding_nikah_frame.jpg',
+          skincare: '/assets/products/pure_kalonji_blackseed_oil.jpg'
+        };
+        memoryStore.categories.forEach(c => {
+          if (catImages[c.id]) {
+            c.image = catImages[c.id];
+          }
+        });
+      }
       // Backup to local file
       fs.writeFileSync(storePath, JSON.stringify(memoryStore, null, 2));
     } else {
@@ -564,6 +578,17 @@ app.get('/api/orders/track/:query', (req, res) => {
   });
 });
 
+// Single Order direct lookup by ID
+app.get('/api/orders/:id', (req, res) => {
+  const store = getStore();
+  const orderId = (req.params.id || '').toUpperCase().trim();
+  const order = (store.orders || []).find(o => (o.id || '').toUpperCase() === orderId || (o.id || '').toUpperCase() === `#${orderId}` || (o.id || '').replace(/^ASZ-/, '') === orderId.replace(/^ASZ-/, ''));
+  if (!order) {
+    return res.status(404).json({ success: false, error: "Order not found" });
+  }
+  res.json(order);
+});
+
 // Update order status (Admin)
 app.put('/api/orders/:id/status', (req, res) => {
   const store = getStore();
@@ -782,6 +807,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   res.json({ 
     success: true, 
     url: fileUrl,
+    imageUrl: fileUrl,
     filename: req.file.filename
   });
 });
@@ -814,6 +840,7 @@ app.get('/api/db-status', (req, res) => {
     timestamp: new Date()
   });
 });
+
 
 // --- 10. SEO: Dynamic Sitemap & Robots.txt ---
 app.get('/robots.txt', (req, res) => {
@@ -883,32 +910,6 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(xml);
 });
 
-// --- 8. AI Voice & Chat Assistant (Brother Bilal with 6-Key Pool & Auto-Failover) ---
-app.get('/api/ai-agent/session', async (req, res) => {
-  try {
-    const session = await getSignedUrlWithFailover();
-    res.json(session);
-  } catch (err) {
-    console.error("AI Agent Session Error:", err.message);
-    res.status(503).json({ success: false, error: err.message });
-  }
-});
-
-app.post('/api/ai-agent/chat', (req, res) => {
-  try {
-    const store = getStore();
-    const { query } = req.body || {};
-    const reply = handleTextQuery(query, store.products || []);
-    res.json(reply);
-  } catch (err) {
-    console.error("AI Chat Error:", err.message);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.get('/api/ai-agent/status', (req, res) => {
-  res.json(getPoolStatus());
-});
 
 // Health check
 app.get('/api/health', (req, res) => {

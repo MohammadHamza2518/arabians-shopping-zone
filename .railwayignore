@@ -8,5 +8,5 @@ scratch
 *.log
 .DS_Store
 uploads/*
-
-
+*.pptx
+*.html.bak

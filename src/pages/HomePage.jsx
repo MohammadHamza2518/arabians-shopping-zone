@@ -51,7 +51,7 @@ const HOME_FAQS = [
   },
   {
     q: "Are Arabians Shopping Zone products available in offline physical stores?",
-    a: "Yes, Arabians Shopping Zone is a verified physical brand with our flagship boutique in Jaipur and partner distribution network in Hyderabad where you can try thobes, sample pure attars, and buy authentic products in person."
+    a: "Yes, Arabians Shopping Zone is a verified physical brand with our flagship boutique in Kanpur (Chauraha, 88/485, Dalel Purwa, Opposite Shifa Eye Hospital, Becon Ganj, Mulganj, Kanpur, UP 208001) where you can try thobes, sample pure attars, and buy authentic products in person."
   }
 ];
 
@@ -85,11 +85,11 @@ export default function HomePage() {
         keywords="Arabians Shopping Zone, Talbina buy online India, authentic talbina dry fruits, saudi thobe hyderabad, emirati jubba men, madani green amama shareef, aged dehnul oud, pure attar perfume, custom nikah nama certificate, haq mehar box, islamic wall decor 3d acrylic ayatul kursi, halal certified store india, sunnah lifestyle products"
       />
 
-      {/* 1. Circular Category Stories / Quick Avatars */}
-      <CategoryStories />
-
-      {/* 2. Luminous Luxury Editorial Hero */}
-      <Hero />
+      {/* 1. Category Stories + Luxury Hero Showcase (Unified Seamless Flow) */}
+      <div className="space-y-0">
+        <CategoryStories />
+        <Hero />
+      </div>
 
       {/* 3. Real-Time Flash Deal Countdown Timer (Ends at Midnight) */}
       <FlashSaleTimer />
@@ -97,7 +97,8 @@ export default function HomePage() {
       {/* 4. Instagram Reels & Video Shopping Showcase (2.8M & 1.1M Views Spotlight) */}
       <ReelsShowcase />
 
-      {/* 5. Curated Sacred Collections (Eliminates Mobile Scroll Fatigue & Talbina Redundancy) */}
+
+      {/* 6. Curated Sacred Collections (Eliminates Mobile Scroll Fatigue & Talbina Redundancy) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10 space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold uppercase tracking-wider">

@@ -231,7 +231,7 @@ export default function PolicyModal() {
                 <h4 className="font-bold text-slate-900 text-sm">How to Request a Return or Exchange:</h4>
                 <ol className="list-decimal pl-5 space-y-1 text-xs text-slate-600">
                   <li>Take a clear photo or short video of the parcel or unworn item.</li>
-                  <li>Message our dedicated WhatsApp team at <strong>+91 72338 62626</strong> (or call <strong>+91 92360 28318</strong>) with your Order ID.</li>
+                  <li>Message our dedicated WhatsApp team or call at <strong>+91 72338 62626</strong> with your Order ID.</li>
                   <li>Our support team will schedule a free reverse pickup from your doorstep within 24-48 hours.</li>
                 </ol>
               </div>
@@ -322,12 +322,12 @@ export default function PolicyModal() {
                 </a>
 
                 <a
-                  href="tel:+919236028318"
+                  href="tel:+917233862626"
                   className="p-3.5 rounded-2xl bg-emerald-900 border border-emerald-700 text-white hover:bg-emerald-800 transition space-y-1 block shadow-sm"
                 >
                   <Phone className="w-5 h-5 text-amber-400" />
                   <div className="font-bold text-xs sm:text-sm text-white">Call Helpline</div>
-                  <div className="text-xs font-mono font-bold text-amber-300">+91 92360 28318</div>
+                  <div className="text-xs font-mono font-bold text-amber-300">+91 72338 62626</div>
                   <div className="text-[10px] text-emerald-200 font-medium">Direct Voice Call</div>
                 </a>
 
@@ -431,7 +431,7 @@ export default function PolicyModal() {
         {/* Modal Footer */}
         <div className="p-4 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 shrink-0">
           <div>
-            Need immediate help? Call <strong>+91 92360 28318</strong> or WhatsApp <strong>+91 72338 62626</strong>
+            Need immediate help? Call or WhatsApp <strong>+91 72338 62626</strong>
           </div>
           <button
             onClick={() => setActivePolicy(null)}

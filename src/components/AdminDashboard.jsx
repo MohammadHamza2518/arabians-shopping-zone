@@ -616,7 +616,7 @@ export default function AdminDashboard() {
                     <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
                       <div className="text-[11px] font-bold text-slate-400 uppercase">Active Catalog</div>
                       <div className="text-xl sm:text-2xl font-black text-slate-900">{products.length} Products</div>
-                      <div className="text-[10px] text-slate-500 font-semibold">Across 5 categories</div>
+                      <div className="text-[10px] text-slate-500 font-semibold">Across {categories.length} categories</div>
                     </div>
 
                     <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">

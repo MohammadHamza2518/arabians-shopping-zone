@@ -161,7 +161,7 @@ export default function PolicyPage() {
               <h4 className="font-serif font-bold text-sm text-slate-900">How to Initiate a Return / Exchange:</h4>
               <ol className="list-decimal pl-5 space-y-1.5 text-xs text-slate-600">
                 <li>Take a clear picture of the outer parcel label and item.</li>
-                <li>WhatsApp our dedicated returns helpline at <strong>+91 72338 62626</strong> (or call <strong>+91 92360 28318</strong>) with your Order ID.</li>
+                <li>WhatsApp our dedicated returns helpline or call at <strong>+91 72338 62626</strong> with your Order ID.</li>
                 <li>Our operations team will arrange free reverse courier pickup from your home.</li>
               </ol>
             </div>

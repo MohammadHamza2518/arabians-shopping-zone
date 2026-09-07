@@ -219,7 +219,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="tel:+919236028318"
+                href="tel:+917233862626"
                 className="flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-800/60 text-emerald-200 text-xs hover:border-amber-500/40 hover:text-white transition group"
                 title="Call Directly"
               >
@@ -228,7 +228,7 @@ export default function Footer() {
                 </div>
                 <div className="text-left flex-1 truncate">
                   <div className="font-bold text-white text-[11px] group-hover:text-amber-300 transition">Calling Helpline</div>
-                  <div className="text-[10px] text-emerald-300/80 font-mono">+91 92360 28318</div>
+                  <div className="text-[10px] text-emerald-300/80 font-mono">+91 72338 62626</div>
                 </div>
                 <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-amber-400 shrink-0" />
               </a>

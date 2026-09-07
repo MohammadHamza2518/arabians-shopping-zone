@@ -49,6 +49,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { searchProducts } from '../utils/searchEngine';
 
 const ICON_OPTIONS = [
   { id: 'Sparkles', name: 'Sparkles (Royal Star / Curated)', Component: Sparkles },
@@ -128,8 +129,8 @@ export default function AdminPage() {
     storeName: "Arabians Shopping Zone",
     whatsapp: "917233862626",
     whatsappDisplay: "+91 72338 62626",
-    phone: "+91 92360 28318",
-    callNumber: "+91 92360 28318",
+    phone: "+91 72338 62626",
+    callNumber: "+91 72338 62626",
     email: "arabiansshoppingzone@gmail.com",
     announcement: "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
     freeShippingThreshold: 999,
@@ -775,10 +776,9 @@ export default function AdminPage() {
     return matchesStatus && matchesSearch;
   });
 
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = (productSearch.trim() ? searchProducts(products, productSearch) : products).filter(p => {
     const matchesCat = productCategoryFilter === 'all' || p.category.toLowerCase() === productCategoryFilter.toLowerCase();
-    const matchesSearch = !productSearch.trim() || p.name.toLowerCase().includes(productSearch.toLowerCase());
-    return matchesCat && matchesSearch;
+    return matchesCat;
   });
 
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -1145,7 +1145,7 @@ export default function AdminPage() {
                     <span className="text-xs font-sans text-slate-400 font-normal">Live</span>
                   </div>
                   <div className="text-[11px] text-slate-400">
-                    Across 5 Pure Categories
+                    Across {categories.length} Pure Categories
                   </div>
                 </div>
 
@@ -2886,7 +2886,7 @@ export default function AdminPage() {
               Sunnah & Luxury Lifestyle • Pan-India Delivery
             </p>
             <p className="text-[11px] text-slate-400 mt-1">
-              WhatsApp: +91 72338 62626 • Call: +91 92360 28318 • arabiansshoppingzone@gmail.com
+              WhatsApp / Call: +91 72338 62626 • arabiansshoppingzone@gmail.com
             </p>
           </div>
 

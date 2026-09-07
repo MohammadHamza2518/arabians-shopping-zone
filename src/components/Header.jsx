@@ -15,8 +15,18 @@ import {
   Star
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
-import InstagramIcon from './InstagramIcon';
 import { getGeneralSupportWhatsAppUrl } from '../utils/whatsapp';
+import { searchProducts } from '../utils/searchEngine';
+
+function InstagramIcon({ className = "w-3.5 h-3.5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+    </svg>
+  );
+}
 
 export default function Header() {
   const navigate = useNavigate();
@@ -48,12 +58,8 @@ export default function Header() {
     return () => clearInterval(timer);
   }, [ANNOUNCEMENTS.length]);
 
-  const searchResults = headerSearch.trim().length >= 2
-    ? products.filter(p => 
-        p.name.toLowerCase().includes(headerSearch.toLowerCase()) ||
-        p.category.toLowerCase().includes(headerSearch.toLowerCase()) ||
-        (p.description || '').toLowerCase().includes(headerSearch.toLowerCase())
-      ).slice(0, 5)
+  const searchResults = headerSearch.trim().length >= 1
+    ? searchProducts(products, headerSearch).slice(0, 6)
     : [];
 
   const handleSearchSubmit = (e) => {
@@ -99,7 +105,7 @@ export default function Header() {
             </Link>
 
             <a 
-              href={settings.instagramUrl} 
+              href={settings.instagramUrl || "https://www.instagram.com/arabians_shopping_zone"} 
               target="_blank" 
               rel="noreferrer" 
               className="flex items-center gap-1 hover:text-amber-300 transition-colors"
@@ -108,12 +114,12 @@ export default function Header() {
               <span>@arabians_shopping_zone</span>
             </a>
             <a 
-              href="tel:+919236028318" 
+              href="tel:+917233862626" 
               className="hidden lg:flex items-center gap-1 hover:text-amber-300 transition-colors"
-              title="Call Helpline: +91 92360 28318"
+              title="Call Helpline: +91 72338 62626"
             >
               <Phone className="w-3.5 h-3.5 text-amber-400" />
-              <span>Call: +91 92360 28318</span>
+              <span>Call: +91 72338 62626</span>
             </a>
             <a 
               href={getGeneralSupportWhatsAppUrl('Store Browsing Assistance', settings.whatsapp)} 
@@ -286,17 +292,6 @@ export default function Header() {
               <span className="hidden sm:inline">Visit Store</span>
             </Link>
 
-            {/* Bilal AI Voice Assistant Trigger */}
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950 via-[#032219] to-emerald-950 text-amber-300 border border-amber-400/40 hover:border-amber-300 text-xs font-bold shadow-sm active:scale-95 transition"
-              title="Speak with Brother Bilal (Store AI Voice Advisor)"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
-              <span className="hidden sm:inline">Bilal AI</span>
-            </button>
-
             {/* Cart & Checkout */}
             <Link
               to="/checkout"
@@ -372,6 +367,8 @@ export default function Header() {
           </div>
 
           <div className="space-y-1.5 text-xs">
+
+
             {/* Hamper Studio Banner in Mobile Drawer */}
             <Link
               to="/hamper"
@@ -471,7 +468,7 @@ export default function Header() {
                 <span>💬 WhatsApp</span>
               </a>
               <a
-                href="tel:+919236028318"
+                href="tel:+917233862626"
                 className="py-2.5 px-2 rounded-xl bg-amber-50 text-amber-950 border border-amber-300 font-bold flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <span>📞 Call Helpline</span>

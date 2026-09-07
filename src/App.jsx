@@ -1,10 +1,9 @@
 import React from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
-import AiVoiceAssistant from './components/AiVoiceAssistant';
 import ScrollToTop from './components/ScrollToTop';
 
 // Dedicated Full Pages
@@ -20,8 +19,6 @@ import AdminPage from './pages/AdminPage';
 import HamperBuilderPage from './pages/HamperBuilderPage';
 import ReviewsPage from './pages/ReviewsPage';
 import StoreLocatorPage from './pages/StoreLocatorPage';
-
-
 import { useStore } from './context/StoreContext';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
@@ -94,8 +91,7 @@ function AppContent() {
           <Route path="/hamper-builder" element={<HamperBuilderPage />} />
           <Route path="/gift-builder" element={<HamperBuilderPage />} />
           <Route path="/store" element={<StoreLocatorPage />} />
-          <Route path="/visit" element={<StoreLocatorPage />} />
-
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
@@ -104,9 +100,6 @@ function AppContent() {
 
       {/* Floating 24/7 WhatsApp Quick Assistant */}
       <FloatingWhatsApp />
-
-      {/* Voice & Chat AI Assistant (Brother Bilal with 6-Key Pool) */}
-      {!isAdminRoute && <AiVoiceAssistant />}
 
       {/* Mobile Sticky Navigation */}
       <MobileBottomNav />

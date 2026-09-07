@@ -25,7 +25,7 @@ const HERO_SLIDES = [
     mrp: "₹2,299",
     ctaText: "Shop Men's Thobes",
     ctaLink: "/shop?category=wearing",
-    image: "/assets/studio/mens_thobe_banner_43.jpg"
+    image: "/assets/studio/mens_black_thobe_studio.jpg"
   },
   {
     id: 'talbina',
@@ -49,7 +49,7 @@ const HERO_SLIDES = [
     mrp: "₹999",
     ctaText: "Discover Pure Oud",
     ctaLink: "/shop?category=fragrance",
-    image: "/assets/studio/dehnul_oud_banner_43.jpg"
+    image: "/assets/studio/oud_mabkhara_luxury.jpg"
   },
   {
     id: 'wedding',
@@ -90,12 +90,11 @@ export default function Hero() {
   const slide = HERO_SLIDES[currentSlide];
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-b from-[#fbf9f4] via-[#f7f3e8] to-[#faf8f5] py-4 sm:py-8 border-b border-amber-900/10">
+    <div className="relative overflow-hidden bg-[#faf8f5] pt-2 pb-4 sm:pb-8">
       
-      {/* Subtle Islamic Ambient Motif */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#032219_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-100/50 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Subtle Ambient Glow */}
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-100/30 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
