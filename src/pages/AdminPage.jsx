@@ -126,6 +126,7 @@ export default function AdminPage() {
   const [catImageFile, setCatImageFile] = useState(null);
   const [uploadingCatImage, setUploadingCatImage] = useState(false);
   const [newSubcatInput, setNewSubcatInput] = useState('');
+  const catFileInputRef = React.useRef(null);
 
   // Hero Slide CRUD state
   const [editingSlide, setEditingSlide] = useState(null);
@@ -3466,158 +3467,181 @@ export default function AdminPage() {
   {/* MODAL: ADD / EDIT CATEGORY ARCHITECTURE                                   */}
   {/* ========================================================================= */}
   {isCategoryModalOpen && editingCategory && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#0c1620] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4 my-8 border border-amber-500/30 shadow-2xl text-slate-100">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
-              <Layers className="w-4 h-4" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="bg-[#0b1520] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-2xl w-full my-auto border border-amber-500/40 shadow-2xl text-slate-100 max-h-[94vh] flex flex-col">
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20 shrink-0">
+              {editingCategory.isNew ? <Plus className="w-4 h-4 sm:w-5 sm:h-5" /> : <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />}
             </div>
             <div>
-              <h3 className="font-serif font-bold text-lg text-white">
-                {editingCategory.isNew ? 'Create New Store Category' : `Edit Category: ${editingCategory.name}`}
+              <h3 className="font-serif font-black text-sm sm:text-xl text-white leading-tight">
+                {editingCategory.isNew ? 'Create New Category & Circle' : `Edit Category: ${editingCategory.name || 'Category'}`}
               </h3>
-              <p className="text-[10px] text-slate-400">Controls stories, catalog tabs, and shop filters.</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-1 sm:line-clamp-none">
+                Updates circular story icon, shop filter tabs, and real-time catalog navigation.
+              </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setIsCategoryModalOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-white"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Live Homepage Story Ring Preview */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#070d12] border border-amber-500/30 flex items-center gap-4">
-          <div className="flex flex-col items-center shrink-0">
-            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-500 shadow-md">
-              <div className="w-full h-full rounded-full bg-[#faf8f5] p-[2px] overflow-hidden">
-                <img
-                  src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
-                  alt="Story Ring Preview"
-                  className="w-full h-full object-cover rounded-full"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = '/assets/logo/logo_main.png';
-                  }}
+        {/* Modal Scrollable Form */}
+        <form onSubmit={handleSaveCategory} className="space-y-4 sm:space-y-5 overflow-y-auto pr-1 sm:pr-2 pt-4 flex-1 text-xs">
+          
+          {/* LIVE STORY RING PREVIEW BANNER */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-emerald-950/20 border border-amber-500/30 flex items-center gap-4">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-500 shadow-lg shadow-amber-500/20">
+                <div className="w-full h-full rounded-full bg-[#faf8f5] p-[2px] overflow-hidden">
+                  <img
+                    src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
+                    alt="Story Ring Preview"
+                    className="w-full h-full object-cover rounded-full"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/assets/logo/logo_main.png';
+                    }}
+                  />
+                </div>
+              </div>
+              <span className="text-[11px] font-black text-amber-300 mt-1.5 max-w-[90px] truncate text-center font-serif">
+                {editingCategory.shortName || editingCategory.name || 'Story Label'}
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Live Homepage Story Ring Preview</span>
+              </div>
+              <p className="text-xs text-slate-200 font-medium leading-relaxed">
+                This exact golden circular story ring will appear at the top of the Homepage!
+              </p>
+              <p className="text-[10px] text-slate-400">
+                Photo uploads, presets, and text changes reflect in this preview immediately.
+              </p>
+            </div>
+          </div>
+
+          {/* SECTION 1: BASIC CATEGORY INFORMATION */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+              <Layers className="w-4 h-4 text-amber-500" />
+              <span>1. Basic Category Information</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">
+                  Category Full Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Healthy & Sunnah Foods, Men's Wear..."
+                  value={editingCategory.name || ''}
+                  onChange={(e) => setEditingCategory({ 
+                    ...editingCategory, 
+                    name: e.target.value,
+                    shortName: editingCategory.shortName || e.target.value
+                  })}
+                  className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-slate-700 hover:border-slate-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-amber-300 mb-1.5 text-xs flex items-center justify-between">
+                  <span>Homepage Story Label *</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Shown under circle</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Healthy, Men's Wear, Wedding"
+                  value={editingCategory.shortName || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, shortName: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-amber-500/40 text-amber-300 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
                 />
               </div>
             </div>
-            <span className="text-[11px] font-extrabold text-amber-300 mt-1 max-w-[100px] truncate text-center">
-              {editingCategory.shortName || editingCategory.name || 'Story Label'}
-            </span>
-          </div>
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-bold">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>Live Homepage Circle Preview</span>
-            </div>
-            <p className="text-[11px] text-slate-300 leading-snug">
-              This is the exact golden circular ring customers will see at the top of the Homepage!
-            </p>
-            <p className="text-[10px] text-slate-500">
-              Any picture or label change updates here in real-time.
-            </p>
-          </div>
-        </div>
 
-        <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Category Full Title *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Healthy & Sunnah Foods"
-                value={editingCategory.name}
-                onChange={(e) => setEditingCategory({ 
-                  ...editingCategory, 
-                  name: e.target.value,
-                  shortName: editingCategory.shortName || e.target.value
-                })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">
+                  Slug URL ID {editingCategory.isNew ? '(Auto-generated)' : '(Read-Only)'}
+                </label>
+                <input
+                  type="text"
+                  disabled={!editingCategory.isNew}
+                  placeholder="e.g. health, wearing, wedding"
+                  value={editingCategory.id || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, id: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Badge Tag</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Royal Sacred, 100% Sunnah, Flagship"
+                  value={editingCategory.badge || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, badge: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block font-bold text-amber-300 mb-1 flex items-center justify-between">
-                <span>Homepage Story Label</span>
-                <span className="text-[10px] text-slate-400 font-normal">Under circle</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Healthy, Men's Wear, Wedding"
-                value={editingCategory.shortName || ''}
-                onChange={(e) => setEditingCategory({ ...editingCategory, shortName: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-amber-500/40 text-amber-300 font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
-            </div>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Subtitle / Tagline</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Premium Madinah & Turkish foam prayer rugs"
+                  value={editingCategory.subtitle || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, subtitle: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">
-                Slug ID {editingCategory.isNew ? '(auto if empty)' : '(Read-only)'}
-              </label>
-              <input
-                type="text"
-                disabled={!editingCategory.isNew}
-                placeholder="e.g. prayer-mats"
-                value={editingCategory.id || ''}
-                onChange={(e) => setEditingCategory({ ...editingCategory, id: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Badge Tag</label>
-              <input
-                type="text"
-                placeholder="e.g. Royal Sacred, New"
-                value={editingCategory.badge || ''}
-                onChange={(e) => setEditingCategory({ ...editingCategory, badge: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Category Icon</label>
+                <select
+                  value={editingCategory.icon || 'Sparkles'}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  {ICON_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Subtitle / Tagline</label>
-            <input
-              type="text"
-              placeholder="e.g. Premium Madinah & Turkish foam prayer rugs"
-              value={editingCategory.subtitle || ''}
-              onChange={(e) => setEditingCategory({ ...editingCategory, subtitle: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-            />
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Category Icon</label>
-            <select
-              value={editingCategory.icon || 'Sparkles'}
-              onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-            >
-              {ICON_OPTIONS.map((opt) => (
-                <option key={opt.id} value={opt.id}>{opt.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Category Cover Image with Quick Presets */}
-          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-2.5">
+          {/* SECTION 2: COVER PHOTO & STORY RING ASSET */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block font-bold text-slate-300">Category Cover Photo</label>
-              <span className="text-[10px] text-slate-400">JPG, PNG, WebP</span>
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <ImageIcon className="w-4 h-4 text-amber-500" />
+                <span>2. Circle Photo & Media Asset</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono">Auto-fit in circular ring</span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-700 p-0.5 bg-[#0c1620] shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-amber-500/30 p-1 bg-[#060c12] shrink-0 shadow-md">
                 <img
                   src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
-                  alt=""
+                  alt="Thumbnail"
                   className="w-full h-full object-cover rounded-xl"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
@@ -3625,32 +3649,59 @@ export default function AdminPage() {
                   }}
                 />
               </div>
-              <div className="flex-1 space-y-1.5">
+
+              <div className="flex-1 space-y-2">
                 <input
                   type="file"
+                  ref={catFileInputRef}
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       setCatImageFile(e.target.files[0]);
                     }
                   }}
-                  className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:brightness-110 cursor-pointer"
+                  className="hidden"
                 />
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => catFileInputRef.current?.click()}
+                    className="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-2 shadow-sm"
+                  >
+                    <Upload className="w-4 h-4 text-amber-400" />
+                    <span>{catImageFile ? `File: ${catImageFile.name}` : 'Upload Photo From PC / Phone'}</span>
+                  </button>
+
+                  {catImageFile && (
+                    <button
+                      type="button"
+                      onClick={() => setCatImageFile(null)}
+                      className="px-2.5 py-2 text-rose-400 hover:text-rose-300 text-xs font-semibold transition"
+                    >
+                      Clear File
+                    </button>
+                  )}
+                </div>
+
                 <input
                   type="text"
-                  placeholder="Or paste direct image URL (e.g. /assets/...)"
+                  placeholder="Or paste direct image URL (e.g. /assets/products/...)"
                   value={editingCategory.image || ''}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, image: e.target.value })}
-                  className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c1620] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  onChange={(e) => {
+                    setCatImageFile(null);
+                    setEditingCategory({ ...editingCategory, image: e.target.value });
+                  }}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
 
             {/* Quick Luxury Presets */}
-            <div className="pt-2 border-t border-slate-800/80">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                Quick Luxury Store Presets:
-              </div>
+            <div className="pt-3 border-t border-slate-800">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                Quick Luxury Store Presets (1-Click Apply):
+              </span>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { label: "Men's Thobe", path: '/assets/studio/mens_white_thobe.jpg' },
@@ -3669,10 +3720,10 @@ export default function AdminPage() {
                       setCatImageFile(null);
                       setEditingCategory({ ...editingCategory, image: preset.path });
                     }}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition border ${
+                    className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition border ${
                       editingCategory.image === preset.path && !catImageFile
-                        ? 'bg-amber-500 text-slate-950 border-amber-400'
-                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-amber-400/60'
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+                        : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:border-amber-400/60'
                     }`}
                   >
                     {preset.label}
@@ -3682,41 +3733,42 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Subcategories tags manager */}
-          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-2.5">
+          {/* SECTION 3: SUBCATEGORIES MANAGER */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3.5">
             <div className="flex items-center justify-between">
-              <label className="font-bold text-slate-300">
-                Subcategories ({editingCategory.subcategories?.length || 0})
-              </label>
-              <span className="text-[10px] text-slate-500">Filtered tabs in catalog</span>
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <Plus className="w-4 h-4 text-amber-500" />
+                <span>3. Subcategories & Filter Tabs ({editingCategory.subcategories?.length || 0})</span>
+              </div>
+              <span className="text-[10px] text-slate-400">Used as category filter tabs</span>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-[#0c1620] rounded-xl border border-slate-800">
+            <div className="flex flex-wrap gap-2 min-h-[36px] p-2.5 bg-[#060c12] rounded-xl border border-slate-800">
               {editingCategory.subcategories && editingCategory.subcategories.length > 0 ? (
                 editingCategory.subcategories.map((sub) => (
                   <span
                     key={sub.id}
-                    className="inline-flex items-center gap-1.5 bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                    className="inline-flex items-center gap-1.5 bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs"
                   >
                     <span>{sub.name}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveSubcatFromCategory(sub.id)}
-                      className="text-emerald-400 hover:text-rose-400 ml-0.5"
+                      className="text-emerald-400 hover:text-rose-400 ml-1 font-black text-sm"
                     >
                       ×
                     </button>
                   </span>
                 ))
               ) : (
-                <span className="text-xs text-slate-500 italic">No subcategories yet. Type below:</span>
+                <span className="text-xs text-slate-500 italic p-1">No subcategories yet. Type below and click Add.</span>
               )}
             </div>
 
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Type subcategory name (e.g. 'Velvet Janamaz')..."
+                placeholder="Type subcategory name (e.g. 'Saudi Thobes', 'Dry Fruit Talbina')..."
                 value={newSubcatInput}
                 onChange={(e) => setNewSubcatInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -3725,31 +3777,32 @@ export default function AdminPage() {
                     handleAddSubcatToCategory();
                   }
                 }}
-                className="flex-1 px-3 py-2 rounded-xl bg-[#0c1620] border border-slate-700 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <button
                 type="button"
                 onClick={handleAddSubcatToCategory}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 text-amber-300 font-bold text-xs hover:bg-slate-700 transition flex items-center gap-1"
+                className="px-4 py-2.5 rounded-xl bg-slate-800 text-amber-300 font-bold text-xs hover:bg-slate-700 transition flex items-center gap-1.5 border border-slate-700"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add</span>
+                <span>Add Tag</span>
               </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-3">
+          {/* Bottom Action Buttons (Fixed Footer) */}
+          <div className="flex items-center gap-3 pt-3 border-t border-slate-800 shrink-0">
             <button
               type="submit"
               disabled={savingCategory || uploadingCatImage}
-              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20"
+              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-sm tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20 active:scale-[0.99]"
             >
-              {savingCategory || uploadingCatImage ? 'Saving Category...' : editingCategory.isNew ? 'Create Category' : 'Save Category Changes'}
+              {savingCategory || uploadingCatImage ? 'Saving Category...' : editingCategory.isNew ? 'Create Category & Publish' : 'Save Category Changes'}
             </button>
             <button
               type="button"
               onClick={() => setIsCategoryModalOpen(false)}
-              className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+              className="px-6 py-3.5 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
             >
               Cancel
             </button>
@@ -3763,199 +3816,232 @@ export default function AdminPage() {
   {/* MODAL: ADD / EDIT HOMEPAGE HERO BANNER SLIDE                              */}
   {/* ========================================================================= */}
   {isSlideModalOpen && editingSlide && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#0c1620] rounded-3xl p-5 sm:p-8 max-w-2xl w-full space-y-4 my-8 border border-amber-500/30 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
-              <ImageIcon className="w-4 h-4" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-hidden">
+      <div className="bg-[#0b1520] border border-amber-500/40 rounded-3xl max-w-2xl w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden text-slate-100">
+        
+        {/* Modal Fixed Header */}
+        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between shrink-0 bg-[#0c1620]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+              <ImageIcon className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-serif font-bold text-lg text-white">
                 {editingSlide.isNew ? 'Create New Homepage Banner Slide' : `Edit Banner Slide: ${editingSlide.title || 'Slide'}`}
               </h3>
-              <p className="text-[10px] text-slate-400">Real-time preview with zero-break aspect ratio safeguards.</p>
+              <p className="text-xs text-slate-400">Live preview & 4:3 crop protection with MongoDB Atlas sync.</p>
             </div>
           </div>
           <button
             onClick={() => setIsSlideModalOpen(false)}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Live 1:1 Homepage Carousel Card Mockup Preview */}
-        <div className="rounded-2xl bg-[#070d12] border border-amber-500/30 p-4 space-y-2">
-          <div className="flex items-center justify-between text-[11px] text-amber-400 font-bold">
-            <span>✨ Live Homepage Banner Preview:</span>
-            <span className="text-[10px] text-slate-400 font-normal">Exact preview as seen by customers</span>
-          </div>
+        {/* Scrollable Form Body */}
+        <form onSubmit={handleSaveSlide} className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar text-xs">
+          {/* Live 1:1 Homepage Carousel Card Mockup Preview */}
+          <div className="rounded-2xl bg-[#060c12] border border-amber-500/30 p-4 space-y-2.5 shadow-lg">
+            <div className="flex items-center justify-between text-[11px] text-amber-400 font-bold uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Live Customer View Preview</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-normal normal-case">Updates as you type</span>
+            </div>
 
-          <div className="rounded-2xl bg-white border border-amber-900/15 p-4 text-[#032219] shadow-md grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center overflow-hidden">
-            {/* Left side text preview */}
-            <div className="sm:col-span-7 space-y-1.5">
-              {editingSlide.badge && (
-                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-950 text-[10px] font-bold">
-                  {editingSlide.badge}
+            <div className="rounded-2xl bg-[#faf8f5] border border-amber-900/15 p-4 text-[#032219] shadow-md grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center overflow-hidden">
+              {/* Left side text preview */}
+              <div className="sm:col-span-7 space-y-1.5">
+                {editingSlide.badge && (
+                  <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-950 text-[10px] font-bold">
+                    {editingSlide.badge}
+                  </div>
+                )}
+                <h4 className="font-serif font-black text-base sm:text-lg text-[#032219] leading-snug line-clamp-2">
+                  {editingSlide.title || 'Enter Slide Title Below...'}
+                </h4>
+                <p className="text-slate-600 text-xs line-clamp-2 leading-relaxed">
+                  {editingSlide.subtitle || 'Enter slide subtitle and benefits description below...'}
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {(editingSlide.price || editingSlide.mrp) && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100/80 border border-amber-300 text-amber-950 text-xs font-bold font-serif">
+                      <span>{editingSlide.price || 'From ₹249'}</span>
+                      {editingSlide.mrp && <span className="line-through text-slate-400 font-sans text-[10px] font-normal">{editingSlide.mrp}</span>}
+                    </div>
+                  )}
+                  {editingSlide.highlight && (
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-[10px] font-semibold">
+                      <span>✓ {editingSlide.highlight}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-              <h4 className="font-serif font-black text-base sm:text-lg text-[#032219] leading-snug line-clamp-2">
-                {editingSlide.title || 'Enter Slide Title Below...'}
-              </h4>
-              <p className="text-slate-600 text-xs line-clamp-2 leading-relaxed">
-                {editingSlide.subtitle || 'Enter slide subtitle and benefits description below...'}
-              </p>
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                {(editingSlide.price || editingSlide.mrp) && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100/80 border border-amber-300 text-amber-950 text-xs font-bold font-serif">
-                    <span>{editingSlide.price || 'From ₹249'}</span>
-                    {editingSlide.mrp && <span className="line-through text-slate-400 font-sans text-[10px] font-normal">{editingSlide.mrp}</span>}
+                <div className="pt-1.5">
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#032219] text-amber-300 text-xs font-bold">
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>{editingSlide.ctaText || 'Shop Collection'}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
                   </div>
-                )}
-                {editingSlide.highlight && (
-                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-[10px] font-semibold">
-                    <span>✓ {editingSlide.highlight}</span>
-                  </div>
-                )}
+                </div>
               </div>
-              <div className="pt-1.5">
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#032219] text-amber-300 text-xs font-bold">
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>{editingSlide.ctaText || 'Shop Collection'}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
+
+              {/* Right side image frame preview */}
+              <div className="sm:col-span-5 flex items-center justify-center">
+                <div className="relative w-full h-36 sm:h-40 rounded-xl overflow-hidden bg-gradient-to-tr from-amber-50 via-white to-emerald-50 border border-amber-900/15 shadow-sm">
+                  <img
+                    src={slideImageFile ? URL.createObjectURL(slideImageFile) : (editingSlide.image || '/assets/talbina/talbina_banner_43.jpg')}
+                    alt="Slide Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/assets/talbina/talbina_banner_43.jpg';
+                    }}
+                  />
+                  <div className="absolute bottom-1.5 right-1.5 bg-white/95 border border-amber-500/40 px-2 py-0.5 rounded text-[9px] font-bold text-[#032219] shadow-xs">
+                    100% Authentic Sunnah
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Right side image frame preview */}
-            <div className="sm:col-span-5 flex items-center justify-center">
-              <div className="relative w-full h-36 sm:h-40 rounded-xl overflow-hidden bg-gradient-to-tr from-amber-50 via-white to-emerald-50 border border-amber-900/15 shadow-sm">
-                <img
-                  src={slideImageFile ? URL.createObjectURL(slideImageFile) : (editingSlide.image || '/assets/talbina/talbina_banner_43.jpg')}
-                  alt="Slide Preview"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = '/assets/talbina/talbina_banner_43.jpg';
-                  }}
+          {/* SECTION 1: TITLE & FLOATING BADGE */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+              <Tag className="w-4 h-4 text-amber-500" />
+              <span>1. Banner Headline & Floating Tag</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block font-bold text-white mb-1.5 text-xs">Slide Headline / Main Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Arabian's Sprouted Barley Talbeena"
+                  value={editingSlide.title || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, title: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-slate-700 hover:border-slate-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition font-semibold"
                 />
-                <div className="absolute bottom-1.5 right-1.5 bg-white/95 border border-amber-500/40 px-2 py-0.5 rounded text-[9px] font-bold text-[#032219] shadow-xs">
-                  100% Authentic Sunnah
-                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-amber-300 mb-1.5 text-xs flex items-center justify-between">
+                  <span>Badge Pill (Floating Top Tag)</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 🥣 Prophetic Sunnah Superfood"
+                  value={editingSlide.badge || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, badge: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-slate-700 hover:border-slate-600 text-amber-300 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-200 mb-1.5 text-xs">Subtitle / Hadith / Benefits Description</label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Stone-ground roasted barley blended with premium California almonds, pistachios, and saffron. Rejuvenates the heart..."
+                value={editingSlide.subtitle || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, subtitle: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-slate-700 hover:border-slate-600 text-white text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+              />
+            </div>
+          </div>
+
+          {/* SECTION 2: PRICING & HIGHLIGHTS */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>2. Pricing & Trust Badge</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div>
+                <label className="block font-bold text-amber-300 mb-1.5 text-xs">Selling Price Tag</label>
+                <input
+                  type="text"
+                  placeholder="e.g. From ₹249"
+                  value={editingSlide.price || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, price: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-400 mb-1.5 text-xs">MRP (Strikethrough)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. ₹270"
+                  value={editingSlide.mrp || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, mrp: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-slate-300 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-emerald-400 mb-1.5 text-xs">Trust Highlight Pill</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 5 High-Repeat Flavors"
+                  value={editingSlide.highlight || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, highlight: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Edit Form Inputs */}
-        <form onSubmit={handleSaveSlide} className="space-y-4 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-white mb-1">Slide Headline / Title *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Arabian's Sprouted Barley Talbeena"
-                value={editingSlide.title || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, title: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-semibold"
-              />
+          {/* SECTION 3: CALL TO ACTION BUTTON & LINK */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+              <ArrowRight className="w-4 h-4 text-amber-500" />
+              <span>3. Call To Action Button & Link</span>
             </div>
 
-            <div>
-              <label className="block font-bold text-amber-300 mb-1">Badge Pill (Top Floating Tag)</label>
-              <input
-                type="text"
-                placeholder="e.g. 🥣 Prophetic Sunnah Superfood"
-                value={editingSlide.badge || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, badge: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
-            </div>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Button Label Text</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Order Sunnah Talbina"
+                  value={editingSlide.ctaText || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, ctaText: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
 
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Subtitle / Hadith / Benefits Description</label>
-            <textarea
-              rows={2}
-              placeholder="e.g. Stone-ground roasted barley blended with premium California almonds, pistachios, and saffron. Rejuvenates the heart..."
-              value={editingSlide.subtitle || ''}
-              onChange={(e) => setEditingSlide({ ...editingSlide, subtitle: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block font-bold text-amber-300 mb-1">Selling Price Tag</label>
-              <input
-                type="text"
-                placeholder="e.g. From ₹249"
-                value={editingSlide.price || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, price: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-400 mb-1">MRP Price (Strikethrough)</label>
-              <input
-                type="text"
-                placeholder="e.g. ₹270"
-                value={editingSlide.mrp || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, mrp: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-emerald-400 mb-1">Highlight Pill Tag</label>
-              <input
-                type="text"
-                placeholder="e.g. 5 High-Repeat Flavors • Lab Certified"
-                value={editingSlide.highlight || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, highlight: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Destination Link / URL</label>
+                <input
+                  type="text"
+                  placeholder="e.g. /product/talbina-vanilla or /shop?category=health"
+                  value={editingSlide.ctaLink || ''}
+                  onChange={(e) => setEditingSlide({ ...editingSlide, ctaLink: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Button Text</label>
-              <input
-                type="text"
-                placeholder="e.g. Order Sunnah Talbina"
-                value={editingSlide.ctaText || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, ctaText: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Button Destination Link</label>
-              <input
-                type="text"
-                placeholder="e.g. /product/talbina-vanilla or /shop?category=health"
-                value={editingSlide.ctaLink || ''}
-                onChange={(e) => setEditingSlide({ ...editingSlide, ctaLink: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Banner Photo Upload & Presets */}
-          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-3">
+          {/* SECTION 4: BANNER PHOTO ASSET */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
-              <label className="font-bold text-amber-300 flex items-center gap-1.5">
-                <ImageIcon className="w-4 h-4" />
-                <span>Banner Slide Image / Photo</span>
-              </label>
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <ImageIcon className="w-4 h-4 text-amber-500" />
+                <span>4. Banner Cover Photo</span>
+              </div>
               <span className="text-[10px] text-slate-400 font-mono">Any size accepted (Auto-cropped to 4:3)</span>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Custom file upload button + URL input */}
+            <div className="space-y-3">
               <input
                 type="file"
                 ref={slideFileInputRef}
@@ -3967,32 +4053,54 @@ export default function AdminPage() {
                 }}
                 className="hidden"
               />
-              <button
-                type="button"
-                onClick={() => slideFileInputRef.current?.click()}
-                className="px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center justify-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span>{slideImageFile ? 'Change Selected File' : 'Upload Photo From PC/Phone'}</span>
-              </button>
 
-              <div className="flex-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => slideFileInputRef.current?.click()}
+                  className="px-5 py-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm shrink-0"
+                >
+                  <Upload className="w-4 h-4 text-amber-400" />
+                  <span>Upload Photo From PC / Phone</span>
+                </button>
+
+                {slideImageFile ? (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/70 border border-emerald-800/60 text-emerald-300 text-xs flex-1">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="truncate flex-1 font-mono">{slideImageFile.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSlideImageFile(null)}
+                      className="text-slate-400 hover:text-rose-400 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-800/80"
+                    >
+                      Clear File
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-slate-400 hidden sm:inline">or paste direct image URL below:</span>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-400 mb-1">Direct Image Path or URL</label>
                 <input
                   type="text"
-                  placeholder="Or paste direct image URL (e.g. /assets/...)"
+                  placeholder="e.g. /assets/talbina/talbina_banner_43.jpg or https://..."
                   value={editingSlide.image || ''}
                   onChange={(e) => {
                     setSlideImageFile(null);
                     setEditingSlide({ ...editingSlide, image: e.target.value });
                   }}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0c1620] border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
 
             {/* Quick Luxury Presets */}
-            <div className="pt-2 border-t border-slate-800/80">
-              <span className="text-[10px] text-slate-400 font-bold block mb-1.5">Quick Luxury Studio Presets:</span>
+            <div className="pt-3 border-t border-slate-800">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                Quick Luxury Studio Presets (1-Click Apply):
+              </span>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { name: '🥣 Talbina Sunnah', path: '/assets/talbina/talbina_banner_43.jpg' },
@@ -4009,10 +4117,10 @@ export default function AdminPage() {
                       setSlideImageFile(null);
                       setEditingSlide({ ...editingSlide, image: p.path });
                     }}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition border ${
-                      editingSlide.image === p.path
-                        ? 'bg-amber-500 text-slate-950 border-amber-400'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                    className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition border ${
+                      editingSlide.image === p.path && !slideImageFile
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+                        : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:border-amber-400/60'
                     }`}
                   >
                     {p.name}
@@ -4022,18 +4130,19 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-3">
+          {/* Bottom Action Buttons (Fixed Footer) */}
+          <div className="flex items-center gap-3 pt-3 border-t border-slate-800 shrink-0">
             <button
               type="submit"
               disabled={savingSlide || uploadingSlideImage}
-              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20"
+              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-sm tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20 active:scale-[0.99]"
             >
-              {savingSlide || uploadingSlideImage ? 'Saving Banner Slide...' : editingSlide.isNew ? 'Create Banner Slide' : 'Save Banner Changes'}
+              {savingSlide || uploadingSlideImage ? 'Saving Banner Slide...' : editingSlide.isNew ? 'Create Banner Slide & Publish' : 'Save Banner Changes'}
             </button>
             <button
               type="button"
               onClick={() => setIsSlideModalOpen(false)}
-              className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+              className="px-6 py-3.5 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
             >
               Cancel
             </button>
