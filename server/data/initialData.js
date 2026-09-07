@@ -147,7 +147,7 @@ export const initialData = {
       "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
       "icon": "Clock",
       "badge": "Handcrafted Luxury",
-      "image": "/assets/categories/decor_bismillah_frame.jpg",
+      "image": "/assets/categories/decor_islamic_wall_clock.jpg",
       "subcategories": [
         {
           "id": "acrylic-tugra",

@@ -93,7 +93,7 @@ async function initMongoDB() {
           wearing: '/assets/studio/mens_white_thobe.jpg',
           health: '/assets/products/talbeena_boxes_group.jpg',
           fragrance: '/assets/categories/fragrance_mukh_malaki.jpg',
-          decor: '/assets/categories/decor_bismillah_frame.jpg',
+          decor: '/assets/categories/decor_islamic_wall_clock.jpg',
           wedding: '/assets/categories/wedding_nikah_frame.jpg',
           skincare: '/assets/products/pure_kalonji_blackseed_oil.jpg'
         };

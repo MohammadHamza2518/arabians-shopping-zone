@@ -24,7 +24,7 @@ const DEFAULT_STORIES = [
   {
     id: 'decor',
     name: 'Home Decor',
-    image: '/assets/categories/decor_bismillah_frame.jpg',
+    image: '/assets/categories/decor_islamic_wall_clock.jpg',
     link: '/shop?category=decor'
   },
   {
@@ -56,7 +56,7 @@ const STORY_DISPLAY_MAP = {
   },
   decor: {
     name: 'Home Decor',
-    image: '/assets/categories/decor_bismillah_frame.jpg'
+    image: '/assets/categories/decor_islamic_wall_clock.jpg'
   },
   wedding: {
     name: 'Muslim Wedding',
