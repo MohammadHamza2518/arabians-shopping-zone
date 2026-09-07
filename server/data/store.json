@@ -394,11 +394,11 @@
     },
     {
       "id": "talbina-vanilla",
-      "name": "Arabian's Talbeena Nutritional Breakfast (Elaichi Dry Fruits - 400g)",
+      "name": "Arabian's Talbeena Nutritional Breakfast (Elaichi Dry Fruits - 250g)",
       "category": "health",
       "subcategory": "talbina",
-      "price": 399,
-      "mrp": 499,
+      "price": 249,
+      "mrp": 270,
       "rating": 5,
       "reviewsCount": 142,
       "badge": "Flagship Bestseller",
@@ -420,15 +420,15 @@
         "Elaichi",
         "Dry Fruits"
       ],
-      "netWeight": "400 Gram"
+      "netWeight": "250 Gram"
     },
     {
       "id": "talbina-milk-mawa",
-      "name": "Arabian's Talbeena Nutritional Breakfast (Milk Mawa Flavour - 400g)",
+      "name": "Arabian's Talbeena Nutritional Breakfast (Milk Mawa Flavour - 250g)",
       "category": "health",
       "subcategory": "talbina",
-      "price": 399,
-      "mrp": 499,
+      "price": 249,
+      "mrp": 270,
       "rating": 4.9,
       "reviewsCount": 98,
       "badge": "Creamy Rich",
@@ -449,15 +449,15 @@
         "Barley Porridge",
         "Healthy Breakfast"
       ],
-      "netWeight": "400 Gram"
+      "netWeight": "250 Gram"
     },
     {
       "id": "talbina-chocolate",
-      "name": "Arabian's Talbeena For Kids (Chocolate Flavour - 1+ Years - 400g)",
+      "name": "Arabian's Talbeena For Kids (Chocolate Flavour - 1+ Years - 250g)",
       "category": "health",
       "subcategory": "talbina",
-      "price": 399,
-      "mrp": 499,
+      "price": 249,
+      "mrp": 270,
       "rating": 4.9,
       "reviewsCount": 112,
       "badge": "Kids Special",
@@ -479,15 +479,15 @@
         "Brain Nutrition",
         "Sunnah Food"
       ],
-      "netWeight": "400 Gram"
+      "netWeight": "250 Gram"
     },
     {
       "id": "talbina-baby-barley",
-      "name": "Arabian's Talbeena Baby Cereal With Barley (3+ Years - 400g)",
+      "name": "Arabian's Talbeena Baby Cereal With Barley (3+ Years - 250g)",
       "category": "health",
       "subcategory": "talbina",
-      "price": 399,
-      "mrp": 499,
+      "price": 249,
+      "mrp": 270,
       "rating": 4.8,
       "reviewsCount": 84,
       "badge": "Gentle Formula",
@@ -509,15 +509,15 @@
         "Easy Digestion",
         "Sunnah Food"
       ],
-      "netWeight": "400 Gram"
+      "netWeight": "250 Gram"
     },
     {
       "id": "talbina-dry-dates",
-      "name": "Arabian's Talbeena With Dry Dates & Vanilla Flavour - 400g",
+      "name": "Arabian's Talbeena With Dry Dates & Vanilla Flavour - 250g",
       "category": "health",
       "subcategory": "talbina",
-      "price": 399,
-      "mrp": 499,
+      "price": 249,
+      "mrp": 270,
       "rating": 5,
       "reviewsCount": 167,
       "badge": "Royal Ajwa Blend",
@@ -539,7 +539,7 @@
         "Natural Iron",
         "Sunnah Food"
       ],
-      "netWeight": "400 Gram"
+      "netWeight": "250 Gram"
     },
     {
       "id": "honey-mix-dryfruits-premium",

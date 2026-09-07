@@ -105,7 +105,7 @@ export default function TalbinaSpotlight() {
                 <span>{activeProduct.badge || "100% Pure Sunnah Food"}</span>
               </span>
               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] sm:text-[11px] font-black px-3 py-1 rounded-full">
-                {activeProduct.netWeight || "400 Gram"}
+                {activeProduct.netWeight || "250 Gram"}
               </span>
             </div>
 
@@ -157,7 +157,7 @@ export default function TalbinaSpotlight() {
                   ₹{activeProduct.mrp}
                 </span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                  Save ₹{activeProduct.mrp - activeProduct.price} (22% Off)
+                  Save ₹{activeProduct.mrp - activeProduct.price} ({Math.round(((activeProduct.mrp - activeProduct.price) / (activeProduct.mrp || 1)) * 100)}% Off)
                 </span>
               </div>
             </div>
