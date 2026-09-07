@@ -2091,7 +2091,7 @@
       "subtitle": "Royal Perfumes, Pure Attars, Bakhoor, Burners, Room Sprays, Dehnul Oud & Car Perfumes",
       "icon": "Sparkles",
       "badge": "Pure Alcohol-Free",
-      "image": "/assets/products/arabian_perfume_royal_oud.jpg",
+      "image": "/assets/categories/fragrance_mukh_malaki.jpg",
       "subcategories": [
         {
           "id": "perfume",
@@ -2142,7 +2142,7 @@
       "subtitle": "Acrylic Tugra Frames, Acrylic & Resin Wall Clocks, Resin Tugre & Sacred Art",
       "icon": "Clock",
       "badge": "Handcrafted Luxury",
-      "image": "/assets/products/resin_wall_clock_emerald.jpg",
+      "image": "/assets/categories/decor_bismillah_frame.jpg",
       "subcategories": [
         {
           "id": "acrylic-tugra",
@@ -2173,7 +2173,7 @@
       "subtitle": "Nikah Nama Booklets, Signing Pens, Thumb Boards, Mirrors, Dupattas, Sehras & Haq Mehar Boxes",
       "icon": "BookOpen",
       "badge": "Sunnah Nikah",
-      "image": "/assets/products/nikah_nama_booklet_royal.jpg",
+      "image": "/assets/categories/wedding_nikah_frame.jpg",
       "subcategories": [
         {
           "id": "nikah-booklet",
@@ -2213,37 +2213,6 @@
         }
       ],
       "shortName": "Muslim Wedding"
-    },
-    {
-      "id": "skincare",
-      "name": "Natural & Sunnah Skin Care",
-      "subtitle": "Organic Soaps, Pure Kalonji Oil, Face Serums, Rose Water & Herbal Care",
-      "icon": "Sparkles",
-      "badge": "100% Organic",
-      "image": "/assets/products/pure_kalonji_blackseed_oil.jpg",
-      "subcategories": [
-        {
-          "id": "face-care",
-          "name": "Face Care & Serums"
-        },
-        {
-          "id": "organic-soaps",
-          "name": "Organic Herbal Soaps"
-        },
-        {
-          "id": "beard-hair-oil",
-          "name": "Sunnah Hair & Beard Oils"
-        },
-        {
-          "id": "rose-water",
-          "name": "Pure Arq-e-Gulab & Toners"
-        },
-        {
-          "id": "body-lotions",
-          "name": "Natural Body Care"
-        }
-      ],
-      "shortName": "Skin Care"
     }
   ],
   "reviews": [
@@ -7824,79 +7793,6 @@
       "helpful": 30
     }
   ],
-  "orders": [],
-  "distributors": [],
-  "coupons": [
-    {
-      "code": "JUMMAH20",
-      "discountPercent": 10,
-      "flatDiscount": 0,
-      "minOrder": 499,
-      "description": "20% Special Jummah Discount",
-      "active": true,
-      "createdAt": "2026-09-02T23:03:17.208Z"
-    },
-    {
-      "code": "ARABIAN10",
-      "discountPercent": 10,
-      "minOrder": 499,
-      "description": "10% Off on all orders above ₹499",
-      "active": true
-    },
-    {
-      "code": "SUNNAH100",
-      "flatDiscount": 100,
-      "minOrder": 999,
-      "description": "Flat ₹100 Off on orders above ₹999",
-      "active": true
-    },
-    {
-      "code": "RAMADAN50",
-      "discountPercent": 5,
-      "minOrder": 299,
-      "description": "5% Extra Festival Discount",
-      "active": true
-    },
-    {
-      "code": "FIRSTORDER",
-      "flatDiscount": 150,
-      "minOrder": 1299,
-      "description": "Flat ₹150 Off for new shoppers",
-      "active": true
-    }
-  ],
-  "settings": {
-    "storeName": "Arabians Shopping Zone",
-    "tagline": "Authentic Sunnah Foods, Royal Arabic Attire & Luxury Fragrances",
-    "phone": "+91 72338 62626",
-    "callNumber": "+91 72338 62626",
-    "whatsapp": "917233862626",
-    "whatsappDisplay": "+91 72338 62626",
-    "email": "arabiansshoppingzone@gmail.com",
-    "googleMapsUrl": "https://share.google/PEgVk9ck06u9M8PA9",
-    "instagramUrl": "https://www.instagram.com/arabians_shopping_zone",
-    "instagramHandle": "@arabians_shopping_zone",
-    "announcement": "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
-    "adminPin": "arabians786",
-    "currency": "₹",
-    "freeShippingThreshold": 999,
-    "standardShippingFee": 70,
-    "flashSale": {
-      "enabled": true,
-      "badge": "Special Sunnah Blessing Deal",
-      "headline": "Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD",
-      "subtitle": "Direct from our market studio. Sealed with tamper-proof halal guarantee.",
-      "couponCode": "ARABIAN10"
-    },
-    "jummahBundle": {
-      "enabled": true,
-      "badge": "Jummah Sunnah Mubarak Set • 1-Click Combo",
-      "title": "The Complete Sunnah Jummah Wardrobe Kit",
-      "subtitle": "Revive the pristine Sunnah of Friday prayers in one complete set: a pristine tailored Saudi thobe, handcrafted Turkish velvet cap, and aged alcohol-free Cambodian oud.",
-      "comboPrice": 2299,
-      "originalPrice": 2797
-    }
-  },
   "reels": [
     {
       "id": "reel-1",
@@ -7982,5 +7878,623 @@
       "productName": "Arabian's Talbeena Milk Mawa Flavour",
       "productPrice": "₹349"
     }
-  ]
+  ],
+  "orders": [
+    {
+      "id": "ASZ-2135",
+      "date": "2026-09-06 19:12",
+      "createdAt": "2026-09-06 19:12",
+      "customer": {
+        "name": "System Audit Test",
+        "phone": "9999999999",
+        "address": "123 Audit Street",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "pincode": "208001"
+      },
+      "customerName": "System Audit Test",
+      "phone": "9999999999",
+      "email": "",
+      "address": "123 Audit Street, Kanpur, Uttar Pradesh, 208001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Audit Product Test",
+          "price": 999,
+          "quantity": 1,
+          "size": "Standard",
+          "image": "/assets/logo/logo_main.png"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 100,
+      "couponCode": "ARABIAN10",
+      "deliveryFee": 0,
+      "total": 899,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "Express Courier Network",
+      "trackingNumber": "DELHIVERY-786923",
+      "trackingId": "DELHIVERY-786923",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 19:12",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 19:12",
+          "done": true
+        },
+        {
+          "status": "Dispatched via Express Courier Network",
+          "time": "06 Sept, 19:12",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-2746",
+      "date": "2026-09-06 18:58",
+      "createdAt": "2026-09-06 18:58",
+      "customer": {
+        "name": "System Audit Test",
+        "phone": "9999999999",
+        "address": "123 Audit Street",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "pincode": "208001"
+      },
+      "customerName": "System Audit Test",
+      "phone": "9999999999",
+      "email": "",
+      "address": "123 Audit Street, Kanpur, Uttar Pradesh, 208001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Audit Product Test",
+          "price": 999,
+          "quantity": 1,
+          "size": "Standard",
+          "image": "/assets/logo/logo_main.png"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 100,
+      "couponCode": "ARABIAN10",
+      "deliveryFee": 0,
+      "total": 899,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "Express Courier Network",
+      "trackingNumber": "DELHIVERY-786923",
+      "trackingId": "DELHIVERY-786923",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 18:58",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 18:58",
+          "done": true
+        },
+        {
+          "status": "Dispatched via Express Courier Network",
+          "time": "06 Sept, 18:58",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-3426",
+      "date": "2026-09-06 18:58",
+      "createdAt": "2026-09-06 18:58",
+      "customer": {
+        "name": "System Audit Test",
+        "phone": "9999999999",
+        "address": "123 Audit Street",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "pincode": "208001"
+      },
+      "customerName": "System Audit Test",
+      "phone": "9999999999",
+      "email": "",
+      "address": "123 Audit Street, Kanpur, Uttar Pradesh, 208001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Audit Product Test",
+          "price": 999,
+          "quantity": 1,
+          "size": "Standard",
+          "image": "/assets/logo/logo_main.png"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 100,
+      "couponCode": "ARABIAN10",
+      "deliveryFee": 0,
+      "total": 899,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "Express Courier Network",
+      "trackingNumber": "DELHIVERY-786923",
+      "trackingId": "DELHIVERY-786923",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 18:58",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 18:58",
+          "done": true
+        },
+        {
+          "status": "Dispatched via Express Courier Network",
+          "time": "06 Sept, 18:58",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-3221",
+      "date": "2026-09-06 18:56",
+      "createdAt": "2026-09-06 18:56",
+      "customer": {
+        "name": "System Audit Test",
+        "phone": "9999999999",
+        "address": "123 Audit Street",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "pincode": "208001"
+      },
+      "customerName": "System Audit Test",
+      "phone": "9999999999",
+      "email": "",
+      "address": "123 Audit Street, Kanpur, Uttar Pradesh, 208001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Audit Product Test",
+          "price": 999,
+          "quantity": 1,
+          "size": "Standard",
+          "image": "/assets/logo/logo_main.png"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 100,
+      "couponCode": "ARABIAN10",
+      "deliveryFee": 0,
+      "total": 899,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "Express Courier Network",
+      "trackingNumber": "DELHIVERY-786923",
+      "trackingId": "DELHIVERY-786923",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 18:56",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 18:56",
+          "done": true
+        },
+        {
+          "status": "Dispatched via Express Courier Network",
+          "time": "06 Sept, 18:56",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-5847",
+      "date": "2026-09-06 18:55",
+      "createdAt": "2026-09-06 18:55",
+      "customer": {
+        "name": "System Audit Test",
+        "phone": "9999999999",
+        "address": "123 Audit Street",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "pincode": "208001"
+      },
+      "customerName": "System Audit Test",
+      "phone": "9999999999",
+      "email": "",
+      "address": "123 Audit Street, Kanpur, Uttar Pradesh, 208001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Audit Product Test",
+          "price": 999,
+          "quantity": 1,
+          "size": "Standard",
+          "image": "/assets/logo/logo_main.png"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 100,
+      "couponCode": "ARABIAN10",
+      "deliveryFee": 0,
+      "total": 899,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "Express Courier Network",
+      "trackingNumber": "DELHIVERY-786923",
+      "trackingId": "DELHIVERY-786923",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 18:55",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 18:55",
+          "done": true
+        },
+        {
+          "status": "Dispatched via Express Courier Network",
+          "time": "06 Sept, 18:55",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-6231",
+      "date": "2026-09-06 18:52",
+      "createdAt": "2026-09-06 18:52",
+      "customer": {
+        "name": "System Audit Test",
+        "phone": "9999999999",
+        "address": "123 Audit Street",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "pincode": "208001"
+      },
+      "customerName": "System Audit Test",
+      "phone": "9999999999",
+      "email": "",
+      "address": "123 Audit Street, Kanpur, Uttar Pradesh, 208001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Audit Product Test",
+          "price": 999,
+          "quantity": 1,
+          "size": "Standard",
+          "image": "/assets/logo/logo_main.png"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 100,
+      "couponCode": "ARABIAN10",
+      "deliveryFee": 0,
+      "total": 899,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "Express Courier Network",
+      "trackingNumber": "DELHIVERY-786923",
+      "trackingId": "DELHIVERY-786923",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 18:52",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 18:52",
+          "done": true
+        },
+        {
+          "status": "Dispatched via Express Courier Network",
+          "time": "06 Sept, 18:52",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-5239",
+      "date": "2026-09-06 15:24",
+      "createdAt": "2026-09-06 15:24",
+      "customer": {
+        "city": "Bareilly",
+        "name": "Hamza Bhai Test",
+        "phone": "9876543210",
+        "pincode": "243001",
+        "email": "test@arabians.shop",
+        "state": "Uttar Pradesh",
+        "address": "Civil Lines"
+      },
+      "customerName": "Hamza Bhai Test",
+      "phone": "9876543210",
+      "email": "test@arabians.shop",
+      "address": "Civil Lines, Bareilly, Uttar Pradesh, 243001",
+      "items": [
+        {
+          "price": 349,
+          "quantity": 1,
+          "name": "Arabian's Talbeena Milk Mawa"
+        }
+      ],
+      "subtotal": 0,
+      "discount": 0,
+      "couponCode": "",
+      "deliveryFee": 0,
+      "total": 349,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Dispatched",
+      "courier": "BlueDart Express",
+      "trackingNumber": "BD99887766",
+      "trackingId": "BD99887766",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-06 15:24",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-06 15:24",
+          "done": true
+        },
+        {
+          "status": "Dispatched via BlueDart Express",
+          "time": "06 Sept, 15:24",
+          "done": true
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "distributors": [
+    {
+      "id": "DIST-525",
+      "name": "Al-Hasan Islamic Mart",
+      "contactPerson": "Mohammad Tariq",
+      "phone": "9876543210",
+      "email": "",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "currentBusiness": "Retail Store / Islamic Mart",
+      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
+      "interestedProducts": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Saudi & Emirati Thobes",
+        "Islamic Home Decor (Ayat-ul-Kursi Art)"
+      ],
+      "message": "",
+      "status": "New Lead",
+      "date": "2026-09-04"
+    },
+    {
+      "id": "DIST-348",
+      "name": "Al-Hasan Islamic Mart",
+      "contactPerson": "Mohammad Tariq",
+      "phone": "9876543210",
+      "email": "",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "currentBusiness": "Retail Store / Islamic Mart",
+      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
+      "interestedProducts": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Saudi & Emirati Thobes",
+        "Islamic Home Decor (Ayat-ul-Kursi Art)"
+      ],
+      "message": "",
+      "status": "New Lead",
+      "date": "2026-09-04"
+    },
+    {
+      "id": "DIST-784",
+      "name": "Al-Hasan Islamic Mart",
+      "contactPerson": "Mohammad Tariq",
+      "phone": "9876543210",
+      "email": "",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "currentBusiness": "Retail Store / Islamic Mart",
+      "investmentBudget": "₹1,00,000+ (Master District Distributor)",
+      "interestedProducts": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Saudi & Emirati Thobes",
+        "Islamic Home Decor (Ayat-ul-Kursi Art)"
+      ],
+      "message": "",
+      "status": "New Lead",
+      "date": "2026-09-04"
+    },
+    {
+      "id": "DIST-101",
+      "businessName": "Al-Huda Islamic Emporium",
+      "ownerName": "Maulana Abdul Wahid",
+      "phone": "9823456780",
+      "email": "alhuda.emporium@gmail.com",
+      "city": "Lucknow",
+      "state": "Uttar Pradesh",
+      "investment": "₹50,000 - ₹1,00,000 (City Stockist)",
+      "categories": [
+        "Arabians Talbina (All Flavors)",
+        "Designer Thobes & Jubbas (Men)"
+      ],
+      "notes": "We have 2 prime stores in Aminabad and Chowk. Monthly demand for Sunnah breakfast is huge.",
+      "status": "Hot Lead"
+    },
+    {
+      "id": "DIST-102",
+      "businessName": "Madina Superstore & Attar House",
+      "ownerName": "Zubair Merchant",
+      "phone": "9812345678",
+      "email": "madina.attar@gmail.com",
+      "city": "Calicut (Kozhikode)",
+      "state": "Kerala",
+      "investment": "₹1,00,000+ (Master District Distributor)",
+      "categories": [
+        "Arabians Talbina (All Flavors)",
+        "Attar & Dehnul Oud (Fragrance)",
+        "Bakhoor & Electric Burners"
+      ],
+      "notes": "Looking for exclusive Malabar district wholesale rights. Immediate warehouse capacity available.",
+      "status": "In Discussion"
+    }
+  ],
+  "coupons": [
+    {
+      "code": "JUMMAH20",
+      "discountPercent": 10,
+      "flatDiscount": 0,
+      "minOrder": 499,
+      "description": "20% Special Jummah Discount",
+      "active": true,
+      "createdAt": "2026-09-02T23:03:17.208Z"
+    },
+    {
+      "code": "ARABIAN10",
+      "discountPercent": 10,
+      "minOrder": 499,
+      "description": "10% Off on all orders above ₹499",
+      "active": true
+    },
+    {
+      "code": "SUNNAH100",
+      "flatDiscount": 100,
+      "minOrder": 999,
+      "description": "Flat ₹100 Off on orders above ₹999",
+      "active": true
+    },
+    {
+      "code": "RAMADAN50",
+      "discountPercent": 5,
+      "minOrder": 299,
+      "description": "5% Extra Festival Discount",
+      "active": true
+    },
+    {
+      "code": "FIRSTORDER",
+      "flatDiscount": 150,
+      "minOrder": 1299,
+      "description": "Flat ₹150 Off for new shoppers",
+      "active": true
+    }
+  ],
+  "settings": {
+    "storeName": "Arabians Shopping Zone",
+    "tagline": "Authentic Sunnah Foods, Royal Arabic Attire & Luxury Fragrances",
+    "phone": "+91 92360 28318",
+    "callNumber": "+91 92360 28318",
+    "whatsapp": "917233862626",
+    "whatsappDisplay": "+91 72338 62626",
+    "email": "arabiansshoppingzone@gmail.com",
+    "googleMapsUrl": "https://share.google/PEgVk9ck06u9M8PA9",
+    "instagramUrl": "https://www.instagram.com/arabians_shopping_zone",
+    "instagramHandle": "@arabians_shopping_zone",
+    "announcement": "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
+    "adminPin": "arabians786",
+    "currency": "₹",
+    "freeShippingThreshold": 999,
+    "standardShippingFee": 70,
+    "flashSale": {
+      "enabled": true,
+      "badge": "Special Sunnah Blessing Deal",
+      "headline": "Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD",
+      "subtitle": "Direct from our market studio. Sealed with tamper-proof halal guarantee.",
+      "couponCode": "ARABIAN10"
+    },
+    "jummahBundle": {
+      "enabled": true,
+      "badge": "Jummah Sunnah Mubarak Set • 1-Click Combo",
+      "title": "The Complete Sunnah Jummah Wardrobe Kit",
+      "subtitle": "Revive the pristine Sunnah of Friday prayers in one complete set: a pristine tailored Saudi thobe, handcrafted Turkish velvet cap, and aged alcohol-free Cambodian oud.",
+      "comboPrice": 2299,
+      "originalPrice": 2797
+    }
+  }
 }
