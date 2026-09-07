@@ -1078,11 +1078,11 @@ export default function AdminPage() {
               }`}
             >
               <div className="flex items-center gap-3">
-                <Layers className="w-4 h-4" />
-                <span>Categories & Catalogs</span>
+                <Layers className={`w-4 h-4 ${activeTab === 'categories' ? 'text-slate-950' : 'text-amber-400'}`} />
+                <span className="font-bold">Homepage Circles & Categories</span>
               </div>
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
-                activeTab === 'categories' ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'
+                activeTab === 'categories' ? 'bg-slate-950 text-amber-300' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
               }`}>
                 {categories.length}
               </span>
@@ -1213,6 +1213,19 @@ export default function AdminPage() {
               title="Sync Store Data"
             >
               <RefreshCw className={`w-4 h-4 ${loadingOrders ? 'animate-spin text-amber-400' : ''}`} />
+            </button>
+
+            <button
+              onClick={() => { setActiveTab('categories'); setIsMobileSidebarOpen(false); }}
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
+                activeTab === 'categories'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
+                  : 'bg-slate-800 hover:bg-slate-700 text-amber-400 border-amber-500/30 hover:border-amber-400'
+              }`}
+              title="Manage Homepage Story Circles & Categories"
+            >
+              <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span>Homepage Circles ({categories.length})</span>
             </button>
 
             {activeTab === 'products' && (
@@ -1376,8 +1389,23 @@ export default function AdminPage() {
               </div>
 
               {/* Quick Action Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
+                <div 
+                  onClick={() => setActiveTab('categories')}
+                  className="bg-[#0c1620] hover:bg-[#101c29] cursor-pointer p-5 rounded-3xl border border-amber-500/30 hover:border-amber-400 transition group space-y-2"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md">
+                    🎨
+                  </div>
+                  <h3 className="font-serif font-bold text-amber-300 group-hover:text-amber-200 transition">
+                    Homepage Story Circles
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Change circle photos, edit titles, reorder circles or add new categories on homepage.
+                  </p>
+                </div>
+
                 <div 
                   onClick={() => setActiveTab('orders')}
                   className="bg-[#0c1620] hover:bg-[#101c29] cursor-pointer p-5 rounded-3xl border border-slate-800 hover:border-amber-500/40 transition group space-y-2"
