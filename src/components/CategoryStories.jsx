@@ -78,14 +78,15 @@ export default function CategoryStories() {
     // Map store categories
     return categories.map(cat => {
       const fallback = STORY_DISPLAY_MAP[cat.id] || {};
-      const displayName = cat.shortName || fallback.name || cat.name;
-      const displayImage = fallback.image || cat.image || '/assets/logo/logo_main.png';
+      const displayName = cat.shortName || cat.name || fallback.name;
+      const displayImage = cat.image || fallback.image || '/assets/logo/logo_main.png';
 
       return {
         id: cat.id,
         name: displayName,
         image: displayImage,
-        link: `/shop?category=${cat.id}`
+        link: `/shop?category=${cat.id}`,
+        fallbackImage: fallback.image || '/assets/logo/logo_main.png'
       };
     });
   }, [categories]);
@@ -113,7 +114,8 @@ export default function CategoryStories() {
                       className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
                       loading="eager"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = story.fallbackImage || '/assets/logo/logo_main.png';
                       }}
                     />
                   </div>

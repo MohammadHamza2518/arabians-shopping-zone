@@ -112,7 +112,7 @@ async function initMongoDB() {
           skincare: '/assets/products/pure_kalonji_blackseed_oil.jpg'
         };
         memoryStore.categories.forEach(c => {
-          if (catImages[c.id]) {
+          if (!c.image && catImages[c.id]) {
             c.image = catImages[c.id];
           }
         });
@@ -376,6 +376,7 @@ app.post('/api/categories', (req, res) => {
   const newCat = {
     id: rawId,
     name: rawName,
+    shortName: (req.body.shortName || '').trim() || rawName,
     subtitle: (req.body.subtitle || '').trim() || `Authentic ${rawName} collection`,
     icon: req.body.icon || 'Sparkles',
     badge: (req.body.badge || '').trim() || 'New Collection',
@@ -386,6 +387,28 @@ app.post('/api/categories', (req, res) => {
   store.categories.push(newCat);
   saveStore(store);
   res.status(201).json({ success: true, category: newCat });
+});
+
+app.put('/api/categories-reorder', (req, res) => {
+  const store = getStore();
+  const { orderedIds } = req.body;
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ error: "orderedIds must be an array of category IDs" });
+  }
+  const currentCats = store.categories || [];
+  const reordered = [];
+  orderedIds.forEach(id => {
+    const found = currentCats.find(c => c.id === id);
+    if (found) reordered.push(found);
+  });
+  currentCats.forEach(c => {
+    if (!reordered.some(r => r.id === c.id)) {
+      reordered.push(c);
+    }
+  });
+  store.categories = reordered;
+  saveStore(store);
+  res.json({ success: true, categories: store.categories });
 });
 
 app.put('/api/categories/:id', (req, res) => {
@@ -407,9 +430,14 @@ app.put('/api/categories/:id', (req, res) => {
     }).filter(s => s.name);
   }
 
+  const updatedName = req.body.name !== undefined ? req.body.name.trim() : store.categories[idx].name;
+
   store.categories[idx] = {
     ...store.categories[idx],
-    name: req.body.name !== undefined ? req.body.name.trim() : store.categories[idx].name,
+    name: updatedName,
+    shortName: req.body.shortName !== undefined 
+      ? req.body.shortName.trim() 
+      : (store.categories[idx].shortName || updatedName),
     subtitle: req.body.subtitle !== undefined ? req.body.subtitle.trim() : store.categories[idx].subtitle,
     icon: req.body.icon !== undefined ? req.body.icon : store.categories[idx].icon,
     badge: req.body.badge !== undefined ? req.body.badge.trim() : store.categories[idx].badge,

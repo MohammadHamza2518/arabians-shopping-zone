@@ -684,6 +684,11 @@ export default function AdminPage() {
         const upData = await upRes.json();
         if (upData.success) {
           finalImageUrl = upData.url || upData.imageUrl;
+        } else {
+          showToast(upData.error || "Image upload failed", "error");
+          setSavingCategory(false);
+          setUploadingCatImage(false);
+          return;
         }
         setUploadingCatImage(false);
       }
@@ -699,6 +704,7 @@ export default function AdminPage() {
       const payload = {
         id: slugId,
         name: editingCategory.name.trim(),
+        shortName: (editingCategory.shortName || editingCategory.name || '').trim(),
         subtitle: (editingCategory.subtitle || '').trim(),
         icon: editingCategory.icon || 'Sparkles',
         badge: (editingCategory.badge || '').trim(),
@@ -745,6 +751,33 @@ export default function AdminPage() {
       }
     } catch {
       showToast("Failed to delete category", "error");
+    }
+  };
+
+  const handleReorderCategory = async (direction, catId) => {
+    const idx = categories.findIndex(c => c.id === catId);
+    if (idx === -1) return;
+    const targetIdx = direction === 'left' || direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= categories.length) return;
+
+    const newOrder = [...categories];
+    const [moved] = newOrder.splice(idx, 1);
+    newOrder.splice(targetIdx, 0, moved);
+
+    try {
+      const res = await fetch('/api/categories-reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds: newOrder.map(c => c.id) })
+      });
+      if (res.ok) {
+        showToast("Category order updated on Homepage!");
+        refreshAll();
+      } else {
+        showToast("Failed to update category order", "error");
+      }
+    } catch {
+      showToast("Error updating category order", "error");
     }
   };
 
@@ -1167,6 +1200,7 @@ export default function AdminPage() {
                 {activeTab === 'products' && 'Product Catalog Management'}
                 {activeTab === 'distributors' && 'B2B Wholesale Pipeline'}
                 {activeTab === 'coupons' && 'Promotional Coupons & Vouchers'}
+                {activeTab === 'categories' && 'Homepage Categories & Story Rings'}
                 {activeTab === 'settings' && 'Store Configuration & Rates'}
               </h2>
             </div>
@@ -1188,6 +1222,31 @@ export default function AdminPage() {
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Product</span>
+              </button>
+            )}
+
+            {activeTab === 'categories' && (
+              <button
+                onClick={() => {
+                  setEditingCategory({
+                    isNew: true,
+                    id: '',
+                    name: '',
+                    shortName: '',
+                    subtitle: '',
+                    icon: 'Sparkles',
+                    badge: 'New Collection',
+                    image: '/assets/logo/logo_main.png',
+                    subcategories: []
+                  });
+                  setCatImageFile(null);
+                  setNewSubcatInput('');
+                  setIsCategoryModalOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Category</span>
               </button>
             )}
 
@@ -1905,7 +1964,7 @@ export default function AdminPage() {
 
           {/* Categories Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((cat) => {
+            {categories.map((cat, index) => {
               const catProductsCount = products.filter(p => p.category === cat.id).length;
               const IconComp = CATEGORY_ICON_MAP[cat.icon] || Sparkles;
 
@@ -1915,23 +1974,63 @@ export default function AdminPage() {
                   className="bg-[#0c1620] rounded-3xl p-5 border border-slate-800 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-500/40 transition group"
                 >
                   <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-16 h-16 rounded-2xl bg-[#070d12] border border-slate-800 p-1 shrink-0 overflow-hidden flex items-center justify-center">
-                        <img 
-                          src={cat.image || '/assets/logo/logo_main.png'} 
-                          alt={cat.name} 
-                          className="w-full h-full object-contain rounded-xl group-hover:scale-105 transition-transform" 
-                        />
+                    {/* Top strip with Homepage Story Circle & Metadata */}
+                    <div className="flex items-start gap-3.5">
+                      {/* Exact Homepage Circular Story Ring Preview */}
+                      <div className="relative shrink-0 flex flex-col items-center">
+                        <div className="w-16 h-16 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-500 shadow-md group-hover:shadow-[0_4px_15px_rgba(217,119,6,0.35)] transition-all">
+                          <div className="w-full h-full rounded-full bg-[#faf8f5] p-[2px] overflow-hidden">
+                            <img 
+                              src={cat.image || '/assets/logo/logo_main.png'} 
+                              alt={cat.name} 
+                              className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = '/assets/logo/logo_main.png';
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-extrabold text-amber-400 mt-1 max-w-[70px] truncate text-center">
+                          {cat.shortName || cat.name}
+                        </span>
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
-                            <IconComp className="w-3.5 h-3.5" />
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                              <IconComp className="w-3.5 h-3.5" />
+                            </div>
+                            <h4 className="font-serif font-bold text-sm text-white truncate">
+                              {cat.name}
+                            </h4>
                           </div>
-                          <h4 className="font-serif font-bold text-sm text-white truncate">
-                            {cat.name}
-                          </h4>
+
+                          {/* Reorder Left / Right on Homepage */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => handleReorderCategory('left', cat.id)}
+                              className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center text-[10px] font-bold transition"
+                              title="Move left on Homepage Story Strip"
+                            >
+                              ◀
+                            </button>
+                            <span className="text-[10px] font-mono text-slate-400 font-bold px-1">
+                              #{index + 1}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={index === categories.length - 1}
+                              onClick={() => handleReorderCategory('right', cat.id)}
+                              className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center text-[10px] font-bold transition"
+                              title="Move right on Homepage Story Strip"
+                            >
+                              ▶
+                            </button>
+                          </div>
                         </div>
 
                         {cat.badge && (
@@ -1987,7 +2086,11 @@ export default function AdminPage() {
                     <button
                       data-testid={`edit-cat-${cat.id}`}
                       onClick={() => {
-                        setEditingCategory({ ...JSON.parse(JSON.stringify(cat)), isNew: false });
+                        setEditingCategory({ 
+                          ...JSON.parse(JSON.stringify(cat)), 
+                          shortName: cat.shortName || cat.name,
+                          isNew: false 
+                        });
                         setCatImageFile(null);
                         setNewSubcatInput('');
                         setIsCategoryModalOpen(true);
@@ -2956,20 +3059,74 @@ export default function AdminPage() {
           </button>
         </div>
 
+        {/* Live Homepage Story Ring Preview */}
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#070d12] border border-amber-500/30 flex items-center gap-4">
+          <div className="flex flex-col items-center shrink-0">
+            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-500 shadow-md">
+              <div className="w-full h-full rounded-full bg-[#faf8f5] p-[2px] overflow-hidden">
+                <img
+                  src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
+                  alt="Story Ring Preview"
+                  className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/assets/logo/logo_main.png';
+                  }}
+                />
+              </div>
+            </div>
+            <span className="text-[11px] font-extrabold text-amber-300 mt-1 max-w-[100px] truncate text-center">
+              {editingCategory.shortName || editingCategory.name || 'Story Label'}
+            </span>
+          </div>
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-bold">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Live Homepage Circle Preview</span>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-snug">
+              This is the exact golden circular ring customers will see at the top of the Homepage!
+            </p>
+            <p className="text-[10px] text-slate-500">
+              Any picture or label change updates here in real-time.
+            </p>
+          </div>
+        </div>
+
         <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-300 mb-1">Category Title *</label>
+              <label className="block font-bold text-slate-300 mb-1">Category Full Title *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Prayer Mats & Janamaz"
+                placeholder="e.g. Healthy & Sunnah Foods"
                 value={editingCategory.name}
-                onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                onChange={(e) => setEditingCategory({ 
+                  ...editingCategory, 
+                  name: e.target.value,
+                  shortName: editingCategory.shortName || e.target.value
+                })}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
 
+            <div>
+              <label className="block font-bold text-amber-300 mb-1 flex items-center justify-between">
+                <span>Homepage Story Label</span>
+                <span className="text-[10px] text-slate-400 font-normal">Under circle</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Healthy, Men's Wear, Wedding"
+                value={editingCategory.shortName || ''}
+                onChange={(e) => setEditingCategory({ ...editingCategory, shortName: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-amber-500/40 text-amber-300 font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-300 mb-1">
                 Slug ID {editingCategory.isNew ? '(auto if empty)' : '(Read-only)'}
@@ -2981,6 +3138,17 @@ export default function AdminPage() {
                 value={editingCategory.id || ''}
                 onChange={(e) => setEditingCategory({ ...editingCategory, id: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Badge Tag</label>
+              <input
+                type="text"
+                placeholder="e.g. Royal Sacred, New"
+                value={editingCategory.badge || ''}
+                onChange={(e) => setEditingCategory({ ...editingCategory, badge: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -2996,41 +3164,38 @@ export default function AdminPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Badge Tag</label>
-              <input
-                type="text"
-                placeholder="e.g. Royal Sacred, New"
-                value={editingCategory.badge || ''}
-                onChange={(e) => setEditingCategory({ ...editingCategory, badge: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Category Icon</label>
-              <select
-                value={editingCategory.icon || 'Sparkles'}
-                onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              >
-                {ICON_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>{opt.name}</option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="block font-bold text-slate-300 mb-1">Category Icon</label>
+            <select
+              value={editingCategory.icon || 'Sparkles'}
+              onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+            >
+              {ICON_OPTIONS.map((opt) => (
+                <option key={opt.id} value={opt.id}>{opt.name}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Category Cover Image */}
-          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-2">
-            <label className="block font-bold text-slate-300">Category Cover Photo</label>
+          {/* Category Cover Image with Quick Presets */}
+          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="block font-bold text-slate-300">Category Cover Photo</label>
+              <span className="text-[10px] text-slate-400">JPG, PNG, WebP</span>
+            </div>
+
             <div className="flex items-center gap-3">
-              <img
-                src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
-                alt=""
-                className="w-14 h-14 rounded-2xl object-contain border border-slate-700 p-1 bg-[#0c1620]"
-              />
+              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-700 p-0.5 bg-[#0c1620] shrink-0">
+                <img
+                  src={catImageFile ? URL.createObjectURL(catImageFile) : (editingCategory.image || '/assets/logo/logo_main.png')}
+                  alt=""
+                  className="w-full h-full object-cover rounded-xl"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/assets/logo/logo_main.png';
+                  }}
+                />
+              </div>
               <div className="flex-1 space-y-1.5">
                 <input
                   type="file"
@@ -3040,15 +3205,50 @@ export default function AdminPage() {
                       setCatImageFile(e.target.files[0]);
                     }
                   }}
-                  className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:brightness-110"
+                  className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:brightness-110 cursor-pointer"
                 />
                 <input
                   type="text"
                   placeholder="Or paste direct image URL (e.g. /assets/...)"
                   value={editingCategory.image || ''}
                   onChange={(e) => setEditingCategory({ ...editingCategory, image: e.target.value })}
-                  className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c1620] border border-slate-700 text-white"
+                  className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c1620] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
+              </div>
+            </div>
+
+            {/* Quick Luxury Presets */}
+            <div className="pt-2 border-t border-slate-800/80">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                Quick Luxury Store Presets:
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { label: "Men's Thobe", path: '/assets/studio/mens_white_thobe.jpg' },
+                  { label: "Talbina Health", path: '/assets/products/talbeena_boxes_group.jpg' },
+                  { label: "Dehnul Oud", path: '/assets/categories/fragrance_mukh_malaki.jpg' },
+                  { label: "Islamic Clock", path: '/assets/categories/decor_islamic_wall_clock.jpg' },
+                  { label: "Nikah Frame", path: '/assets/categories/wedding_nikah_frame.jpg' },
+                  { label: "Blackseed Oil", path: '/assets/products/pure_kalonji_blackseed_oil.jpg' },
+                  { label: "Attar Bottle", path: '/assets/products/attar_rooh_gulab_pure.jpg' },
+                  { label: "Bakhoor Burner", path: '/assets/products/bakhoor_electric_brass_burner.jpg' }
+                ].map((preset) => (
+                  <button
+                    key={preset.path}
+                    type="button"
+                    onClick={() => {
+                      setCatImageFile(null);
+                      setEditingCategory({ ...editingCategory, image: preset.path });
+                    }}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition border ${
+                      editingCategory.image === preset.path && !catImageFile
+                        ? 'bg-amber-500 text-slate-950 border-amber-400'
+                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-amber-400/60'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

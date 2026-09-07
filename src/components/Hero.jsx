@@ -33,8 +33,8 @@ const HERO_SLIDES = [
     title: "Arabian's Sprouted Barley Talbeena",
     subtitle: "Stone-ground roasted barley blended with premium California almonds, pistachios, and saffron. Rejuvenates the heart and vitalizes immunity according to authentic Hadith 5417.",
     highlight: "5 High-Repeat Flavors • Lab Certified • 100% Halal",
-    price: "From ₹349",
-    mrp: "₹449",
+    price: "From ₹249",
+    mrp: "₹270",
     ctaText: "Order Sunnah Talbina",
     ctaLink: "/product/talbina-vanilla",
     image: "/assets/talbina/talbina_banner_43.jpg"
