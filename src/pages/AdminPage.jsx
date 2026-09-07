@@ -74,7 +74,7 @@ const CATEGORY_ICON_MAP = ICON_OPTIONS.reduce((acc, curr) => {
 }, {});
 
 export default function AdminPage() {
-  const { products, categories, refreshAll, showToast, settings: globalSettings } = useStore();
+  const { products, categories, heroSlides, setHeroSlides, refreshAll, showToast, settings: globalSettings } = useStore();
 
   const [passcode, setPasscode] = useState('');
   const [showPasscode, setShowPasscode] = useState(false);
@@ -82,7 +82,7 @@ export default function AdminPage() {
     return sessionStorage.getItem('asz_admin_auth') === 'true';
   });
 
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'orders', 'products', 'distributors', 'coupons', 'settings'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'orders', 'products', 'categories', 'banners', 'distributors', 'coupons', 'settings'
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Admin Data states
@@ -124,6 +124,14 @@ export default function AdminPage() {
   const [catImageFile, setCatImageFile] = useState(null);
   const [uploadingCatImage, setUploadingCatImage] = useState(false);
   const [newSubcatInput, setNewSubcatInput] = useState('');
+
+  // Hero Slide CRUD state
+  const [editingSlide, setEditingSlide] = useState(null);
+  const [isSlideModalOpen, setIsSlideModalOpen] = useState(false);
+  const [savingSlide, setSavingSlide] = useState(false);
+  const [slideImageFile, setSlideImageFile] = useState(null);
+  const [uploadingSlideImage, setUploadingSlideImage] = useState(false);
+  const slideFileInputRef = React.useRef(null);
 
   // Coupon modal state
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
@@ -807,6 +815,165 @@ export default function AdminPage() {
     });
   };
 
+  // --- Homepage Hero Slide Handlers ---
+  const openSlideModal = (slide = null) => {
+    if (slide) {
+      setEditingSlide({ ...slide, isNew: false });
+    } else {
+      setEditingSlide({
+        isNew: true,
+        id: `slide-${Date.now()}`,
+        badge: '✨ Exclusive Collection',
+        title: '',
+        subtitle: '',
+        highlight: '100% Halal Verified • Fast Delivery',
+        price: 'From ₹499',
+        mrp: '₹799',
+        ctaText: 'Shop Collection',
+        ctaLink: '/shop',
+        image: '/assets/talbina/talbina_banner_43.jpg'
+      });
+    }
+    setSlideImageFile(null);
+    setIsSlideModalOpen(true);
+  };
+
+  const handleSaveSlide = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingSlide || !editingSlide.title?.trim()) {
+      showToast("Please enter a slide title / headline", "error");
+      return;
+    }
+
+    setSavingSlide(true);
+    try {
+      let finalImageUrl = editingSlide.image || '/assets/talbina/talbina_banner_43.jpg';
+
+      // If user picked a local image file, upload it to server first
+      if (slideImageFile) {
+        setUploadingSlideImage(true);
+        const formData = new FormData();
+        formData.append('image', slideImageFile);
+        const upRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const upData = await upRes.json();
+        if (upData.url) {
+          finalImageUrl = upData.url;
+        }
+      }
+
+      const payload = {
+        badge: (editingSlide.badge || '').trim(),
+        title: (editingSlide.title || '').trim(),
+        subtitle: (editingSlide.subtitle || '').trim(),
+        highlight: (editingSlide.highlight || '').trim(),
+        price: (editingSlide.price || '').trim(),
+        mrp: (editingSlide.mrp || '').trim(),
+        ctaText: (editingSlide.ctaText || 'Shop Collection').trim(),
+        ctaLink: (editingSlide.ctaLink || '/shop').trim(),
+        image: finalImageUrl
+      };
+
+      let res;
+      if (editingSlide.isNew) {
+        res = await fetch('/api/hero-slides', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        res = await fetch(`/api/hero-slides/${editingSlide.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast(editingSlide.isNew ? "🎉 New Hero Banner added!" : "✅ Hero Banner updated successfully!");
+        setIsSlideModalOpen(false);
+        setEditingSlide(null);
+        setSlideImageFile(null);
+        if (data.heroSlides) setHeroSlides(data.heroSlides);
+        refreshAll();
+      } else {
+        showToast(data.error || "Failed to save banner slide", "error");
+      }
+    } catch (err) {
+      showToast("Error saving banner: " + err.message, "error");
+    } finally {
+      setSavingSlide(false);
+      setUploadingSlideImage(false);
+    }
+  };
+
+  const handleReorderSlide = async (slideId, direction) => {
+    const slides = [...(heroSlides || [])];
+    const idx = slides.findIndex(s => s.id === slideId);
+    if (idx === -1) return;
+    const targetIdx = direction === 'left' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= slides.length) return;
+
+    const temp = slides[idx];
+    slides[idx] = slides[targetIdx];
+    slides[targetIdx] = temp;
+
+    setHeroSlides(slides);
+    try {
+      const res = await fetch('/api/hero-slides-reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slideIds: slides.map(s => s.id) })
+      });
+      const data = await res.json();
+      if (res.ok && data.heroSlides) {
+        setHeroSlides(data.heroSlides);
+        showToast(`Slide #${idx + 1} shifted ${direction === 'left' ? 'left' : 'right'}!`);
+      }
+    } catch (err) {
+      showToast("Failed to reorder: " + err.message, "error");
+    }
+  };
+
+  const handleDeleteSlide = async (slideId) => {
+    if ((heroSlides || []).length <= 1) {
+      showToast("Cannot delete the only slide! At least 1 slide must remain on Homepage.", "error");
+      return;
+    }
+    if (!window.confirm("Are you sure you want to delete this Hero Banner slide from the homepage?")) return;
+    try {
+      const res = await fetch(`/api/hero-slides/${slideId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Banner slide removed from Homepage");
+        if (data.heroSlides) setHeroSlides(data.heroSlides);
+        refreshAll();
+      } else {
+        showToast(data.error || "Failed to delete slide", "error");
+      }
+    } catch (err) {
+      showToast("Error deleting slide: " + err.message, "error");
+    }
+  };
+
+  const handleResetSlides = async () => {
+    if (!window.confirm("Restore original factory hero banner slides (Thobes, Talbina, Oud, Nikah)? This will reset custom changes.")) return;
+    try {
+      const res = await fetch('/api/hero-slides/reset', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("↺ Hero banners restored to original royal design!");
+        if (data.heroSlides) setHeroSlides(data.heroSlides);
+        refreshAll();
+      }
+    } catch (err) {
+      showToast("Reset failed: " + err.message, "error");
+    }
+  };
+
   const handleCreateCoupon = async (e) => {
     e.preventDefault();
     if (!newCouponData.code.trim()) {
@@ -1089,6 +1256,25 @@ export default function AdminPage() {
             </button>
 
             <button
+              onClick={() => { setActiveTab('banners'); setIsMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition ${
+                activeTab === 'banners'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <ImageIcon className={`w-4 h-4 ${activeTab === 'banners' ? 'text-slate-950' : 'text-amber-400'}`} />
+                <span className="font-bold">Homepage Hero Banners</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                activeTab === 'banners' ? 'bg-slate-950 text-amber-300' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+              }`}>
+                {heroSlides?.length || 4}
+              </span>
+            </button>
+
+            <button
               onClick={() => { setActiveTab('distributors'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition ${
                 activeTab === 'distributors'
@@ -1228,6 +1414,19 @@ export default function AdminPage() {
               <span>Homepage Circles ({categories.length})</span>
             </button>
 
+            <button
+              onClick={() => { setActiveTab('banners'); setIsMobileSidebarOpen(false); }}
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
+                activeTab === 'banners'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
+                  : 'bg-slate-800 hover:bg-slate-700 text-amber-400 border-amber-500/30 hover:border-amber-400'
+              }`}
+              title="Manage Homepage Hero Carousel Banners"
+            >
+              <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+              <span>Hero Banners ({heroSlides?.length || 4})</span>
+            </button>
+
             {activeTab === 'products' && (
               <button
                 onClick={() => openProductModal()}
@@ -1260,6 +1459,16 @@ export default function AdminPage() {
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Category</span>
+              </button>
+            )}
+
+            {activeTab === 'banners' && (
+              <button
+                onClick={() => openSlideModal()}
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Banner Slide</span>
               </button>
             )}
 
@@ -1389,8 +1598,23 @@ export default function AdminPage() {
               </div>
 
               {/* Quick Action Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 
+                <div 
+                  onClick={() => setActiveTab('banners')}
+                  className="bg-[#0c1620] hover:bg-[#101c29] cursor-pointer p-5 rounded-3xl border border-amber-500/40 hover:border-amber-400 transition group space-y-2"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md">
+                    🖼️
+                  </div>
+                  <h3 className="font-serif font-bold text-amber-300 group-hover:text-amber-200 transition">
+                    Homepage Hero Banners
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Edit slides (Talbina, Thobes, Oud), change photos, prices, text or add new slides.
+                  </p>
+                </div>
+
                 <div 
                   onClick={() => setActiveTab('categories')}
                   className="bg-[#0c1620] hover:bg-[#101c29] cursor-pointer p-5 rounded-3xl border border-amber-500/30 hover:border-amber-400 transition group space-y-2"
@@ -2141,6 +2365,181 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB: HOMEPAGE HERO BANNER SLIDER STUDIO                                   */}
+      {/* ========================================================================= */}
+      {activeTab === 'banners' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c1620] p-5 sm:p-6 rounded-3xl border border-amber-500/30 shadow-sm">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 text-slate-950 flex items-center justify-center font-bold shadow-md">
+                  🖼️
+                </div>
+                <h3 className="font-serif font-bold text-lg text-white">Homepage Hero Banner Slider Studio</h3>
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono">
+                  {(heroSlides || []).length} Slides Active
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1.5 max-w-2xl">
+                Full visual control over the top editorial carousel (Talbina, Thobes, Oud, Nikah). Change headlines, photos, pricing, and button links with zero risk of breaking homepage UI.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+              <button
+                onClick={() => handleResetSlides()}
+                className="px-3.5 py-2.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 border border-slate-700"
+                title="Restore curated default banners"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                <span>Reset to Factory Design</span>
+              </button>
+
+              <button
+                onClick={() => openSlideModal()}
+                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition flex items-center gap-1.5 shadow-md"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add New Slide</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Banner Slides List */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {(heroSlides || []).map((slide, index) => (
+              <div 
+                key={slide.id || index}
+                className="bg-[#0c1620] rounded-3xl p-5 sm:p-6 border border-slate-800 hover:border-amber-500/40 transition group space-y-4 shadow-sm flex flex-col justify-between"
+              >
+                <div className="space-y-3.5">
+                  {/* Card Header: Position & Sequence Control */}
+                  <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono font-bold bg-amber-500/15 border border-amber-500/30 text-amber-400 px-2.5 py-0.5 rounded-full">
+                        Slide #{index + 1}
+                      </span>
+                      {slide.badge && (
+                        <span className="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full truncate max-w-[200px]">
+                          {slide.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Reorder Left / Right */}
+                    <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
+                      <button
+                        onClick={() => handleReorderSlide(slide.id, 'left')}
+                        disabled={index === 0}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-0.5 transition ${
+                          index === 0 
+                            ? 'text-slate-600 cursor-not-allowed' 
+                            : 'text-amber-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                        title="Move Slide Left (Earlier in Carousel)"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span>Move Left</span>
+                      </button>
+                      <span className="text-slate-700 text-xs">|</span>
+                      <button
+                        onClick={() => handleReorderSlide(slide.id, 'right')}
+                        disabled={index === (heroSlides || []).length - 1}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-0.5 transition ${
+                          index === (heroSlides || []).length - 1
+                            ? 'text-slate-600 cursor-not-allowed' 
+                            : 'text-amber-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                        title="Move Slide Right (Later in Carousel)"
+                      >
+                        <span>Move Right</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Visual Body: Thumbnail + Headline + Pricing */}
+                  <div className="flex items-start gap-4">
+                    {/* Fixed aspect ratio thumbnail with guaranteed crop */}
+                    <div className="relative w-32 h-24 sm:w-36 sm:h-28 rounded-2xl overflow-hidden bg-slate-900 border border-amber-900/20 shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300">
+                      <img 
+                        src={slide.image || '/assets/talbina/talbina_banner_43.jpg'} 
+                        alt={slide.title}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = '/assets/talbina/talbina_banner_43.jpg';
+                        }}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-xs text-[9px] font-bold text-amber-300 px-1.5 py-0.5 rounded">
+                        Locked 4:3
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <h4 className="font-serif font-bold text-white text-base leading-snug group-hover:text-amber-300 transition line-clamp-2">
+                        {slide.title}
+                      </h4>
+
+                      {slide.subtitle && (
+                        <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                          {slide.subtitle}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {(slide.price || slide.mrp) && (
+                          <span className="text-[11px] font-bold font-serif text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                            {slide.price} <span className="line-through text-slate-500 font-normal ml-0.5">{slide.mrp}</span>
+                          </span>
+                        )}
+                        {slide.highlight && (
+                          <span className="text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 px-2 py-0.5 rounded truncate max-w-[180px]">
+                            ✓ {slide.highlight}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="text-[10px] text-slate-400 pt-1 flex items-center gap-1 font-mono truncate">
+                        <span className="text-amber-400 font-bold">Button:</span>
+                        <span>"{slide.ctaText || 'Shop Now'}"</span>
+                        <span className="text-slate-500">→ {slide.ctaLink || '/shop'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Action Buttons */}
+                <div className="flex items-center gap-2 pt-3 border-t border-slate-800/80">
+                  <button
+                    onClick={() => openSlideModal(slide)}
+                    className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-amber-500/20"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Edit Slide Content & Photo</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteSlide(slide.id)}
+                    disabled={(heroSlides || []).length <= 1}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 border ${
+                      (heroSlides || []).length <= 1
+                        ? 'text-slate-600 border-slate-800 cursor-not-allowed'
+                        : 'text-rose-400 hover:bg-rose-950/40 border-rose-900/40 hover:border-rose-800'
+                    }`}
+                    title="Delete this banner slide"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -3348,6 +3747,290 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setIsCategoryModalOpen(false)}
+              className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )}
+
+  {/* ========================================================================= */}
+  {/* MODAL: ADD / EDIT HOMEPAGE HERO BANNER SLIDE                              */}
+  {/* ========================================================================= */}
+  {isSlideModalOpen && editingSlide && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="bg-[#0c1620] rounded-3xl p-5 sm:p-8 max-w-2xl w-full space-y-4 my-8 border border-amber-500/30 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+              <ImageIcon className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-lg text-white">
+                {editingSlide.isNew ? 'Create New Homepage Banner Slide' : `Edit Banner Slide: ${editingSlide.title || 'Slide'}`}
+              </h3>
+              <p className="text-[10px] text-slate-400">Real-time preview with zero-break aspect ratio safeguards.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsSlideModalOpen(false)}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Live 1:1 Homepage Carousel Card Mockup Preview */}
+        <div className="rounded-2xl bg-[#070d12] border border-amber-500/30 p-4 space-y-2">
+          <div className="flex items-center justify-between text-[11px] text-amber-400 font-bold">
+            <span>✨ Live Homepage Banner Preview:</span>
+            <span className="text-[10px] text-slate-400 font-normal">Exact preview as seen by customers</span>
+          </div>
+
+          <div className="rounded-2xl bg-white border border-amber-900/15 p-4 text-[#032219] shadow-md grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center overflow-hidden">
+            {/* Left side text preview */}
+            <div className="sm:col-span-7 space-y-1.5">
+              {editingSlide.badge && (
+                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-950 text-[10px] font-bold">
+                  {editingSlide.badge}
+                </div>
+              )}
+              <h4 className="font-serif font-black text-base sm:text-lg text-[#032219] leading-snug line-clamp-2">
+                {editingSlide.title || 'Enter Slide Title Below...'}
+              </h4>
+              <p className="text-slate-600 text-xs line-clamp-2 leading-relaxed">
+                {editingSlide.subtitle || 'Enter slide subtitle and benefits description below...'}
+              </p>
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {(editingSlide.price || editingSlide.mrp) && (
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100/80 border border-amber-300 text-amber-950 text-xs font-bold font-serif">
+                    <span>{editingSlide.price || 'From ₹249'}</span>
+                    {editingSlide.mrp && <span className="line-through text-slate-400 font-sans text-[10px] font-normal">{editingSlide.mrp}</span>}
+                  </div>
+                )}
+                {editingSlide.highlight && (
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-[10px] font-semibold">
+                    <span>✓ {editingSlide.highlight}</span>
+                  </div>
+                )}
+              </div>
+              <div className="pt-1.5">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#032219] text-amber-300 text-xs font-bold">
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>{editingSlide.ctaText || 'Shop Collection'}</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
+                </div>
+              </div>
+            </div>
+
+            {/* Right side image frame preview */}
+            <div className="sm:col-span-5 flex items-center justify-center">
+              <div className="relative w-full h-36 sm:h-40 rounded-xl overflow-hidden bg-gradient-to-tr from-amber-50 via-white to-emerald-50 border border-amber-900/15 shadow-sm">
+                <img
+                  src={slideImageFile ? URL.createObjectURL(slideImageFile) : (editingSlide.image || '/assets/talbina/talbina_banner_43.jpg')}
+                  alt="Slide Preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/assets/talbina/talbina_banner_43.jpg';
+                  }}
+                />
+                <div className="absolute bottom-1.5 right-1.5 bg-white/95 border border-amber-500/40 px-2 py-0.5 rounded text-[9px] font-bold text-[#032219] shadow-xs">
+                  100% Authentic Sunnah
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Edit Form Inputs */}
+        <form onSubmit={handleSaveSlide} className="space-y-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-white mb-1">Slide Headline / Title *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Arabian's Sprouted Barley Talbeena"
+                value={editingSlide.title || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, title: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-amber-300 mb-1">Badge Pill (Top Floating Tag)</label>
+              <input
+                type="text"
+                placeholder="e.g. 🥣 Prophetic Sunnah Superfood"
+                value={editingSlide.badge || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, badge: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-300 mb-1">Subtitle / Hadith / Benefits Description</label>
+            <textarea
+              rows={2}
+              placeholder="e.g. Stone-ground roasted barley blended with premium California almonds, pistachios, and saffron. Rejuvenates the heart..."
+              value={editingSlide.subtitle || ''}
+              onChange={(e) => setEditingSlide({ ...editingSlide, subtitle: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block font-bold text-amber-300 mb-1">Selling Price Tag</label>
+              <input
+                type="text"
+                placeholder="e.g. From ₹249"
+                value={editingSlide.price || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, price: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-400 mb-1">MRP Price (Strikethrough)</label>
+              <input
+                type="text"
+                placeholder="e.g. ₹270"
+                value={editingSlide.mrp || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, mrp: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-emerald-400 mb-1">Highlight Pill Tag</label>
+              <input
+                type="text"
+                placeholder="e.g. 5 High-Repeat Flavors • Lab Certified"
+                value={editingSlide.highlight || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, highlight: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Button Text</label>
+              <input
+                type="text"
+                placeholder="e.g. Order Sunnah Talbina"
+                value={editingSlide.ctaText || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, ctaText: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Button Destination Link</label>
+              <input
+                type="text"
+                placeholder="e.g. /product/talbina-vanilla or /shop?category=health"
+                value={editingSlide.ctaLink || ''}
+                onChange={(e) => setEditingSlide({ ...editingSlide, ctaLink: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+              />
+            </div>
+          </div>
+
+          {/* Banner Photo Upload & Presets */}
+          <div className="p-3.5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-amber-300 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4" />
+                <span>Banner Slide Image / Photo</span>
+              </label>
+              <span className="text-[10px] text-slate-400 font-mono">Any size accepted (Auto-cropped to 4:3)</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <input
+                type="file"
+                ref={slideFileInputRef}
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setSlideImageFile(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => slideFileInputRef.current?.click()}
+                className="px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center justify-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{slideImageFile ? 'Change Selected File' : 'Upload Photo From PC/Phone'}</span>
+              </button>
+
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Or paste direct image URL (e.g. /assets/...)"
+                  value={editingSlide.image || ''}
+                  onChange={(e) => {
+                    setSlideImageFile(null);
+                    setEditingSlide({ ...editingSlide, image: e.target.value });
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0c1620] border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+            </div>
+
+            {/* Quick Luxury Presets */}
+            <div className="pt-2 border-t border-slate-800/80">
+              <span className="text-[10px] text-slate-400 font-bold block mb-1.5">Quick Luxury Studio Presets:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { name: '🥣 Talbina Sunnah', path: '/assets/talbina/talbina_banner_43.jpg' },
+                  { name: '👑 Saudi Thobe', path: '/assets/studio/mens_black_thobe_studio.jpg' },
+                  { name: '✨ Aged Dehnul Oud', path: '/assets/studio/oud_mabkhara_luxury.jpg' },
+                  { name: '💍 Velvet Nikah Nama', path: '/assets/studio/nikah_nama_banner_43.jpg' },
+                  { name: '🌿 Pure Kalonji Oil', path: '/assets/products/pure_kalonji_blackseed_oil.jpg' },
+                  { name: '🕰️ Islamic Wall Clock', path: '/assets/categories/decor_islamic_wall_clock.jpg' }
+                ].map((p, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setSlideImageFile(null);
+                      setEditingSlide({ ...editingSlide, image: p.path });
+                    }}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition border ${
+                      editingSlide.image === p.path
+                        ? 'bg-amber-500 text-slate-950 border-amber-400'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-3">
+            <button
+              type="submit"
+              disabled={savingSlide || uploadingSlideImage}
+              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20"
+            >
+              {savingSlide || uploadingSlideImage ? 'Saving Banner Slide...' : editingSlide.isNew ? 'Create Banner Slide' : 'Save Banner Changes'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSlideModalOpen(false)}
               className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
             >
               Cancel

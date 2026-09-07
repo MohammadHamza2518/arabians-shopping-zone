@@ -6,6 +6,7 @@ const StoreContext = createContext();
 export function StoreProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [heroSlides, setHeroSlides] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reels, setReels] = useState([]);
   const [settings, setSettings] = useState({
@@ -93,17 +94,19 @@ export function StoreProvider({ children }) {
   const refreshAll = async (showLoading = false) => {
     try {
       if (showLoading) setLoading(true);
-      const [prodRes, catRes, revRes, reelRes, setRes] = await Promise.all([
-        fetch('/api/products').then(r => r.json()),
-        fetch('/api/categories').then(r => r.json()),
-        fetch('/api/reviews').then(r => r.json()),
-        fetch('/api/reels').then(r => r.json()),
-        fetch('/api/settings').then(r => r.json())
+      const [prodRes, catRes, revRes, reelRes, setRes, heroRes] = await Promise.all([
+        fetch('/api/products').then(r => r.json()).catch(() => []),
+        fetch('/api/categories').then(r => r.json()).catch(() => []),
+        fetch('/api/reviews').then(r => r.json()).catch(() => []),
+        fetch('/api/reels').then(r => r.json()).catch(() => []),
+        fetch('/api/settings').then(r => r.json()).catch(() => ({})),
+        fetch('/api/hero-slides').then(r => r.json()).catch(() => [])
       ]);
       setProducts(prodRes || []);
       setCategories(catRes || []);
       setReviews(revRes || []);
       setReels(reelRes || []);
+      if (Array.isArray(heroRes) && heroRes.length > 0) setHeroSlides(heroRes);
       if (setRes && setRes.storeName) setSettings(setRes);
     } catch (err) {
       console.error("Failed to fetch store data:", err);
@@ -406,6 +409,8 @@ export function StoreProvider({ children }) {
     <StoreContext.Provider value={{
       products,
       categories,
+      heroSlides,
+      setHeroSlides,
       reviews,
       setReviews,
       reviewStats,

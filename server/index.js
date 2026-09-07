@@ -42,14 +42,71 @@ let isMongoConnected = false;
 // Active memory store (instant millisecond latency)
 let memoryStore = null;
 
+// Default Curated Homepage Hero Slides (Zero-Break Guaranteed)
+const DEFAULT_HERO_SLIDES = [
+  {
+    id: 'thobes',
+    badge: '👑 Royal Wardrobe Collection',
+    title: "Saudi & Emirati Royal Cut Thobes",
+    subtitle: "Engineered with tailored standing collars, concealed snap plackets, and breathable luxury poly-blend fabric for Jummah prayers, Umrah, and auspicious gatherings.",
+    highlight: "100% Free Size Replacement • Direct Studio Tailoring",
+    price: "From ₹1,499",
+    mrp: "₹2,299",
+    ctaText: "Shop Men's Thobes",
+    ctaLink: "/shop?category=wearing",
+    image: "/assets/studio/mens_black_thobe_studio.jpg"
+  },
+  {
+    id: 'talbina',
+    badge: '🥣 Prophetic Sunnah Superfood',
+    title: "Arabian's Sprouted Barley Talbeena",
+    subtitle: "Stone-ground roasted barley blended with premium California almonds, pistachios, and saffron. Rejuvenates the heart and vitalizes immunity according to authentic Hadith 5417.",
+    highlight: "5 High-Repeat Flavors • Lab Certified • 100% Halal",
+    price: "From ₹249",
+    mrp: "₹270",
+    ctaText: "Order Sunnah Talbina",
+    ctaLink: "/product/talbina-vanilla",
+    image: "/assets/talbina/talbina_banner_43.jpg"
+  },
+  {
+    id: 'oud',
+    badge: '✨ Pure Alcohol-Free Perfumery',
+    title: "Aged Cambodian Dehnul Oud & Attars",
+    subtitle: "Distilled from aged wild Koh Kong and Assamese agarwood forests. 24–48 hours extreme longevity with majestic projection that lingers on clothes for days.",
+    highlight: "Zero Alcohol • Pure Concentrated Misce Oil",
+    price: "From ₹649",
+    mrp: "₹999",
+    ctaText: "Discover Pure Oud",
+    ctaLink: "/shop?category=fragrance",
+    image: "/assets/studio/oud_mabkhara_luxury.jpg"
+  },
+  {
+    id: 'wedding',
+    badge: '💍 Sacred Nikah Traditions',
+    title: "Luxury Velvet Gold-Foil Nikah Nama",
+    subtitle: "Handcrafted heirloom marriage certificate booklets with Quranic covenants, ostrich feather quill signing pens, and velvet Haq Mehar treasure boxes.",
+    highlight: "Sacred Sunnah Keepsakes • Pan-India Courier",
+    price: "From ₹899",
+    mrp: "₹1,499",
+    ctaText: "View Nikah Collection",
+    ctaLink: "/shop?category=wedding",
+    image: "/assets/studio/nikah_nama_banner_43.jpg"
+  }
+];
+
 function loadLocalStore() {
   if (!fs.existsSync(storePath)) {
-    fs.writeFileSync(storePath, JSON.stringify(initialData, null, 2));
-    return JSON.parse(JSON.stringify(initialData));
+    const fresh = JSON.parse(JSON.stringify(initialData));
+    fresh.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+    fs.writeFileSync(storePath, JSON.stringify(fresh, null, 2));
+    return fresh;
   }
   try {
     const raw = fs.readFileSync(storePath, 'utf8');
     const parsed = JSON.parse(raw);
+    if (!parsed.heroSlides || !Array.isArray(parsed.heroSlides) || parsed.heroSlides.length === 0) {
+      parsed.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+    }
     if (!parsed.settings) parsed.settings = {};
     if (!parsed.settings.shipmozo) {
       parsed.settings.shipmozo = {
@@ -95,6 +152,7 @@ async function initMongoDB() {
       memoryStore = {
         products: cloudStore.products || memoryStore.products,
         categories: cloudStore.categories || memoryStore.categories,
+        heroSlides: (cloudStore.heroSlides && cloudStore.heroSlides.length > 0) ? cloudStore.heroSlides : (memoryStore.heroSlides || DEFAULT_HERO_SLIDES),
         reviews: cloudStore.reviews || memoryStore.reviews,
         reels: (cloudStore.reels && cloudStore.reels.length > 0) ? cloudStore.reels : (memoryStore.reels || initialData.reels || []),
         orders: cloudStore.orders || memoryStore.orders || [],
@@ -461,6 +519,131 @@ app.delete('/api/categories/:id', (req, res) => {
 
   saveStore(store);
   res.json({ success: true, message: `Category '${catId}' deleted successfully` });
+});
+
+// --- 2.5. Homepage Hero Slides CRUD ---
+app.get('/api/hero-slides', (req, res) => {
+  const store = getStore();
+  if (!store.heroSlides || !Array.isArray(store.heroSlides) || store.heroSlides.length === 0) {
+    store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+    saveStore(store);
+  }
+  res.json(store.heroSlides);
+});
+
+app.post('/api/hero-slides', (req, res) => {
+  const store = getStore();
+  if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
+    store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+  }
+
+  const title = (req.body.title || '').trim();
+  if (!title) {
+    return res.status(400).json({ error: "Slide title is required" });
+  }
+
+  const id = (req.body.id || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `slide-${Date.now()}`).trim();
+
+  // Check duplicate id
+  const existingIdx = store.heroSlides.findIndex(s => s.id === id);
+  const finalId = existingIdx !== -1 ? `${id}-${Date.now()}` : id;
+
+  const newSlide = {
+    id: finalId,
+    badge: (req.body.badge || '').trim(),
+    title: title,
+    subtitle: (req.body.subtitle || '').trim(),
+    highlight: (req.body.highlight || '').trim(),
+    price: (req.body.price || '').trim(),
+    mrp: (req.body.mrp || '').trim(),
+    ctaText: (req.body.ctaText || 'Shop Collection').trim(),
+    ctaLink: (req.body.ctaLink || '/shop').trim(),
+    image: (req.body.image || '/assets/talbina/talbina_banner_43.jpg').trim()
+  };
+
+  store.heroSlides.push(newSlide);
+  saveStore(store);
+  res.status(201).json({ success: true, slide: newSlide, heroSlides: store.heroSlides });
+});
+
+app.put('/api/hero-slides-reorder', (req, res) => {
+  const { slideIds } = req.body;
+  if (!Array.isArray(slideIds)) {
+    return res.status(400).json({ error: "slideIds array is required" });
+  }
+
+  const store = getStore();
+  if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
+    store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+  }
+
+  const slideMap = new Map();
+  store.heroSlides.forEach(s => slideMap.set(s.id, s));
+
+  const reordered = [];
+  slideIds.forEach(id => {
+    if (slideMap.has(id)) {
+      reordered.push(slideMap.get(id));
+      slideMap.delete(id);
+    }
+  });
+
+  slideMap.forEach(s => reordered.push(s));
+
+  store.heroSlides = reordered;
+  saveStore(store);
+  res.json({ success: true, heroSlides: store.heroSlides });
+});
+
+app.put('/api/hero-slides/:id', (req, res) => {
+  const store = getStore();
+  if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
+    store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+  }
+
+  const idx = store.heroSlides.findIndex(s => s.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ error: "Hero slide not found" });
+  }
+
+  const current = store.heroSlides[idx];
+  store.heroSlides[idx] = {
+    ...current,
+    badge: req.body.badge !== undefined ? req.body.badge.trim() : current.badge,
+    title: req.body.title !== undefined ? req.body.title.trim() : current.title,
+    subtitle: req.body.subtitle !== undefined ? req.body.subtitle.trim() : current.subtitle,
+    highlight: req.body.highlight !== undefined ? req.body.highlight.trim() : current.highlight,
+    price: req.body.price !== undefined ? req.body.price.trim() : current.price,
+    mrp: req.body.mrp !== undefined ? req.body.mrp.trim() : current.mrp,
+    ctaText: req.body.ctaText !== undefined ? req.body.ctaText.trim() : current.ctaText,
+    ctaLink: req.body.ctaLink !== undefined ? req.body.ctaLink.trim() : current.ctaLink,
+    image: req.body.image !== undefined ? req.body.image.trim() : current.image
+  };
+
+  saveStore(store);
+  res.json({ success: true, slide: store.heroSlides[idx], heroSlides: store.heroSlides });
+});
+
+app.delete('/api/hero-slides/:id', (req, res) => {
+  const store = getStore();
+  if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
+    store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+  }
+
+  if (store.heroSlides.length <= 1) {
+    return res.status(400).json({ error: "At least 1 hero banner slide must remain active on homepage" });
+  }
+
+  store.heroSlides = store.heroSlides.filter(s => s.id !== req.params.id);
+  saveStore(store);
+  res.json({ success: true, message: "Slide deleted", heroSlides: store.heroSlides });
+});
+
+app.post('/api/hero-slides/reset', (req, res) => {
+  const store = getStore();
+  store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
+  saveStore(store);
+  res.json({ success: true, message: "Hero banner slides reset to curated defaults", heroSlides: store.heroSlides });
 });
 
 // --- 3. Reviews ---
