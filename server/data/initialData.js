@@ -643,7 +643,7 @@ export const initialData = {
     },
     {
       "id": "talbina-vanilla",
-      "name": "Arabian's Talbeena Nutritional Breakfast (Vanilla Dry Fruits - 400g)",
+      "name": "Arabian's Talbeena Nutritional Breakfast (Elaichi Dry Fruits - 400g)",
       "category": "health",
       "subcategory": "talbina",
       "price": 399,
@@ -657,7 +657,7 @@ export const initialData = {
       "gallery": [
         "/assets/talbina/talbina_vanilla_dryfruits.jpg"
       ],
-      "description": "Authentic Sunnah recipe made from sprouted whole grain barley (Jau), enriched with California almonds, Afghan cashews, pistachios, and natural vanilla. Clinically revered to soothe sadness and energize the heart.",
+      "description": "Authentic Sunnah recipe made from sprouted whole grain barley (Jau), enriched with California almonds, Afghan cashews, pistachios, and natural green cardamom (elaichi). Clinically revered to soothe sadness and energize the heart.",
       "benefits": [
         "Authentic Sunnah superfood based on Sahih Bukhari Hadith",
         "High soluble fiber (Beta-Glucan) supports digestion and cholesterol",
@@ -667,7 +667,7 @@ export const initialData = {
         "Talbina",
         "Talbeena",
         "Sunnah Food",
-        "Vanilla",
+        "Elaichi",
         "Dry Fruits"
       ]
     },

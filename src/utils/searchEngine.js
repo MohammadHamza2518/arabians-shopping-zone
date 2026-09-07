@@ -27,7 +27,7 @@ const SUBCATEGORY_NAMES_MAP = {
   bisht: ["bisht", "qubba", "arabic bisht", "syrian qubba", "cloak", "royal robe"],
   turban: ["turban", "wedding turban", "groom pagdi", "sehra"],
   
-  talbina: ["talbina", "talbeena", "sprouted barley", "barley", "jao", "dalia", "superfood", "pista", "badam", "saffron", "kesar", "vanilla", "chocolate", "strawberry", "kewra"],
+  talbina: ["talbina", "talbeena", "sprouted barley", "barley", "jao", "dalia", "superfood", "pista", "badam", "saffron", "kesar", "elaichi", "cardamom", "vanilla", "chocolate", "strawberry", "kewra"],
   'honey-mix': ["honey mix", "dry fruits honey", "dryfruit honey", "royal honey", "nuts in honey"],
   'pure-honey': ["pure honey", "raw honey", "sidr honey", "kashmir honey", "natural honey", "shehad", "shahad"],
   

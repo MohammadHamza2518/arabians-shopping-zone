@@ -24,7 +24,7 @@ export default function TalbinaSpotlight() {
   const [qty, setQty] = useState(1);
 
   const FLAVOR_NAMES = {
-    'talbina-vanilla': 'Vanilla Dry Fruits',
+    'talbina-vanilla': 'Elaichi Dry Fruits',
     'talbina-milk-mawa': 'Royal Milk Mawa',
     'talbina-chocolate': 'Kids Chocolate (1+ Yrs)',
     'talbina-baby-barley': 'Baby Barley Cereal (3+ Yrs)',
