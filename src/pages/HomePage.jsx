@@ -67,9 +67,9 @@ export default function HomePage() {
   };
 
   // Filter products by selected tab with controlled visible count (Prevents infinite scrolling)
-  // In 'all' category tab, feature royal Thobes first, followed by all other collections (Talbina, Oud, Decor, Wedding)
+  // Newly uploaded products and featured items are shown immediately at the top
   const currentTabProducts = activeCatalogTab === 'all' 
-    ? [...products.filter(p => p.category === 'wearing'), ...products.filter(p => p.category !== 'wearing')]
+    ? products
     : products.filter(p => p.category === activeCatalogTab);
 
   const displayedProducts = currentTabProducts.slice(0, visibleCount);

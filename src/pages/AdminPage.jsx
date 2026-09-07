@@ -104,6 +104,8 @@ export default function AdminPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [productUrlInput, setProductUrlInput] = useState('');
   const [previewImageIdx, setPreviewImageIdx] = useState(0);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const productFileInputRef = React.useRef(null);
 
   // Category CRUD state
   const [editingCategory, setEditingCategory] = useState(null);
@@ -411,15 +413,13 @@ export default function AdminPage() {
     }
   };
 
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files || []);
+  const processImageFiles = async (filesList) => {
+    const files = Array.from(filesList || []);
     if (!files.length) return;
 
     const currentPhotos = getProductPhotos(editingProduct);
-
     if (currentPhotos.length >= 3) {
       showToast("Maximum 3 photos allowed! Pehle kisi photo ko remove karein.", "error");
-      e.target.value = '';
       return;
     }
 
@@ -454,16 +454,40 @@ export default function AdminPage() {
           gallery: updatedGallery
         }));
         setPreviewImageIdx(0);
-        showToast(`${uploadedUrls.length} photo(s) uploaded successfully! (${updatedGallery.length}/3 photos)`);
+        showToast(`✅ ${uploadedUrls.length} photo(s) uploaded successfully! (${updatedGallery.length}/3 photos)`);
       } else {
-        showToast("Upload failed", "error");
+        showToast("Upload failed. File format check karein.", "error");
       }
     } catch {
-      showToast("Image upload error", "error");
+      showToast("Image upload error. Please retry.", "error");
     } finally {
       setUploadingImage(false);
-      e.target.value = '';
+      if (productFileInputRef.current) {
+        productFileInputRef.current.value = '';
+      }
     }
+  };
+
+  const handleImageUpload = (e) => {
+    processImageFiles(e.target.files);
+  };
+
+  const handleImageDrop = (e) => {
+    e.preventDefault();
+    setIsDraggingImage(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processImageFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleImageDragOver = (e) => {
+    e.preventDefault();
+    setIsDraggingImage(true);
+  };
+
+  const handleImageDragLeave = (e) => {
+    e.preventDefault();
+    setIsDraggingImage(false);
   };
 
   const handleAddImageUrl = (e) => {
@@ -1037,10 +1061,10 @@ export default function AdminPage() {
             {activeTab === 'products' && (
               <button
                 onClick={() => openProductModal()}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5"
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Add Product</span>
+                <span>Add Product</span>
               </button>
             )}
 
@@ -2203,205 +2227,339 @@ export default function AdminPage() {
   </div>
 
   {/* ========================================================================= */}
-  {/* MODAL 1: ADD / EDIT PRODUCT                                               */}
+  {/* MODAL 1: ADD / EDIT PRODUCT (MODERN STUDIO WORKSPACE)                     */}
   {/* ========================================================================= */}
   {isProductModalOpen && editingProduct && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#0c1620] rounded-3xl p-6 sm:p-8 max-w-2xl w-full space-y-4 my-8 border border-amber-500/30 shadow-2xl text-slate-100">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 className="font-serif font-bold text-lg text-white">
-            {editingProduct.isNew ? 'Add New Product to Catalog' : 'Edit Product Details'}
-          </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="bg-[#0b1520] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-3xl w-full my-auto border border-amber-500/40 shadow-2xl text-slate-100 max-h-[94vh] flex flex-col">
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20 shrink-0">
+              {editingProduct.isNew ? <Plus className="w-4 h-4 sm:w-5 sm:h-5" /> : <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />}
+            </div>
+            <div>
+              <h3 className="font-serif font-black text-sm sm:text-xl text-white leading-tight">
+                {editingProduct.isNew ? 'Add New Product to Storefront' : 'Edit Product Catalog'}
+              </h3>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-1 sm:line-clamp-none">
+                Product will be published live on website homepage, category catalog, and search index.
+              </p>
+            </div>
+          </div>
           <button
+            type="button"
             onClick={() => setIsProductModalOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-white"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSaveProduct} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Product Title *</label>
-            <input
-              type="text"
-              required
-              value={editingProduct.name}
-              onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Category *</label>
-              <select
-                value={editingProduct.category}
-                onChange={(e) => {
-                  const newCat = e.target.value;
-                  setEditingProduct({ 
-                    ...editingProduct, 
-                    category: newCat,
-                    subcategory: '',
-                    subCategory: ''
-                  });
-                }}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+        {/* Modal Scrollable Form */}
+        <form onSubmit={handleSaveProduct} className="space-y-6 overflow-y-auto pr-1 sm:pr-2 pt-4 flex-1 text-xs">
+          
+          {/* SECTION 1: BASIC INFORMATION */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+              <Package className="w-4 h-4 text-amber-500" />
+              <span>1. Basic Product Information</span>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-300 mb-1">Subcategory</label>
-              <select
-                value={editingProduct.subcategory || editingProduct.subCategory || ''}
-                onChange={(e) => setEditingProduct({ 
-                  ...editingProduct, 
-                  subcategory: e.target.value,
-                  subCategory: e.target.value 
-                })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-              >
-                <option value="">-- General / None --</option>
-                {(categories.find(c => c.id === editingProduct.category)?.subcategories || []).map((sub) => (
-                  <option key={sub.id} value={sub.id}>{sub.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Special Badge</label>
+              <label className="block font-bold text-slate-200 mb-1.5 text-xs">
+                Product Title / Name *
+              </label>
               <input
                 type="text"
-                placeholder="e.g. Bestseller, Sunnah"
+                required
+                placeholder="e.g. Royal Saudi Thobe with Standing Collar, Pure Dehnul Oud..."
+                value={editingProduct.name}
+                onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-slate-700 hover:border-slate-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Category *</label>
+                <select
+                  value={editingProduct.category}
+                  onChange={(e) => {
+                    const newCat = e.target.value;
+                    setEditingProduct({ 
+                      ...editingProduct, 
+                      category: newCat,
+                      subcategory: '',
+                      subCategory: ''
+                    });
+                  }}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-200 mb-1.5 text-xs">Subcategory (Optional)</label>
+                <select
+                  value={editingProduct.subcategory || editingProduct.subCategory || ''}
+                  onChange={(e) => setEditingProduct({ 
+                    ...editingProduct, 
+                    subcategory: e.target.value,
+                    subCategory: e.target.value 
+                  })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="">-- General Collection --</option>
+                  {(categories.find(c => c.id === editingProduct.category)?.subcategories || []).map((sub) => (
+                    <option key={sub.id} value={sub.id}>{sub.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Special Badge with 1-Click Quick Pills */}
+            <div className="space-y-2">
+              <label className="block font-bold text-slate-200 text-xs">
+                Product Badge (Storefront Tag)
+              </label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {['New Arrival', 'Flagship Bestseller', '100% Pure Sunnah', 'Royal Luxury', 'Limited Edition', 'Custom Handcrafted'].map((badgePreset) => (
+                  <button
+                    key={badgePreset}
+                    type="button"
+                    onClick={() => setEditingProduct({ ...editingProduct, badge: badgePreset })}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition border ${
+                      editingProduct.badge === badgePreset 
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm' 
+                        : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:border-amber-500/50'
+                    }`}
+                  >
+                    {badgePreset}
+                  </button>
+                ))}
+                {editingProduct.badge && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct({ ...editingProduct, badge: '' })}
+                    className="px-2 py-1 rounded-lg text-[10px] text-rose-400 hover:bg-rose-950/40 transition"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                placeholder="Or type custom badge (e.g. Free Gift Inside, 100% Organic)..."
                 value={editingProduct.badge || ''}
                 onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">Selling Price (₹) *</label>
-              <input
-                type="number"
-                required
-                value={editingProduct.price}
-                onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
+          {/* SECTION 2: PRICING & INVENTORY */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <IndianRupee className="w-4 h-4 text-amber-500" />
+                <span>2. Pricing, Discount & Stock</span>
+              </div>
+              {editingProduct.mrp && editingProduct.price && Number(editingProduct.mrp) > Number(editingProduct.price) && (
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 font-black text-[10px]">
+                  🎉 Saves ₹{Number(editingProduct.mrp) - Number(editingProduct.price)} ({Math.round(((Number(editingProduct.mrp) - Number(editingProduct.price)) / Number(editingProduct.mrp)) * 100)}% OFF)
+                </span>
+              )}
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-300 mb-1">MRP Price (₹)</label>
-              <input
-                type="number"
-                value={editingProduct.mrp || ''}
-                onChange={(e) => setEditingProduct({ ...editingProduct, mrp: Number(e.target.value) })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
-              />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <label className="block font-bold text-slate-200 mb-1 text-xs">Selling Price (₹) *</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                  <input
+                    type="number"
+                    required
+                    value={editingProduct.price}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
+                    className="w-full pl-7 pr-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-200 mb-1 text-xs">MRP Cut-Price (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                  <input
+                    type="number"
+                    placeholder="e.g. 1499"
+                    value={editingProduct.mrp || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, mrp: Number(e.target.value) })}
+                    className="w-full pl-7 pr-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-200 mb-1 text-xs">In-Stock Units</label>
+                <input
+                  type="number"
+                  value={editingProduct.stock !== undefined ? editingProduct.stock : 50}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-200 mb-1 text-xs">Net Weight / Size</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 400g, 50ml, Free Size"
+                  value={editingProduct.netWeight || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, netWeight: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Product Photos (Strictly 1 to 3 Photos Allowed) */}
+          {/* SECTION 3: PRODUCT PHOTOS (INTUITIVE & FOOLPROOF) */}
           {(() => {
             const activePhotos = getProductPhotos(editingProduct);
             const remainingSlots = 3 - activePhotos.length;
             const currentPreviewUrl = activePhotos[previewImageIdx] || activePhotos[0] || '/assets/logo/logo_main.png';
 
             return (
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700 space-y-3.5">
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+                
+                {/* Hidden Multi-file input triggered by ANY button/card click */}
+                <input
+                  ref={productFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadingImage}
+                />
+
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <label className="block font-bold text-amber-300 text-xs sm:text-sm">
-                      Product Photos ({activePhotos.length}/3)
-                    </label>
-                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
-                      activePhotos.length === 3 
-                        ? 'bg-emerald-950/90 text-emerald-300 border-emerald-700' 
-                        : activePhotos.length > 0
-                        ? 'bg-amber-950/90 text-amber-300 border-amber-700'
-                        : 'bg-rose-950/90 text-rose-300 border-rose-700'
+                    <ImageIcon className="w-4 h-4 text-amber-500" />
+                    <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">
+                      3. Product Photos ({activePhotos.length}/3)
+                    </span>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                      activePhotos.length > 0 
+                        ? 'bg-emerald-950 text-emerald-300 border-emerald-700' 
+                        : 'bg-rose-950 text-rose-300 border-rose-700'
                     }`}>
-                      {activePhotos.length === 3 ? '✅ Max Limit Reached (3/3 Photos)' : `${remainingSlots} slot${remainingSlots > 1 ? 's' : ''} available`}
+                      {activePhotos.length === 3 ? '✅ 3/3 Full' : `${remainingSlots} slot${remainingSlots > 1 ? 's' : ''} left`}
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-semibold">
-                    Min 1 photo • Max 3 photos
+                  <span className="text-[11px] text-slate-400">
+                    Min 1 required • Max 3 photos
                   </span>
                 </div>
 
+                {/* Big Drag & Drop / Click to Upload Zone */}
+                {activePhotos.length < 3 && (
+                  <div
+                    onClick={() => productFileInputRef.current?.click()}
+                    onDrop={handleImageDrop}
+                    onDragOver={handleImageDragOver}
+                    onDragLeave={handleImageDragLeave}
+                    className={`p-4 sm:p-6 rounded-2xl border-2 border-dashed cursor-pointer text-center transition flex flex-col items-center justify-center gap-2 group ${
+                      isDraggingImage
+                        ? 'border-amber-400 bg-amber-500/20 scale-[1.01]'
+                        : 'border-amber-500/40 hover:border-amber-400 bg-[#060c12] hover:bg-amber-500/5'
+                    }`}
+                  >
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/15 group-hover:bg-amber-500/25 text-amber-400 flex items-center justify-center transition shadow-sm">
+                      {uploadingImage ? <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-amber-400" /> : <Upload className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />}
+                    </div>
+                    <div>
+                      <span className="text-xs sm:text-sm font-bold text-white block group-hover:text-amber-300 transition">
+                        {uploadingImage ? 'Uploading Image(s)... Please wait' : 'Click to Browse Files or Drag & Drop Photos Here'}
+                      </span>
+                      <span className="text-[10px] sm:text-[11px] text-slate-400 block mt-0.5">
+                        Select up to {remainingSlots} photo(s) (JPG, PNG, WebP). First photo is automatically the storefront cover.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* 3 Visual Photo Slots */}
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {[0, 1, 2].map((slotIdx) => {
                     const photoUrl = activePhotos[slotIdx];
                     const isCover = slotIdx === 0;
-                    const isPreviewing = previewImageIdx === slotIdx;
+                    const isSelectedPreview = previewImageIdx === slotIdx;
 
                     return (
-                      <div 
+                      <div
                         key={slotIdx}
-                        className={`relative rounded-2xl border p-2 flex flex-col justify-between transition ${
+                        className={`relative rounded-xl sm:rounded-2xl border p-1.5 sm:p-2 flex flex-col justify-between transition ${
                           photoUrl 
-                            ? (isPreviewing ? 'border-amber-400 bg-amber-500/10 shadow-md' : 'border-slate-700 bg-[#070d12]')
-                            : 'border-dashed border-slate-700/80 bg-[#070d12]/40 text-slate-500'
+                            ? (isSelectedPreview ? 'border-amber-400 bg-amber-500/10 shadow-md' : 'border-slate-700 bg-[#060c12]')
+                            : 'border-dashed border-slate-700 bg-[#060c12]/50 hover:border-amber-500/60 cursor-pointer'
                         }`}
+                        onClick={() => {
+                          if (photoUrl) {
+                            setPreviewImageIdx(slotIdx);
+                          } else {
+                            productFileInputRef.current?.click();
+                          }
+                        }}
                       >
                         {/* Slot Header */}
-                        <div className="w-full flex items-center justify-between mb-1.5 px-0.5">
-                          <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
+                        <div className="w-full flex items-center justify-between mb-1 sm:mb-1.5 px-0.5">
+                          <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
                             isCover ? 'text-amber-400' : 'text-slate-400'
                           }`}>
-                            {isCover ? '⭐ Cover Photo' : `Photo ${slotIdx + 1}`}
+                            {isCover ? '⭐ Cover' : `Photo ${slotIdx + 1}`}
                           </span>
                           {photoUrl && (
                             <button
                               type="button"
-                              onClick={() => handleRemovePhoto(slotIdx)}
-                              className="p-1 rounded-lg text-rose-400 hover:text-rose-200 hover:bg-rose-950/60 transition"
-                              title="Delete this photo"
+                              onClick={(e) => { e.stopPropagation(); handleRemovePhoto(slotIdx); }}
+                              className="p-1 rounded-lg text-rose-400 hover:text-white hover:bg-rose-900 transition"
+                              title="Delete photo"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                             </button>
                           )}
                         </div>
 
-                        {/* Slot Viewport */}
-                        <div 
-                          onClick={() => photoUrl && setPreviewImageIdx(slotIdx)}
-                          className="w-full aspect-square rounded-xl overflow-hidden bg-black/50 relative flex items-center justify-center cursor-pointer group border border-slate-800"
-                        >
+                        {/* Viewport */}
+                        <div className="w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-black/60 relative flex items-center justify-center border border-slate-800">
                           {photoUrl ? (
                             <>
                               <img 
                                 src={photoUrl} 
                                 alt={`Slot ${slotIdx + 1}`} 
-                                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                className="w-full h-full object-cover"
                               />
                               {!isCover && (
                                 <button
                                   type="button"
                                   onClick={(e) => { e.stopPropagation(); handleSetPrimaryPhoto(slotIdx); }}
-                                  className="absolute inset-x-1 bottom-1 py-1 rounded-lg bg-black/85 hover:bg-amber-500 hover:text-black text-amber-300 text-[9px] font-black transition opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 shadow"
+                                  className="absolute inset-x-1 bottom-1 py-1 rounded bg-black/90 hover:bg-amber-500 hover:text-black text-amber-300 text-[8px] sm:text-[9px] font-black transition shadow truncate text-center"
                                 >
-                                  ⭐ Make Cover
+                                  ⭐ Set Cover
                                 </button>
-                              )}
-                              {isPreviewing && (
-                                <span className="absolute top-1 left-1 bg-amber-500 text-black text-[8px] font-black px-1.5 py-0.5 rounded shadow">
-                                  Viewing
-                                </span>
                               )}
                             </>
                           ) : (
-                            <div className="flex flex-col items-center justify-center p-2 text-center text-slate-600">
-                              <Plus className="w-4 h-4 mb-0.5 text-slate-500" />
-                              <span className="text-[9px] font-bold text-slate-400 leading-tight">
-                                {isCover ? 'Cover Photo (Required)' : 'Optional'}
+                            <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 text-center text-slate-500 hover:text-amber-400 transition">
+                              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mb-1" />
+                              <span className="text-[9px] sm:text-[10px] font-bold leading-tight">
+                                {isCover ? '+ Cover' : `+ Photo ${slotIdx + 1}`}
                               </span>
                             </div>
                           )}
@@ -2411,100 +2569,51 @@ export default function AdminPage() {
                   })}
                 </div>
 
-                {/* Upload & Add Controls (Capped at 3 Photos strictly) */}
-                {activePhotos.length < 3 ? (
-                  <div className="space-y-2 pt-2 border-t border-slate-800">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {/* Upload from Device */}
-                      <div>
-                        <label className="w-full py-2.5 px-3 rounded-xl border border-dashed border-amber-500/60 hover:border-amber-400 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-2 cursor-pointer text-amber-200 text-xs font-bold transition">
-                          <Upload className="w-3.5 h-3.5 text-amber-400" />
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            multiple 
-                            onChange={handleImageUpload} 
-                            className="hidden" 
-                            disabled={uploadingImage}
-                          />
-                          <span>
-                            {uploadingImage ? 'Uploading Image(s)...' : `Upload Device File (${remainingSlots} slot${remainingSlots > 1 ? 's' : ''} left)`}
-                          </span>
-                        </label>
-                      </div>
+                {/* Paste Image URL Fallback */}
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
+                  <input
+                    type="text"
+                    placeholder="Or paste external image URL (https://...)"
+                    value={productUrlInput}
+                    onChange={(e) => setProductUrlInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddImageUrl(); } }}
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddImageUrl}
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-slate-700 shrink-0"
+                  >
+                    + Add URL
+                  </button>
+                </div>
 
-                      {/* Or Paste URL */}
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="text"
-                          placeholder="Paste image URL (https://...)"
-                          value={productUrlInput}
-                          onChange={(e) => setProductUrlInput(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddImageUrl(); } }}
-                          className="flex-1 px-3 py-2 text-xs rounded-xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleAddImageUrl}
-                          className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-slate-700 shrink-0"
-                        >
-                          + Add
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-slate-400 leading-relaxed">
-                      💡 <b>Rules:</b> Ek product me 1, 2 ya maximum 3 photos dal sakte hain. 3 se zyda photos allowed nahi hain. Photo 1 storefront par Cover Photo rahegi.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-2 text-emerald-300 font-bold text-[11px]">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>Maximum 3 Photos limit reached (3/3). 3 se zyda photos nahi dali ja sakti.</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400">
-                      Nayi photo dalne ke liye kisi photo ko delete karein.
-                    </span>
-                  </div>
-                )}
-
-                {/* Display Frame Mode & Live Preview Viewport */}
-                <div className="pt-2 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center">
-                  <div className="sm:col-span-7 space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-300">
-                      Storefront Frame Fit (Crop Prevention)
-                    </label>
-                    <select
-                      value={editingProduct.imageFit || 'auto'}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, imageFit: e.target.value })}
-                      className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-[#070d12] border border-slate-700 text-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                    >
-                      <option value="auto">✨ Smart Auto-Fit (Preserves clothing & square bottles)</option>
-                      <option value="contain">📦 Fit Full Product (100% visible, zero cropping)</option>
-                      <option value="cover">👑 Fill Frame (Portrait fashion mode)</option>
-                    </select>
-                  </div>
-
-                  <div className="sm:col-span-5 bg-black/40 rounded-xl p-2.5 border border-slate-800 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <span className="block text-[9px] font-black uppercase tracking-wider text-amber-400">
-                        Live Preview
-                      </span>
-                      <span className="block text-[10px] text-slate-300 font-semibold truncate">
-                        {activePhotos[previewImageIdx] ? (previewImageIdx === 0 ? 'Cover Photo' : `Photo ${previewImageIdx + 1}`) : 'No Photo'}
-                      </span>
-                      <span className="block text-[9px] text-slate-500">1:1 Square Frame</span>
-                    </div>
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 relative shrink-0 flex items-center justify-center">
+                {/* Live Customer Storefront Card Preview */}
+                <div className="pt-3 border-t border-slate-800">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-amber-400 mb-2">
+                    Live Storefront Card Preview (How Customers Will See It)
+                  </span>
+                  <div className="bg-[#faf8f5] p-3 rounded-2xl border border-amber-900/15 max-w-xs text-slate-800 flex items-center gap-3 shadow-md">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 border border-amber-900/10 shrink-0 relative">
                       <img 
-                        src={currentPreviewUrl} 
-                        alt="Preview" 
-                        className={`w-full h-full ${
-                          editingProduct.imageFit === 'contain' 
-                            ? 'object-contain p-1' 
-                            : 'object-cover'
-                        }`}
+                        src={activePhotos[0] || '/assets/logo/logo_main.png'} 
+                        alt="Storefront Preview" 
+                        className="w-full h-full object-cover"
                       />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <span className="inline-block px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 text-[9px] font-bold truncate max-w-full">
+                        {editingProduct.badge || 'New Arrival'}
+                      </span>
+                      <h4 className="font-serif font-bold text-xs text-slate-900 truncate">
+                        {editingProduct.name || 'Untitled Product'}
+                      </h4>
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="font-extrabold text-[#064e3b]">₹{editingProduct.price || 0}</span>
+                        {editingProduct.mrp && Number(editingProduct.mrp) > Number(editingProduct.price) && (
+                          <span className="line-through text-[10px] text-slate-400">₹{editingProduct.mrp}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2513,32 +2622,69 @@ export default function AdminPage() {
             );
           })()}
 
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Product Description</label>
-            <textarea
-              rows={3}
-              value={editingProduct.description || ''}
-              onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-            />
+          {/* SECTION 4: DESCRIPTION & SMART SEARCH */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>4. Description & Customer Search Keywords</span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-200 mb-1.5 text-xs">Product Description</label>
+              <textarea
+                rows={3}
+                placeholder="Describe key ingredients, materials, scents, or Islamic Sunnah references..."
+                value={editingProduct.description || ''}
+                onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            {/* Smart Search Tag Helpers */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1 text-xs">
+                Search Keywords / Tags (Auto-indexed for Website Search Bar)
+              </label>
+              <p className="text-[10px] text-slate-400 mb-1.5">
+                Separate with commas (e.g. oud, attar, thobe, gift, wedding). Customers searching these will find this product.
+              </p>
+              <input
+                type="text"
+                placeholder="e.g. oud, pure attar, incense, gift..."
+                value={Array.isArray(editingProduct.tags) ? editingProduct.tags.join(', ') : (editingProduct.tags || '')}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const tagsArr = val.split(',').map(t => t.trim()).filter(Boolean);
+                  setEditingProduct({ ...editingProduct, tags: tagsArr });
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-3">
+          {/* Form Actions */}
+          <div className="flex items-center gap-2 sm:gap-3 pt-2 pb-1 shrink-0">
             <button
               type="submit"
               disabled={savingProduct}
-              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20"
+              className="flex-1 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950 font-black text-xs sm:text-sm tracking-wide hover:brightness-110 transition shadow-xl shadow-amber-500/25 flex items-center justify-center gap-1.5 sm:gap-2 active:scale-98"
             >
-              {savingProduct ? 'Saving Product...' : 'Save Product Changes'}
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950 shrink-0" />
+              <span>
+                {savingProduct 
+                  ? 'Publishing...' 
+                  : (editingProduct.isNew ? '🚀 Publish to Website' : 'Save Product Updates')}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => setIsProductModalOpen(false)}
-              className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+              className="px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition shrink-0"
             >
               Cancel
             </button>
           </div>
+
         </form>
       </div>
     </div>

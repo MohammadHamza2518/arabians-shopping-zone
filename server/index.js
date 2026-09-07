@@ -230,6 +230,21 @@ app.post('/api/products', (req, res) => {
   const safeImage = cleanGallery[0] || (req.body.image && req.body.image.trim()) || '/assets/logo/logo_main.png';
   const finalGallery = cleanGallery.length > 0 ? cleanGallery : [safeImage];
 
+  // Auto-generate smart search tags from title, category, subcategory and badge
+  const autoTags = new Set();
+  if (req.body.name) {
+    req.body.name.split(/\s+/).forEach(w => {
+      const clean = w.replace(/[^a-zA-Z0-9]/g, '').trim();
+      if (clean.length > 2) autoTags.add(clean);
+    });
+  }
+  if (req.body.category) autoTags.add(req.body.category);
+  if (subcat) autoTags.add(subcat);
+  if (req.body.badge) autoTags.add(req.body.badge);
+  if (Array.isArray(req.body.tags)) {
+    req.body.tags.forEach(t => t && autoTags.add(t.trim()));
+  }
+
   const newProduct = {
     id: req.body.id || ('prod-' + Date.now()),
     name: req.body.name || 'Untitled Product',
@@ -246,8 +261,10 @@ app.post('/api/products', (req, res) => {
     imageFit: req.body.imageFit || 'auto',
     gallery: finalGallery,
     description: req.body.description || '',
-    benefits: req.body.benefits || [],
-    tags: req.body.tags || []
+    benefits: Array.isArray(req.body.benefits) ? req.body.benefits : [],
+    tags: Array.from(autoTags),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   store.products.unshift(newProduct);
