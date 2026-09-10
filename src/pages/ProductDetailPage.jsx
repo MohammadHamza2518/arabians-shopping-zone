@@ -16,11 +16,12 @@ import {
   Sparkles,
   ArrowLeft,
   ChevronRight,
-  Ruler
+  Ruler,
+  AlertCircle
 } from 'lucide-react';
 import SmartSizeFinderModal from '../components/SmartSizeFinderModal';
 import PersonalizationStudio from '../components/PersonalizationStudio';
-import { getProductOrderWhatsAppUrl } from '../utils/whatsapp';
+import { getProductOrderWhatsAppUrl, getRestockInquiryWhatsAppUrl } from '../utils/whatsapp';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -38,6 +39,16 @@ export default function ProductDetailPage() {
   const [detailImgClass, setDetailImgClass] = useState('object-cover object-top');
   const [hasDetailImgError, setHasDetailImgError] = useState(false);
 
+  // Stock and Flipkart-Style Size Availability
+  const totalSizes = Array.isArray(product?.sizes) ? product.sizes.length : 0;
+  const outSizes = Array.isArray(product?.outOfStockSizes) ? product.outOfStockSizes : [];
+  const outSizesCount = totalSizes > 0 ? outSizes.filter(s => product.sizes.includes(s)).length : 0;
+  const availableSizesCount = Math.max(0, totalSizes - outSizesCount);
+  const isAllSizesOutOfStock = totalSizes > 0 && availableSizesCount === 0;
+  const isEntireProductOutOfStock = product?.inStock === false || (product?.stock !== undefined && product?.stock <= 0) || isAllSizesOutOfStock;
+  const isSelectedSizeOutOfStock = Boolean(selectedSize && outSizes.includes(selectedSize));
+  const isCurrentSelectionUnavailable = isEntireProductOutOfStock || isSelectedSizeOutOfStock;
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (product) {
@@ -49,8 +60,14 @@ export default function ProductDetailPage() {
         ? (isWearing ? 'object-cover object-top' : 'object-cover object-center')
         : (isWearing ? 'object-cover object-top' : 'object-contain p-4 sm:p-6');
       setDetailImgClass(defaultFit);
+      
+      // Auto-select first in-stock size if sizes are defined
       if (product.sizes && product.sizes.length > 0) {
-        setSelectedSize(product.sizes[0]);
+        const prodOutSizes = product.outOfStockSizes || [];
+        const firstAvailable = product.sizes.find(s => !prodOutSizes.includes(s));
+        setSelectedSize(firstAvailable || product.sizes[0]);
+      } else {
+        setSelectedSize('');
       }
     }
   }, [id, product]);
@@ -270,7 +287,14 @@ export default function ProductDetailPage() {
               <span className="text-slate-300">•</span>
               <span className="text-slate-500">{product.reviewsCount || 65}+ Customer Reviews</span>
               <span className="text-slate-300">•</span>
-              <span className="text-emerald-700 font-semibold">In Stock ({product.stock || 40} Units)</span>
+              {isEntireProductOutOfStock ? (
+                <span className="text-rose-600 font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                  Currently Out of Stock
+                </span>
+              ) : (
+                <span className="text-emerald-700 font-semibold">In Stock ({product.stock || 40} Units)</span>
+              )}
             </div>
           </div>
 
@@ -295,15 +319,19 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Size or Specification Selector (if applicable) */}
+          {/* Size or Specification Selector (Flipkart Style) */}
           {product.sizes && product.sizes.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <label className="font-bold text-slate-800">Select Tailored Size:</label>
                   {selectedSize && (
-                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                      Size {selectedSize}
+                    <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded border ${
+                      isSelectedSizeOutOfStock
+                        ? 'bg-rose-50 text-rose-700 border-rose-300'
+                        : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    }`}>
+                      Size {selectedSize} {isSelectedSizeOutOfStock ? '(Sold Out)' : '(In Stock)'}
                     </span>
                   )}
                 </div>
@@ -316,20 +344,58 @@ export default function ProductDetailPage() {
                   <span>📏 Smart Size Finder</span>
                 </button>
               </div>
+
               <div className="flex flex-wrap gap-2">
-                {product.sizes.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSelectedSize(s)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
-                      selectedSize === s
-                        ? 'bg-slate-950 text-white shadow-md ring-2 ring-amber-400'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-400'
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+                {product.sizes.map((s) => {
+                  const isSizeOOS = outSizes.includes(s);
+                  const isSelected = selectedSize === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      className={`relative px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        isSelected
+                          ? isSizeOOS
+                            ? 'bg-slate-900 text-rose-300 ring-2 ring-rose-500 shadow'
+                            : 'bg-slate-950 text-white shadow-md ring-2 ring-amber-400'
+                          : isSizeOOS
+                          ? 'bg-slate-100/90 text-slate-400 border border-slate-300 line-through decoration-rose-500 decoration-2 hover:border-slate-400'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-400'
+                      }`}
+                    >
+                      <span>{s}</span>
+                      {isSizeOOS && (
+                        <span className="text-[8px] font-black uppercase text-rose-600 bg-rose-100 px-1 py-0.5 rounded leading-none no-underline">
+                          Sold
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Warning banner when selected size is out of stock */}
+              {isSelectedSizeOutOfStock && (
+                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-300/80 text-xs text-amber-900 flex items-center gap-2.5 mt-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>
+                    Size <strong>{selectedSize}</strong> is currently out of stock. Leave an inquiry on WhatsApp to be notified when fresh stock arrives!
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Master Out-of-Stock Alert */}
+          {isEntireProductOutOfStock && (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-xs text-rose-900 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+              <div>
+                <p className="font-bold">This product is currently Out of Stock.</p>
+                <p className="text-[11px] text-rose-700 mt-0.5">
+                  You can chat with us on WhatsApp to inquire restock dates or request an offline reservation.
+                </p>
               </div>
             </div>
           )}
@@ -349,55 +415,87 @@ export default function ProductDetailPage() {
               <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100"
+                  disabled={isCurrentSelectionUnavailable}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-50"
                 >
                   -
                 </button>
                 <span className="w-10 text-center font-bold text-xs">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100"
+                  disabled={isCurrentSelectionUnavailable}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-50"
                 >
                   +
                 </button>
               </div>
 
               {/* Secondary: Add to Bag */}
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition border border-slate-300 flex items-center justify-center gap-1.5 active:scale-95"
-              >
-                {addedAnimation ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-800 font-bold">Added to Bag!</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4 text-slate-700" />
-                    <span>Add to Bag</span>
-                  </>
-                )}
-              </button>
+              {isCurrentSelectionUnavailable ? (
+                <button
+                  disabled
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 text-slate-400 font-bold text-xs border border-slate-300 cursor-not-allowed flex items-center justify-center gap-1.5"
+                >
+                  <span>{isSelectedSizeOutOfStock ? `Size ${selectedSize} Sold Out` : 'Sold Out'}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition border border-slate-300 flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  {addedAnimation ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-600" />
+                      <span className="text-emerald-800 font-bold">Added to Bag!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4 text-slate-700" />
+                      <span>Add to Bag</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* DUAL HERO ACTION BUTTONS: Buy Now + Buy on WhatsApp */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={handleBuyNow}
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950 font-black text-xs sm:text-sm hover:from-amber-400 hover:to-amber-500 transition shadow-gold flex items-center justify-center gap-2 active:scale-95"
-              >
-                <Zap className="w-4 h-4 text-slate-950" />
-                <span>Buy Now (₹{product.price * quantity})</span>
-              </button>
+              {isCurrentSelectionUnavailable ? (
+                <button
+                  disabled
+                  className="w-full py-3.5 px-4 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <span>Out of Stock</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleBuyNow}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950 font-black text-xs sm:text-sm hover:from-amber-400 hover:to-amber-500 transition shadow-gold flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Zap className="w-4 h-4 text-slate-950" />
+                  <span>Buy Now (₹{product.price * quantity})</span>
+                </button>
+              )}
 
-              <button
-                onClick={handleWhatsAppOrder}
-                className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-black text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 active:scale-95"
-              >
-                <MessageSquare className="w-4 h-4 text-slate-950" />
-                <span>Buy via WhatsApp</span>
-              </button>
+              {isCurrentSelectionUnavailable ? (
+                <a
+                  href={getRestockInquiryWhatsAppUrl(product, isSelectedSizeOutOfStock ? selectedSize : null, settings?.whatsapp)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Ask Restock Date on WhatsApp</span>
+                </a>
+              ) : (
+                <button
+                  onClick={handleWhatsAppOrder}
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-black text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <MessageSquare className="w-4 h-4 text-slate-950" />
+                  <span>Buy via WhatsApp</span>
+                </button>
+              )}
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">

@@ -31,6 +31,14 @@ export default function ProductCard({ product }) {
     ? Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100) 
     : 0;
 
+  // Stock and Flipkart-Style Size Availability
+  const totalSizes = Array.isArray(product.sizes) ? product.sizes.length : 0;
+  const outSizes = Array.isArray(product.outOfStockSizes) ? product.outOfStockSizes : [];
+  const outSizesCount = totalSizes > 0 ? outSizes.filter(s => product.sizes.includes(s)).length : 0;
+  const availableSizesCount = Math.max(0, totalSizes - outSizesCount);
+  const isAllSizesOutOfStock = totalSizes > 0 && availableSizesCount === 0;
+  const isOutOfStock = product.inStock === false || (product.stock !== undefined && product.stock <= 0) || isAllSizesOutOfStock;
+
   const handleImageLoad = (e) => {
     if (product.imageFit === 'cover' || isTalbina) {
       setImgClass(isWearing ? 'object-cover object-top' : 'object-cover object-center');
@@ -106,13 +114,25 @@ export default function ProductCard({ product }) {
           />
         )}
 
-        {/* Quick View overlay on desktop */}
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <span className="bg-white/95 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5 text-amber-600" />
-            <span>View Details</span>
-          </span>
-        </div>
+        {/* Out of Stock Overlay Banner */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-10 p-2 text-center">
+            <span className="bg-slate-950/95 text-rose-300 border border-rose-500/50 font-black text-[10px] sm:text-xs px-3 py-1.5 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              Out of Stock
+            </span>
+          </div>
+        )}
+
+        {/* Quick View overlay on desktop (only when in stock) */}
+        {!isOutOfStock && (
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+            <span className="bg-white/95 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+              <Eye className="w-3.5 h-3.5 text-amber-600" />
+              <span>View Details</span>
+            </span>
+          </div>
+        )}
       </Link>
 
       {/* Details & Actions */}
@@ -156,10 +176,22 @@ export default function ProductCard({ product }) {
             {product.name}
           </Link>
 
-          {/* Sizing or Weight Tag */}
-          {(product.netWeight || (product.sizes && product.sizes.length > 0)) && (
+          {/* Sizing or Weight Tag with Stock Awareness */}
+          {(product.netWeight || totalSizes > 0) && (
             <div className="text-[10px] sm:text-[11px] text-slate-500">
-              {product.netWeight ? product.netWeight : `${product.sizes.length} Sizes Available`}
+              {product.netWeight ? (
+                <span>{product.netWeight}</span>
+              ) : totalSizes > 0 ? (
+                isOutOfStock ? (
+                  <span className="text-rose-600 font-bold">All Sizes Out of Stock</span>
+                ) : outSizesCount > 0 ? (
+                  <span className="text-amber-700 font-medium">
+                    {availableSizesCount} of {totalSizes} Sizes In Stock
+                  </span>
+                ) : (
+                  <span>{totalSizes} Sizes Available</span>
+                )
+              ) : null}
             </div>
           )}
         </div>
@@ -179,15 +211,24 @@ export default function ProductCard({ product }) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => addToCart(product, 1)}
-            className="px-3 py-1.5 rounded-xl bg-[#032219] text-amber-300 hover:bg-[#063e2e] active:scale-95 transition-all text-xs font-bold flex items-center gap-1.5 shadow-sm"
-            aria-label="Add to cart"
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">Add</span>
-          </button>
+          {isOutOfStock ? (
+            <span 
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold select-none cursor-not-allowed"
+              title="Currently out of stock"
+            >
+              Sold Out
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => addToCart(product, 1)}
+              className="px-3 py-1.5 rounded-xl bg-[#032219] text-amber-300 hover:bg-[#063e2e] active:scale-95 transition-all text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              aria-label="Add to cart"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Add</span>
+            </button>
+          )}
         </div>
 
       </div>

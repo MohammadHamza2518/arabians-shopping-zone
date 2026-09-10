@@ -49,6 +49,26 @@ Please confirm availability, share design preview, and provide dispatch details 
 }
 
 /**
+ * 1.5. Pre-filled WhatsApp message for Out-of-Stock / Restock inquiry
+ */
+export function getRestockInquiryWhatsAppUrl(product, size = null, phone = STORE_WHATSAPP_PHONE) {
+  const msg = 
+`Assalam o Alaikum Arabians Shopping Zone! 🌙
+
+I am interested in buying:
+📦 *Product:* ${product?.name || 'Product'}${size ? `\n📏 *Required Size:* ${size}` : ''}
+
+It shows currently *Out of Stock* on your website. 
+Could you please let me know:
+1. Is it available in your local warehouse/store?
+2. When will fresh stock / this size be available for dispatch?
+
+Thank you!`;
+
+  return createWhatsAppUrl(msg, phone);
+}
+
+/**
  * 2. Pre-filled WhatsApp message for full cart / checkout order
  */
 export function getCartOrderWhatsAppUrl({ orderId, customer, items, total, paymentMethod }, phone = STORE_WHATSAPP_PHONE) {

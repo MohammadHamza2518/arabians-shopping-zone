@@ -190,6 +190,17 @@ export function StoreProvider({ children }) {
 
   // Cart management
   const addToCart = (product, quantity = 1, selectedVariant = null, customization = null) => {
+    // Inventory safeguard: Check if product or selected size is out of stock
+    if (product.inStock === false || (product.stock !== undefined && product.stock <= 0)) {
+      showToast("Ye product filhal out of stock hai!", "error");
+      return;
+    }
+
+    if (selectedVariant && Array.isArray(product.outOfStockSizes) && product.outOfStockSizes.includes(selectedVariant)) {
+      showToast(`Size ${selectedVariant} filhal out of stock hai!`, "error");
+      return;
+    }
+
     setCart(prev => {
       const variantKey = selectedVariant || 'standard';
       const custKey = customization ? JSON.stringify(customization) : '';

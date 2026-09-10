@@ -120,6 +120,7 @@ export default function AdminPage() {
   const [previewImageIdx, setPreviewImageIdx] = useState(0);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const productFileInputRef = React.useRef(null);
+  const [newSizeInput, setNewSizeInput] = useState('');
 
   // Category CRUD state
   const [editingCategory, setEditingCategory] = useState(null);
@@ -447,6 +448,7 @@ export default function AdminPage() {
   const openProductModal = (productToEdit = null) => {
     setProductUrlInput('');
     setPreviewImageIdx(0);
+    setNewSizeInput('');
     if (!productToEdit) {
       setEditingProduct({
         id: `prod-${Date.now()}`,
@@ -466,7 +468,10 @@ export default function AdminPage() {
         imageFit: 'auto',
         description: '',
         benefits: [],
-        tags: []
+        tags: [],
+        sizes: [],
+        outOfStockSizes: [],
+        inStock: true
       });
     } else {
       const photos = getProductPhotos(productToEdit);
@@ -475,10 +480,33 @@ export default function AdminPage() {
         isNew: false,
         gallery: photos,
         image: photos[0] || productToEdit.image || '/assets/logo/logo_main.png',
-        imageFit: productToEdit.imageFit || 'auto'
+        imageFit: productToEdit.imageFit || 'auto',
+        sizes: Array.isArray(productToEdit.sizes) ? [...productToEdit.sizes] : [],
+        outOfStockSizes: Array.isArray(productToEdit.outOfStockSizes) ? [...productToEdit.outOfStockSizes] : [],
+        inStock: productToEdit.inStock !== false
       });
     }
     setIsProductModalOpen(true);
+  };
+
+  const handleToggleProductStock = async (product) => {
+    const newStatus = product.inStock === false ? true : false;
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inStock: newStatus })
+      });
+      const data = await res.json();
+      if (data.success || data.product) {
+        showToast(`"${product.name.slice(0, 22)}..." marked ${newStatus ? 'In Stock (Live)' : 'Out of Stock'}`);
+        refreshAll();
+      } else {
+        showToast("Failed to update stock", "error");
+      }
+    } catch {
+      showToast("Error updating stock", "error");
+    }
   };
 
   const handleSaveProduct = async (e) => {
@@ -507,11 +535,15 @@ export default function AdminPage() {
         gallery: photos.slice(0, 3),
         price: Number(editingProduct.price) || 0,
         mrp: Number(editingProduct.mrp) || Number(editingProduct.price) || 0,
+        stock: Number(editingProduct.stock) || 0,
         rating: Number(editingProduct.rating) || 5.0,
         reviewsCount: Number(editingProduct.reviewsCount) || 1,
         badge: (editingProduct.badge || '').trim(),
         subcategory: subcatValue,
-        subCategory: subcatValue
+        subCategory: subcatValue,
+        sizes: Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [],
+        outOfStockSizes: Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : [],
+        inStock: editingProduct.inStock !== false
       };
 
       const res = await fetch(url, {
@@ -2130,7 +2162,7 @@ export default function AdminPage() {
                 />
                 
                 <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center justify-between gap-1 flex-wrap">
                     <div className="flex items-center gap-1.5 truncate">
                       <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
                         {p.category}
@@ -2141,27 +2173,56 @@ export default function AdminPage() {
                         </span>
                       )}
                     </div>
-                    {p.badge && (
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 truncate">
-                        {p.badge}
+                    
+                    <div className="flex items-center gap-1">
+                      {p.badge && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 truncate">
+                          {p.badge}
+                        </span>
+                      )}
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
+                        p.inStock === false || (p.stock !== undefined && p.stock <= 0)
+                          ? 'bg-rose-950/80 text-rose-300 border-rose-700' 
+                          : 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
+                      }`}>
+                        {p.inStock === false || (p.stock !== undefined && p.stock <= 0) ? '🔴 Out of Stock' : '🟢 In Stock'}
                       </span>
-                    )}
+                    </div>
                   </div>
 
                   <h4 className="font-bold text-xs text-white truncate" title={p.name}>
                     {p.name}
                   </h4>
 
-                  <div className="text-xs">
-                    <span className="font-black text-emerald-400 font-mono">₹{p.price}</span>
-                    {p.mrp && (
-                      <span className="line-through text-slate-500 ml-1.5 text-[11px]">
-                        ₹{p.mrp}
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-black text-emerald-400 font-mono">₹{p.price}</span>
+                      {p.mrp && (
+                        <span className="line-through text-slate-500 ml-1.5 text-[11px]">
+                          ₹{p.mrp}
+                        </span>
+                      )}
+                    </div>
+                    {p.stock !== undefined && (
+                      <span className="text-[10px] text-slate-400">
+                        Units: <strong className="text-slate-200">{p.stock}</strong>
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2">
+                  {/* Size status if applicable */}
+                  {Array.isArray(p.sizes) && p.sizes.length > 0 && (
+                    <div className="text-[10px] text-slate-400 pt-0.5">
+                      📏 Sizes: <span className={(p.outOfStockSizes || []).length > 0 ? 'text-amber-400 font-semibold' : 'text-slate-300'}>
+                        {p.sizes.length - ((p.outOfStockSizes || []).filter(s => p.sizes.includes(s)).length)}/{p.sizes.length} in stock
+                      </span>
+                      {(p.outOfStockSizes || []).length > 0 && (
+                        <span className="text-rose-400 ml-1 font-semibold">({p.outOfStockSizes.length} sold out)</span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-1.5 pt-2 flex-wrap">
                     <button
                       onClick={() => openProductModal(p)}
                       className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 text-[11px] font-bold flex items-center gap-1 transition"
@@ -2170,8 +2231,19 @@ export default function AdminPage() {
                       <span>Edit</span>
                     </button>
                     <button
+                      onClick={() => handleToggleProductStock(p)}
+                      className={`px-2 py-1 rounded-xl text-[10px] font-bold border transition flex items-center gap-1 ${
+                        p.inStock === false 
+                          ? 'bg-emerald-950/50 text-emerald-300 border-emerald-700/70 hover:bg-emerald-900/60' 
+                          : 'bg-rose-950/50 text-rose-300 border-rose-700/70 hover:bg-rose-900/60'
+                      }`}
+                      title={p.inStock === false ? 'Click to mark product In Stock' : 'Click to mark product Out of Stock'}
+                    >
+                      <span>{p.inStock === false ? '🟢 Set In Stock' : '🔴 Mark OOS'}</span>
+                    </button>
+                    <button
                       onClick={() => handleDeleteProduct(p.id, p.name)}
-                      className="px-2.5 py-1 rounded-xl bg-rose-950/40 text-rose-300 hover:bg-rose-900/60 text-[11px] font-bold flex items-center gap-1 transition"
+                      className="px-2 py-1 rounded-xl bg-rose-950/40 text-rose-300 hover:bg-rose-900/60 text-[11px] font-bold flex items-center gap-1 transition ml-auto"
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>Delete</span>
@@ -3253,6 +3325,261 @@ export default function AdminPage() {
                   className="w-full px-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* SECTION 2.5: INVENTORY AVAILABILITY & SIZE VARIATIONS STUDIO (FLIPKART STYLE) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <Layers className="w-4 h-4 text-amber-500" />
+                <span>2.5. Stock Availability & Flipkart-Style Size Inventory</span>
+              </div>
+              <span className="text-[10px] text-slate-400">
+                Flipkart-Style Size Strikethrough & Availability Studio
+              </span>
+            </div>
+
+            {/* Master Product Stock Switch */}
+            <div className="p-3.5 rounded-xl bg-[#060c12] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-white">Product Master Stock Status:</span>
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                    editingProduct.inStock !== false 
+                      ? 'bg-emerald-950 text-emerald-300 border-emerald-700' 
+                      : 'bg-rose-950 text-rose-300 border-rose-700'
+                  }`}>
+                    {editingProduct.inStock !== false ? '🟢 In Stock (Live on Store)' : '🔴 Out of Stock (Sold Out)'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {editingProduct.inStock !== false 
+                    ? 'Customers can add to cart and purchase instantly.' 
+                    : 'Storefront shows "Out of Stock" overlay; purchase buttons disabled with WhatsApp inquiry lead.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditingProduct({ ...editingProduct, inStock: editingProduct.inStock === false ? true : false })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 ${
+                  editingProduct.inStock !== false
+                    ? 'bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-700/80'
+                    : 'bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80'
+                }`}
+              >
+                <span>{editingProduct.inStock !== false ? '🔴 Mark Out of Stock' : '🟢 Mark In Stock'}</span>
+              </button>
+            </div>
+
+            {/* Sizes & Flipkart-Style Out of Stock Variations Manager */}
+            <div className="space-y-3 pt-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <label className="block font-bold text-slate-200 text-xs">
+                    Product Sizes (e.g. Saudi Thobe Lengths, Kurtas, Clothes)
+                  </label>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Click on any size chip to toggle it <strong>In Stock</strong> or <strong>Out of Stock</strong> (customers will see a strikethrough just like Flipkart).
+                  </p>
+                </div>
+                
+                {Array.isArray(editingProduct.sizes) && editingProduct.sizes.length > 0 && (
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setEditingProduct({ ...editingProduct, outOfStockSizes: [] })}
+                      className="px-2 py-1 rounded-lg bg-emerald-950/70 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900 transition font-bold"
+                    >
+                      Mark All In Stock
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingProduct({ ...editingProduct, outOfStockSizes: [...editingProduct.sizes] })}
+                      className="px-2 py-1 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800/80 hover:bg-rose-900 transition font-bold"
+                    >
+                      Mark All Out of Stock
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingProduct({ ...editingProduct, sizes: [], outOfStockSizes: [] })}
+                      className="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition font-medium"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Presets for Instant Setup */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider block">
+                  ⚡ 1-Click Size Presets:
+                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const thobeSizes = ["52 (S)", "54 (M)", "56 (L)", "58 (XL)", "60 (XXL)"];
+                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                      const combined = Array.from(new Set([...current, ...thobeSizes]));
+                      setEditingProduct({ ...editingProduct, sizes: combined });
+                    }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 transition"
+                  >
+                    + Saudi Thobes (52, 54, 56, 58, 60)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const clothingSizes = ["S", "M", "L", "XL", "XXL", "3XL"];
+                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                      const combined = Array.from(new Set([...current, ...clothingSizes]));
+                      setEditingProduct({ ...editingProduct, sizes: combined });
+                    }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-slate-700 text-slate-300 hover:border-amber-500/50 transition"
+                  >
+                    + Clothing Standard (S, M, L, XL, XXL)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const attarSizes = ["3ml (1/4 Tola)", "6ml (1/2 Tola)", "12ml (1 Tola)"];
+                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                      const combined = Array.from(new Set([...current, ...attarSizes]));
+                      setEditingProduct({ ...editingProduct, sizes: combined });
+                    }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-slate-700 text-slate-300 hover:border-amber-500/50 transition"
+                  >
+                    + Attar / Oils (3ml, 6ml, 12ml)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const weightSizes = ["250g", "500g", "1kg"];
+                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                      const combined = Array.from(new Set([...current, ...weightSizes]));
+                      setEditingProduct({ ...editingProduct, sizes: combined });
+                    }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-slate-700 text-slate-300 hover:border-amber-500/50 transition"
+                  >
+                    + Weight (250g, 500g, 1kg)
+                  </button>
+                </div>
+              </div>
+
+              {/* Add Custom Size Input */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Type custom size (e.g. 54, 56, Free Size, 100ml)..."
+                  value={newSizeInput}
+                  onChange={(e) => setNewSizeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = newSizeInput.trim();
+                      if (val) {
+                        const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                        if (!current.includes(val)) {
+                          setEditingProduct({ ...editingProduct, sizes: [...current, val] });
+                        }
+                        setNewSizeInput('');
+                      }
+                    }
+                  }}
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const val = newSizeInput.trim();
+                    if (val) {
+                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                      if (!current.includes(val)) {
+                        setEditingProduct({ ...editingProduct, sizes: [...current, val] });
+                      }
+                      setNewSizeInput('');
+                    }
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition flex items-center gap-1 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Size</span>
+                </button>
+              </div>
+
+              {/* Active Size Chips & Interactive Availability Toggles */}
+              {Array.isArray(editingProduct.sizes) && editingProduct.sizes.length > 0 ? (
+                <div className="p-3 rounded-xl bg-[#060c12] border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span className="font-semibold text-slate-300">Configured Sizes ({editingProduct.sizes.length}):</span>
+                    <span>
+                      Click toggle button to switch In Stock / Out of Stock
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {editingProduct.sizes.map((size) => {
+                      const isOOS = Array.isArray(editingProduct.outOfStockSizes) && editingProduct.outOfStockSizes.includes(size);
+                      return (
+                        <div
+                          key={size}
+                          className={`flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl border transition ${
+                            isOOS 
+                              ? 'bg-rose-950/20 border-rose-800/60 text-slate-300' 
+                              : 'bg-slate-900 border-slate-700 text-white shadow-sm'
+                          }`}
+                        >
+                          <span className={`text-xs font-bold ${isOOS ? 'line-through decoration-rose-500 decoration-2 text-slate-400' : 'text-slate-100'}`}>
+                            {size}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentOOS = Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : [];
+                              const updatedOOS = isOOS 
+                                ? currentOOS.filter(s => s !== size)
+                                : [...currentOOS, size];
+                              setEditingProduct({ ...editingProduct, outOfStockSizes: updatedOOS });
+                            }}
+                            className={`px-2 py-0.5 rounded-lg text-[9px] font-black transition border ${
+                              isOOS
+                                ? 'bg-rose-950 text-rose-300 border-rose-700 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-700'
+                                : 'bg-emerald-950 text-emerald-300 border-emerald-700 hover:bg-rose-950 hover:text-rose-300 hover:border-rose-700'
+                            }`}
+                            title={isOOS ? 'Click to mark In Stock' : 'Click to mark Out of Stock'}
+                          >
+                            {isOOS ? '🔴 Out of Stock' : '🟢 In Stock'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSizes = editingProduct.sizes.filter(s => s !== size);
+                              const newOOS = (editingProduct.outOfStockSizes || []).filter(s => s !== size);
+                              setEditingProduct({ ...editingProduct, sizes: newSizes, outOfStockSizes: newOOS });
+                            }}
+                            className="p-1 text-slate-500 hover:text-rose-400 rounded-lg transition"
+                            title="Remove size variation"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-[#060c12]/60 border border-dashed border-slate-800 text-center text-slate-500 text-[11px]">
+                  No size options added yet. Click one of the 1-Click presets above or type custom sizes if this product has size variations.
+                </div>
+              )}
             </div>
           </div>
 

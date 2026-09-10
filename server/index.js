@@ -337,6 +337,9 @@ app.post('/api/products', (req, res) => {
     description: req.body.description || '',
     benefits: Array.isArray(req.body.benefits) ? req.body.benefits : [],
     tags: Array.from(autoTags),
+    sizes: Array.isArray(req.body.sizes) ? req.body.sizes : [],
+    outOfStockSizes: Array.isArray(req.body.outOfStockSizes) ? req.body.outOfStockSizes : [],
+    inStock: req.body.inStock !== undefined ? Boolean(req.body.inStock) : true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -380,6 +383,10 @@ app.put('/api/products/:id', (req, res) => {
     mrp: req.body.mrp !== undefined ? Number(req.body.mrp) : store.products[idx].mrp,
     stock: req.body.stock !== undefined ? Number(req.body.stock) : store.products[idx].stock,
     badge: req.body.badge !== undefined ? (req.body.badge || '').trim() : store.products[idx].badge,
+    sizes: req.body.sizes !== undefined ? (Array.isArray(req.body.sizes) ? req.body.sizes : []) : (store.products[idx].sizes || []),
+    outOfStockSizes: req.body.outOfStockSizes !== undefined ? (Array.isArray(req.body.outOfStockSizes) ? req.body.outOfStockSizes : []) : (store.products[idx].outOfStockSizes || []),
+    inStock: req.body.inStock !== undefined ? Boolean(req.body.inStock) : (store.products[idx].inStock !== false),
+    updatedAt: new Date().toISOString()
   };
 
   saveStore(store);

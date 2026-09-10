@@ -36,7 +36,10 @@
       ],
       "isNew": false,
       "subCategory": "thobes",
-      "imageFit": "auto"
+      "imageFit": "auto",
+      "outOfStockSizes": [],
+      "inStock": true,
+      "updatedAt": "2026-09-10T10:21:33.586Z"
     },
     {
       "id": "thobe-al-noor-signature",
@@ -2213,6 +2216,56 @@
         }
       ],
       "shortName": "Muslim Wedding"
+    }
+  ],
+  "heroSlides": [
+    {
+      "id": "thobes",
+      "badge": "👑 Royal Wardrobe Collection",
+      "title": "Saudi & Emirati Royal Cut Thobes",
+      "subtitle": "Engineered with tailored standing collars, concealed snap plackets, and breathable luxury poly-blend fabric for Jummah prayers, Umrah, and auspicious gatherings.",
+      "highlight": "100% Free Size Replacement • Direct Studio Tailoring",
+      "price": "From ₹1,499",
+      "mrp": "₹2,299",
+      "ctaText": "Shop Men's Thobes",
+      "ctaLink": "/shop?category=wearing",
+      "image": "/assets/studio/mens_black_thobe_studio.jpg"
+    },
+    {
+      "id": "talbina",
+      "badge": "🥣 Prophetic Sunnah Superfood",
+      "title": "Arabian's Sprouted Barley Talbeena",
+      "subtitle": "Stone-ground roasted barley blended with premium California almonds, pistachios, and saffron. Rejuvenates the heart and vitalizes immunity according to authentic Hadith 5417.",
+      "highlight": "5 High-Repeat Flavors • Lab Certified • 100% Halal",
+      "price": "From ₹249",
+      "mrp": "₹270",
+      "ctaText": "Order Sunnah Talbina",
+      "ctaLink": "/product/talbina-vanilla",
+      "image": "/assets/talbina/talbina_banner_43.jpg"
+    },
+    {
+      "id": "oud",
+      "badge": "✨ Pure Alcohol-Free Perfumery",
+      "title": "Aged Cambodian Dehnul Oud & Attars",
+      "subtitle": "Distilled from aged wild Koh Kong and Assamese agarwood forests. 24–48 hours extreme longevity with majestic projection that lingers on clothes for days.",
+      "highlight": "Zero Alcohol • Pure Concentrated Misce Oil",
+      "price": "From ₹649",
+      "mrp": "₹999",
+      "ctaText": "Discover Pure Oud",
+      "ctaLink": "/shop?category=fragrance",
+      "image": "/assets/studio/oud_mabkhara_luxury.jpg"
+    },
+    {
+      "id": "wedding",
+      "badge": "💍 Sacred Nikah Traditions",
+      "title": "Luxury Velvet Gold-Foil Nikah Nama",
+      "subtitle": "Handcrafted heirloom marriage certificate booklets with Quranic covenants, ostrich feather quill signing pens, and velvet Haq Mehar treasure boxes.",
+      "highlight": "Sacred Sunnah Keepsakes • Pan-India Courier",
+      "price": "From ₹899",
+      "mrp": "₹1,499",
+      "ctaText": "View Nikah Collection",
+      "ctaLink": "/shop?category=wedding",
+      "image": "/assets/studio/nikah_nama_banner_43.jpg"
     }
   ],
   "reviews": [
@@ -7881,6 +7934,83 @@
   ],
   "orders": [
     {
+      "id": "ASZ-6201",
+      "date": "2026-09-07 22:10",
+      "createdAt": "2026-09-07 22:10",
+      "customer": {
+        "name": "Mohd Faiz",
+        "phone": "9580835179",
+        "email": "mohdfaizii768@gmail.com",
+        "address": "Shuklaganj\nAhmad nagar, Unnao, UP - 209861",
+        "street": "Shuklaganj\nAhmad nagar",
+        "city": "Unnao",
+        "state": "UP",
+        "pincode": "209861"
+      },
+      "customerName": "Mohd Faiz",
+      "phone": "9580835179",
+      "email": "mohdfaizii768@gmail.com",
+      "address": "Shuklaganj\nAhmad nagar, Unnao, UP - 209861, Unnao, UP, 209861",
+      "items": [
+        {
+          "id": "talbina-vanilla",
+          "name": "Arabian's Talbeena Nutritional Breakfast (Elaichi Dry Fruits - 400g)",
+          "price": 399,
+          "quantity": 1,
+          "selectedSize": "standard",
+          "customization": null,
+          "image": "/assets/talbina/talbina_vanilla_dryfruits.jpg"
+        }
+      ],
+      "subtotal": 429,
+      "discount": 40,
+      "couponCode": "HAMZA10",
+      "deliveryFee": 70,
+      "total": 429,
+      "paymentMethod": "cod",
+      "paymentMode": "cod",
+      "status": "Dispatched",
+      "courier": "Shipmozo Express Logistics",
+      "trackingNumber": "TRK19020163",
+      "trackingId": "TRK19020163",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-07 22:10",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-07 22:10",
+          "done": true
+        },
+        {
+          "status": "Packing at Central Warehouse",
+          "time": "In Progress",
+          "done": false
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Dispatched to Shipmozo (Ref: 31526AP75215410420)",
+          "time": "07 Sept, 22:11",
+          "done": true
+        }
+      ],
+      "shipmozoPushed": true,
+      "shipmozoOrderId": "31526AP75215410420",
+      "shipmozoReferenceId": "ASZ-6201",
+      "shipmozoPushedAt": "2026-09-07T22:11:39.391Z"
+    },
+    {
       "id": "ASZ-2135",
       "date": "2026-09-06 19:12",
       "createdAt": "2026-09-06 19:12",
@@ -8427,6 +8557,15 @@
     }
   ],
   "coupons": [
+    {
+      "code": "HAMZA10",
+      "discountPercent": 10,
+      "flatDiscount": 0,
+      "minOrder": 299,
+      "description": "lelo bss discount hai",
+      "active": true,
+      "createdAt": "2026-09-07T22:09:55.897Z"
+    },
     {
       "code": "JUMMAH20",
       "discountPercent": 10,
