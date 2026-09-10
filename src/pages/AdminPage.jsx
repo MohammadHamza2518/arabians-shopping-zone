@@ -50,7 +50,9 @@ import {
   Scroll,
   Star,
   Compass,
-  Image as ImageIcon
+  Image as ImageIcon,
+  CreditCard,
+  ShieldCheck
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { searchProducts } from '../utils/searchEngine';
@@ -1863,12 +1865,20 @@ export default function AdminPage() {
                       </span>
                       <span className="text-xs text-slate-400">{ord.createdAt || ord.date}</span>
                       <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                        (ord.paymentMode || ord.paymentMethod || 'cod').toLowerCase() === 'cod' 
+                        (ord.paymentMode || ord.paymentMethod || 'cod').toLowerCase().includes('online') || (ord.paymentMode || ord.paymentMethod || 'cod').toLowerCase().includes('razorpay')
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50'
+                          : (ord.paymentMode || ord.paymentMethod || 'cod').toLowerCase() === 'cod' 
                           ? 'bg-amber-950 text-amber-300 border border-amber-700/50' 
-                          : 'bg-emerald-950 text-emerald-300 border border-emerald-700/50'
+                          : 'bg-teal-950 text-teal-300 border border-teal-700/50'
                       }`}>
                         {ord.paymentMode || ord.paymentMethod || 'COD'}
                       </span>
+                      {ord.razorpayPaymentId && (
+                        <span className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-lg flex items-center gap-1" title="Razorpay Payment ID">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          <span>RZP: {ord.razorpayPaymentId}</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Status Updater & Actions */}
@@ -2728,6 +2738,51 @@ export default function AdminPage() {
           </div>
 
           <form onSubmit={handleSaveSettings} className="space-y-6 text-xs">
+            
+            {/* SECTION 0: RAZORPAY PAYMENT GATEWAY STATUS */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#070d12] to-[#070d12] border border-emerald-500/40 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-sm text-white flex items-center gap-2">
+                      <span>Razorpay Live Payment Gateway</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30 font-semibold">
+                        ● Live & Connected
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400">Accept direct online payments via UPI (GPay/PhonePe/Paytm), Debit/Credit Cards & NetBanking</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-slate-400">Live Merchant Key:</span>
+                  <code className="px-2.5 py-1 rounded-lg bg-black/50 border border-slate-700 text-amber-300 font-mono text-[11px]">
+                    rzp_live_TaICrfbpvjAX2q
+                  </code>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-slate-300">
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Accepted Modes</div>
+                  <div className="font-bold text-white text-xs mt-0.5">UPI, Cards, NetBanking, Wallets</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Security Protocol</div>
+                  <div className="font-bold text-emerald-400 text-xs mt-0.5 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>HMAC-SHA256 Encrypted</span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Currency & Settlement</div>
+                  <div className="font-bold text-white text-xs mt-0.5">INR (₹) • Direct Bank Settlement</div>
+                </div>
+              </div>
+            </div>
             
             {/* SECTION 1: FLASH SALE & COUNTDOWN TIMER */}
             <div className="p-5 rounded-2xl bg-[#070d12] border border-amber-500/30 space-y-4">

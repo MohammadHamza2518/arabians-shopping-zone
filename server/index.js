@@ -8,6 +8,8 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 import { initialData } from './data/initialData.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -753,6 +755,167 @@ app.post('/api/orders', (req, res) => {
   }
 
   res.status(201).json(newOrder);
+});
+
+// --- Razorpay Payment Gateway Integration ---
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_TaICrfbpvjAX2q';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'OP3A8g7vKiYzHmtNRJpqWDlv';
+
+let razorpayClient = null;
+try {
+  razorpayClient = new Razorpay({
+    key_id: RAZORPAY_KEY_ID,
+    key_secret: RAZORPAY_KEY_SECRET
+  });
+  console.log('✅ Razorpay Live Gateway initialized with Key ID:', RAZORPAY_KEY_ID);
+} catch (err) {
+  console.error('⚠️ Razorpay initialization warning:', err.message);
+}
+
+// 1. Get Payment Gateway Public Config
+app.get('/api/payment/config', (req, res) => {
+  res.json({
+    success: true,
+    enabled: true,
+    keyId: RAZORPAY_KEY_ID,
+    currency: 'INR',
+    businessName: 'Arabians Shopping Zone'
+  });
+});
+
+// 2. Create Razorpay Order
+app.post('/api/payment/create-order', async (req, res) => {
+  try {
+    const { amount, receipt, notes } = req.body;
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ success: false, message: 'Invalid order amount' });
+    }
+
+    if (!razorpayClient) {
+      return res.status(500).json({ success: false, message: 'Payment gateway not initialized' });
+    }
+
+    // Razorpay expects amount in paise (1 INR = 100 paise)
+    const amountInPaise = Math.round(Number(amount) * 100);
+    const receiptId = (receipt || `rcpt_${Date.now()}`).toString().slice(-40);
+
+    const rzpOrder = await razorpayClient.orders.create({
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: receiptId,
+      notes: notes || {}
+    });
+
+    res.json({
+      success: true,
+      orderId: rzpOrder.id,
+      amount: rzpOrder.amount,
+      currency: rzpOrder.currency,
+      keyId: RAZORPAY_KEY_ID
+    });
+  } catch (err) {
+    console.error('Razorpay order creation error:', err);
+    res.status(500).json({
+      success: false,
+      message: err.error?.description || err.message || 'Failed to initiate online payment'
+    });
+  }
+});
+
+// 3. Verify Razorpay Payment & Register Confirmed Order
+app.post('/api/payment/verify', async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderData
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Missing payment signature parameters' });
+    }
+
+    // Verify HMAC-SHA256 signature
+    const hmac = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET);
+    hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+    const generatedSignature = hmac.digest('hex');
+
+    if (generatedSignature !== razorpay_signature) {
+      console.error('Signature verification mismatch!');
+      return res.status(400).json({ success: false, message: 'Payment signature verification failed' });
+    }
+
+    // Payment is 100% verified! Now create confirmed order
+    const store = getStore();
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const orderId = `ASZ-${randomSuffix}`;
+
+    const now = new Date();
+    const dateFormatted = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+
+    const payload = orderData || {};
+    const customerObj = payload.customer || {};
+    const custName = customerObj.name || payload.customerName || payload.name || 'Customer';
+    const custPhone = customerObj.phone || payload.phone || '';
+    const custEmail = customerObj.email || payload.email || '';
+    const custAddress = customerObj.address 
+      ? [customerObj.address, customerObj.city, customerObj.state, customerObj.pincode].filter(Boolean).join(', ')
+      : (payload.address || '');
+
+    const newOrder = {
+      id: orderId,
+      date: dateFormatted,
+      createdAt: dateFormatted,
+      customer: customerObj,
+      customerName: custName,
+      phone: custPhone,
+      email: custEmail,
+      address: custAddress,
+      items: payload.items || [],
+      subtotal: payload.subtotal || 0,
+      discount: payload.discount || 0,
+      couponCode: payload.couponCode || '',
+      deliveryFee: payload.deliveryFee || payload.shippingCharges || 0,
+      total: payload.total || 0,
+      paymentMethod: 'Online (Razorpay)',
+      paymentMode: 'Online (Razorpay)',
+      paymentStatus: 'Paid Online',
+      razorpayPaymentId: razorpay_payment_id,
+      razorpayOrderId: razorpay_order_id,
+      status: 'Confirmed',
+      courier: 'Express Courier Network',
+      trackingNumber: 'TRK' + Date.now().toString().slice(-8),
+      trackingId: 'TRK' + Date.now().toString().slice(-8),
+      timeline: [
+        { status: 'Order Placed & Paid Online (Razorpay)', time: dateFormatted, done: true },
+        { status: 'Payment Verified (ID: ' + razorpay_payment_id + ')', time: dateFormatted, done: true },
+        { status: 'Packing at Central Warehouse', time: 'In Progress', done: false },
+        { status: 'Out for Delivery', time: 'Pending', done: false },
+        { status: 'Delivered', time: 'Pending', done: false }
+      ]
+    };
+
+    store.orders.unshift(newOrder);
+    saveStore(store);
+
+    if (isMongoConnected && mongoDb) {
+      mongoDb.collection('orders').insertOne({ ...newOrder, _savedAt: new Date() }).catch(err => {
+        console.error("MongoDB orders insert notice:", err.message);
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Payment verified and order confirmed successfully',
+      order: newOrder,
+      orderId: newOrder.id,
+      paymentId: razorpay_payment_id
+    });
+  } catch (err) {
+    console.error('Payment verification error:', err);
+    res.status(500).json({ success: false, message: 'Server error during payment verification: ' + err.message });
+  }
 });
 
 // Track order by Order ID, Customer Phone, Tracking AWB, or Email

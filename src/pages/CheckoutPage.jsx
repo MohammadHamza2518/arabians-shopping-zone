@@ -14,7 +14,9 @@ import {
   Sparkles,
   Ticket,
   Copy,
-  ArrowRight
+  ArrowRight,
+  CreditCard,
+  Lock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -52,7 +54,7 @@ export default function CheckoutPage() {
     pincode: ''
   });
 
-  const [paymentMode, setPaymentMode] = useState('cod'); // 'cod', 'upi', 'whatsapp'
+  const [paymentMode, setPaymentMode] = useState('online'); // 'online' (Razorpay), 'cod', 'whatsapp'
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -134,9 +136,111 @@ export default function CheckoutPage() {
         shippingCharges,
         total: finalTotal,
         paymentMode,
-        paymentStatus: paymentMode === 'upi' ? 'Paid Online' : 'Pending Verification'
+        paymentStatus: paymentMode === 'online' ? 'Paid Online' : 'Pending Verification'
       };
 
+      // 1. ONLINE PAYMENT FLOW (RAZORPAY)
+      if (paymentMode === 'online') {
+        const initRes = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: finalTotal,
+            receipt: `rcpt_${Date.now().toString().slice(-8)}`,
+            notes: {
+              customerName: formData.name,
+              phone: formData.phone,
+              city: formData.city
+            }
+          })
+        });
+
+        const initData = await initRes.json();
+        if (!initData.success || !initData.orderId) {
+          throw new Error(initData.message || "Could not connect to payment gateway. Please try Cash on Delivery.");
+        }
+
+        const openRazorpay = () => {
+          const options = {
+            key: initData.keyId,
+            amount: initData.amount,
+            currency: initData.currency || 'INR',
+            name: 'Arabians Shopping Zone',
+            description: `Order Payment (${cartCount} items)`,
+            image: '/assets/logo/logo_main.png',
+            order_id: initData.orderId,
+            prefill: {
+              name: formData.name,
+              email: formData.email,
+              contact: formData.phone
+            },
+            notes: {
+              address: fullAddress
+            },
+            theme: {
+              color: '#022c22'
+            },
+            modal: {
+              ondismiss: () => {
+                setSubmitting(false);
+                showToast("Payment window closed. You can retry or choose Cash on Delivery.", "info");
+              }
+            },
+            handler: async (response) => {
+              try {
+                const verifyRes = await fetch('/api/payment/verify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    orderData: orderPayload
+                  })
+                });
+
+                const verifyData = await verifyRes.json();
+                if (verifyData.success && verifyData.order) {
+                  setPlacedOrderInfo(verifyData.order);
+                  clearCart();
+                  confetti({
+                    particleCount: 140,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    colors: ['#047857', '#d97706', '#f59e0b', '#10b981', '#ffffff']
+                  });
+                  showToast("Alhamdulillah! Payment verified and order confirmed.", "success");
+                } else {
+                  showToast(verifyData.message || "Payment verification failed. Please contact customer care.", "error");
+                }
+              } catch (verErr) {
+                showToast("Network error verifying payment. Please save Payment ID: " + response.razorpay_payment_id, "error");
+              } finally {
+                setSubmitting(false);
+              }
+            }
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.open();
+        };
+
+        if (typeof window.Razorpay === 'undefined') {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = openRazorpay;
+          script.onerror = () => {
+            setSubmitting(false);
+            showToast("Failed to load Razorpay payment SDK. Please check connection.", "error");
+          };
+          document.body.appendChild(script);
+        } else {
+          openRazorpay();
+        }
+        return;
+      }
+
+      // 2. COD & WHATSAPP ORDER FLOW
       const res = await createOrder(orderPayload);
       if (res && (res.id || res.success)) {
         const orderData = res.order || res;
@@ -174,9 +278,11 @@ export default function CheckoutPage() {
         showToast(res.message || "Failed to place order.", "error");
       }
     } catch (err) {
-      showToast("An error occurred while placing order.", "error");
+      showToast(err.message || "An error occurred while placing order.", "error");
     } finally {
-      setSubmitting(false);
+      if (paymentMode !== 'online') {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -247,11 +353,21 @@ export default function CheckoutPage() {
               {placedOrderInfo.address || (placedOrderInfo.customer?.address ? placedOrderInfo.customer.address : `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`)}
             </div>
             <div>
-              <strong className="text-slate-900">Payment Preference:</strong>{' '}
-              <span className="uppercase font-bold text-amber-800">
-                {placedOrderInfo.paymentMode || placedOrderInfo.paymentMethod || paymentMode || 'COD'}
+              <strong className="text-slate-900">Payment Status:</strong>{' '}
+              <span className={`uppercase font-bold ${placedOrderInfo.paymentStatus === 'Paid Online' ? 'text-emerald-700 font-extrabold' : 'text-amber-800'}`}>
+                {placedOrderInfo.paymentStatus || (paymentMode === 'online' ? 'Paid Online' : 'Pending Verification')}
               </span>
+              <span className="text-slate-400 ml-1">({placedOrderInfo.paymentMode || placedOrderInfo.paymentMethod || paymentMode})</span>
             </div>
+            {placedOrderInfo.razorpayPaymentId && (
+              <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-emerald-50 border border-emerald-300/80 text-emerald-900 font-mono mt-1">
+                <span className="font-bold flex items-center gap-1.5 text-[11px]">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Razorpay Reference ID:
+                </span>
+                <span className="font-black select-all">{placedOrderInfo.razorpayPaymentId}</span>
+              </div>
+            )}
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-3">
@@ -419,52 +535,61 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Cash on Delivery */}
-                <label className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between space-y-2 ${
-                  paymentMode === 'cod' ? 'border-emerald-600 bg-emerald-50/50' : 'border-slate-200 hover:border-slate-300'
+                {/* Online Payment via Razorpay */}
+                <label className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between space-y-2 relative overflow-hidden ${
+                  paymentMode === 'online' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 hover:border-slate-300'
                 }`}>
                   <div className="flex items-center justify-between">
-                    <Banknote className="w-5 h-5 text-emerald-700" />
+                    <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow-xs">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="radio"
+                      name="payment"
+                      checked={paymentMode === 'online'}
+                      onChange={() => setPaymentMode('online')}
+                      className="text-emerald-600 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-xs text-slate-900">Pay Online (Instant)</span>
+                      <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-200/70 text-emerald-900 border border-emerald-300">Fast & Safe</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-0.5">UPI, GPay, PhonePe, Cards, NetBanking</p>
+                  </div>
+                </label>
+
+                {/* Cash on Delivery */}
+                <label className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between space-y-2 ${
+                  paymentMode === 'cod' ? 'border-amber-600 bg-amber-50/50 shadow-sm' : 'border-slate-200 hover:border-slate-300'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-xs">
+                      <Banknote className="w-4 h-4" />
+                    </div>
                     <input
                       type="radio"
                       name="payment"
                       checked={paymentMode === 'cod'}
                       onChange={() => setPaymentMode('cod')}
-                      className="text-emerald-600 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-slate-900">Cash On Delivery</div>
-                    <p className="text-[10px] text-slate-500">Pay cash or UPI at your doorstep</p>
-                  </div>
-                </label>
-
-                {/* Instant UPI QR */}
-                <label className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between space-y-2 ${
-                  paymentMode === 'upi' ? 'border-amber-500 bg-amber-50/50' : 'border-slate-200 hover:border-slate-300'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <QrCode className="w-5 h-5 text-amber-600" />
-                    <input
-                      type="radio"
-                      name="payment"
-                      checked={paymentMode === 'upi'}
-                      onChange={() => setPaymentMode('upi')}
                       className="text-amber-600 focus:ring-amber-500"
                     />
                   </div>
                   <div>
-                    <div className="font-bold text-xs text-slate-900">Instant UPI / QR</div>
-                    <p className="text-[10px] text-slate-500">GPay, PhonePe, Paytm QR</p>
+                    <div className="font-bold text-xs text-slate-900">Cash On Delivery (COD)</div>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Pay cash or UPI at your doorstep</p>
                   </div>
                 </label>
 
                 {/* Direct WhatsApp Order */}
                 <label className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between space-y-2 ${
-                  paymentMode === 'whatsapp' ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 hover:border-slate-300'
+                  paymentMode === 'whatsapp' ? 'border-emerald-500 bg-emerald-50/50 shadow-sm' : 'border-slate-200 hover:border-slate-300'
                 }`}>
                   <div className="flex items-center justify-between">
-                    <MessageSquare className="w-5 h-5 text-emerald-600" />
+                    <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
                     <input
                       type="radio"
                       name="payment"
@@ -475,23 +600,25 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <div className="font-bold text-xs text-slate-900">Order via WhatsApp</div>
-                    <p className="text-[10px] text-slate-500">Direct chat with store rep</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Direct chat with store rep</p>
                   </div>
                 </label>
               </div>
 
-              {/* UPI QR Display (if UPI chosen) */}
-              {paymentMode === 'upi' && (
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-center space-y-2 animate-fadeIn">
-                  <div className="w-32 h-32 bg-white p-2 rounded-xl mx-auto border border-amber-300 shadow-sm flex items-center justify-center">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=arabians@upi%26pn=ArabiansShoppingZone%26am=${finalTotal}%26cu=INR`}
-                      alt="UPI QR Code"
-                      className="w-full h-full object-contain"
-                    />
+              {/* Online Payment Trust Banner */}
+              {paymentMode === 'online' && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 flex items-center gap-3 animate-fadeIn">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-amber-300" />
                   </div>
-                  <div className="text-xs text-slate-700">
-                    Scan via any UPI App (GPay, PhonePe, Paytm). Total: <strong>₹{finalTotal}</strong>
+                  <div className="flex-1 text-xs">
+                    <div className="font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                      <span>Powered by Razorpay Verified Live Gateway</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.5 rounded border border-emerald-300">256-Bit SSL Encrypted</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Supports Google Pay, PhonePe, Paytm, BHIM UPI, Visa, Mastercard, RuPay & NetBanking.
+                    </p>
                   </div>
                 </div>
               )}
@@ -659,10 +786,23 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-sm hover:from-amber-400 hover:to-amber-500 transition shadow-gold flex items-center justify-center gap-2 active:scale-95"
+                className={`w-full py-4 rounded-xl text-slate-950 font-black text-sm transition shadow-gold flex items-center justify-center gap-2 active:scale-95 cursor-pointer ${
+                  paymentMode === 'online'
+                    ? 'bg-gradient-to-r from-emerald-400 via-amber-400 to-emerald-400 hover:from-emerald-300 hover:to-amber-300'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500'
+                }`}
               >
                 {submitting ? (
-                  <span>Securing Your Order...</span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                    <span>Connecting Secure Gateway...</span>
+                  </span>
+                ) : paymentMode === 'online' ? (
+                  <>
+                    <Lock className="w-4 h-4 text-emerald-950" />
+                    <span>Pay Online Now • ₹{finalTotal}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
                 ) : (
                   <>
                     <span>Confirm & Place Order (₹{finalTotal})</span>
