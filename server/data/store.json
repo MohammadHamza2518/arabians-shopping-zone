@@ -5,14 +5,15 @@
       "name": "Royal Black & Gold Emirati Thobe (Complete Out of Stock Demo)",
       "category": "wearing",
       "subcategory": "thobes",
+      "subCategory": "thobes",
       "price": 2499,
       "mrp": 3499,
       "rating": 5,
       "reviewsCount": 42,
-      "stock": 0,
-      "inStock": false,
+      "stock": 50,
       "badge": "Sold Out Demo",
       "image": "/assets/studio/mens_white_thobe.jpg",
+      "imageFit": "auto",
       "gallery": [
         "/assets/studio/mens_white_thobe.jpg"
       ],
@@ -21,6 +22,20 @@
         "100% Premium imported Japanese crepe fabric",
         "Handcrafted royal embroidery",
         "Wrinkle-free fall"
+      ],
+      "tags": [
+        "Royal",
+        "Black",
+        "Gold",
+        "Emirati",
+        "Thobe",
+        "Complete",
+        "Out",
+        "Stock",
+        "Demo",
+        "wearing",
+        "thobes",
+        "Sold Out Demo"
       ],
       "sizes": [
         "52 (S)",
@@ -33,7 +48,10 @@
         "54 (M)",
         "56 (L)",
         "58 (XL)"
-      ]
+      ],
+      "inStock": false,
+      "createdAt": "2026-09-10T10:26:07.222Z",
+      "updatedAt": "2026-09-10T10:26:07.222Z"
     },
     {
       "id": "thobe-saudi-classic-white",
@@ -77,7 +95,7 @@
         "58 (XL)"
       ],
       "inStock": true,
-      "updatedAt": "2026-09-10T10:21:33.586Z"
+      "updatedAt": "2026-09-10T10:25:55.662Z"
     },
     {
       "id": "thobe-al-noor-signature",
@@ -7971,6 +7989,207 @@
     }
   ],
   "orders": [
+    {
+      "id": "ASZ-9190",
+      "date": "2026-09-10 16:37",
+      "createdAt": "2026-09-10 16:37",
+      "customer": {
+        "name": "Test Buyer",
+        "phone": "9876543210",
+        "email": "buyer@example.com",
+        "address": "Flat 101, Luxury Towers, Mumbai, Maharashtra, 400001",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "pincode": "400001"
+      },
+      "customerName": "Test Buyer",
+      "phone": "9876543210",
+      "email": "buyer@example.com",
+      "address": "Flat 101, Luxury Towers, Mumbai, Maharashtra, 400001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Luxury Saudi Cut Pure White Arabian Thobe",
+          "price": 1699,
+          "mrp": 2299,
+          "quantity": 1,
+          "image": "/assets/studio/mens_white_thobe.jpg",
+          "selectedSize": null,
+          "customization": null
+        }
+      ],
+      "subtotal": 1699,
+      "discount": 0,
+      "couponCode": "",
+      "deliveryFee": 0,
+      "total": 1699,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Confirmed",
+      "courier": "Express Courier Network",
+      "trackingNumber": "TRK38445284",
+      "trackingId": "TRK38445284",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-10 16:37",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-10 16:37",
+          "done": true
+        },
+        {
+          "status": "Packing at Central Warehouse",
+          "time": "In Progress",
+          "done": false
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-8390",
+      "date": "2026-09-10 16:37",
+      "createdAt": "2026-09-10 16:37",
+      "customer": {
+        "name": "Test Buyer",
+        "phone": "9876543210",
+        "email": "buyer@example.com",
+        "address": "Flat 101, Luxury Towers, Mumbai, Maharashtra, 400001",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "pincode": "400001"
+      },
+      "customerName": "Test Buyer",
+      "phone": "9876543210",
+      "email": "buyer@example.com",
+      "address": "Flat 101, Luxury Towers, Mumbai, Maharashtra, 400001",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Luxury Saudi Cut Pure White Arabian Thobe",
+          "price": 1699,
+          "mrp": 2299,
+          "quantity": 1,
+          "image": "/assets/studio/mens_white_thobe.jpg",
+          "selectedSize": null,
+          "customization": null
+        }
+      ],
+      "subtotal": 1699,
+      "discount": 0,
+      "couponCode": "",
+      "deliveryFee": 0,
+      "total": 1699,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Confirmed",
+      "courier": "Express Courier Network",
+      "trackingNumber": "TRK38436922",
+      "trackingId": "TRK38436922",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-10 16:37",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-10 16:37",
+          "done": true
+        },
+        {
+          "status": "Packing at Central Warehouse",
+          "time": "In Progress",
+          "done": false
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ASZ-8425",
+      "date": "2026-09-10 16:37",
+      "createdAt": "2026-09-10 16:37",
+      "customer": {
+        "name": "Test Buyer",
+        "phone": "9876543210",
+        "email": "",
+        "address": ""
+      },
+      "customerName": "Test Buyer",
+      "phone": "9876543210",
+      "email": "",
+      "address": "",
+      "items": [
+        {
+          "id": "thobe-saudi-classic-white",
+          "name": "Luxury Saudi Cut Pure White Arabian Thobe",
+          "price": 1699,
+          "mrp": 2299,
+          "quantity": 1,
+          "image": "/assets/studio/mens_white_thobe.jpg",
+          "selectedSize": null,
+          "customization": null
+        }
+      ],
+      "subtotal": 1699,
+      "discount": 0,
+      "couponCode": "",
+      "deliveryFee": 0,
+      "total": 1699,
+      "paymentMethod": "COD",
+      "paymentMode": "COD",
+      "status": "Confirmed",
+      "courier": "Express Courier Network",
+      "trackingNumber": "TRK38431244",
+      "trackingId": "TRK38431244",
+      "timeline": [
+        {
+          "status": "Order Placed",
+          "time": "2026-09-10 16:37",
+          "done": true
+        },
+        {
+          "status": "Verified & Confirmed",
+          "time": "2026-09-10 16:37",
+          "done": true
+        },
+        {
+          "status": "Packing at Central Warehouse",
+          "time": "In Progress",
+          "done": false
+        },
+        {
+          "status": "Out for Delivery",
+          "time": "Pending",
+          "done": false
+        },
+        {
+          "status": "Delivered",
+          "time": "Pending",
+          "done": false
+        }
+      ]
+    },
     {
       "id": "ASZ-6201",
       "date": "2026-09-07 22:10",

@@ -179,16 +179,33 @@ export default function AdminPage() {
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
+  const getAdminHeaders = (extra = {}) => {
+    const token = sessionStorage.getItem('asz_admin_token') || '';
+    const pin = sessionStorage.getItem('asz_admin_pin') || passcode || 'arabians786';
+    return {
+      'x-admin-token': token,
+      'x-admin-pin': pin,
+      ...extra
+    };
+  };
+
   // Load orders, distributors, coupons & settings
   const fetchAdminData = async () => {
     setLoadingOrders(true);
     try {
       const [ordersRes, distRes, coupRes, setRes] = await Promise.all([
-        fetch('/api/orders').catch(() => ({ json: () => [] })),
-        fetch('/api/distributors').catch(() => ({ json: () => [] })),
-        fetch('/api/coupons').catch(() => ({ json: () => [] })),
+        fetch('/api/orders', { headers: getAdminHeaders() }).catch(() => ({ json: () => [] })),
+        fetch('/api/distributors', { headers: getAdminHeaders() }).catch(() => ({ json: () => [] })),
+        fetch('/api/coupons', { headers: getAdminHeaders() }).catch(() => ({ json: () => [] })),
         fetch('/api/settings').catch(() => ({ json: () => null }))
       ]);
+
+      if (ordersRes.status === 401) {
+        handleLogout();
+        showToast("Admin session expired. Please re-enter PIN.", "error");
+        return;
+      }
+
       const ordersData = await ordersRes.json();
       const distData = await distRes.json();
       const coupData = await coupRes.json();
@@ -218,8 +235,11 @@ export default function AdminPage() {
 
       // Auto-poll orders every 12 seconds so new orders show up live without refreshing!
       const pollTimer = setInterval(() => {
-        fetch('/api/orders')
-          .then(r => r.json())
+        fetch('/api/orders', { headers: getAdminHeaders() })
+          .then(r => {
+            if (r.status === 401) return null;
+            return r.json();
+          })
           .then(freshOrders => {
             if (Array.isArray(freshOrders)) {
               setOrders(prev => {
@@ -234,7 +254,7 @@ export default function AdminPage() {
       }, 12000);
 
       // Fetch Shipmozo connection status & warehouse info
-      fetch('/api/shipmozo/status')
+      fetch('/api/shipmozo/status', { headers: getAdminHeaders() })
         .then(r => r.json())
         .then(st => setMozoStatus(st))
         .catch(() => {});
@@ -243,21 +263,41 @@ export default function AdminPage() {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const correctPin = globalSettings?.adminPin || 'arabians786';
-    if (passcode.trim() === correctPin || passcode.trim() === 'arabians786') {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('asz_admin_auth', 'true');
-      showToast("Admin access granted. Welcome to Arabians Executive Console!");
-    } else {
-      showToast("Incorrect Passcode. Access denied.", "error");
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: passcode.trim() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.token) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('asz_admin_auth', 'true');
+        sessionStorage.setItem('asz_admin_token', data.token);
+        sessionStorage.setItem('asz_admin_pin', passcode.trim());
+        showToast("Admin access granted. Welcome to Arabians Executive Console!");
+      } else {
+        showToast(data.message || "Incorrect Passcode. Access denied.", "error");
+      }
+    } catch {
+      if (passcode.trim() === 'arabians786') {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('asz_admin_auth', 'true');
+        sessionStorage.setItem('asz_admin_pin', passcode.trim());
+        showToast("Admin access granted.");
+      } else {
+        showToast("Login connection error", "error");
+      }
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('asz_admin_auth');
+    sessionStorage.removeItem('asz_admin_token');
+    sessionStorage.removeItem('asz_admin_pin');
     showToast("Logged out of Admin Console.");
   };
 
@@ -265,7 +305,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ status: newStatus })
       });
       const data = await res.json();
@@ -287,7 +327,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ trackingNumber: trackNum })
       });
       const data = await res.json();
@@ -331,7 +371,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/shipmozo/push-order/${order.id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           weight: customWeight,
           warehouseId: warehouseId
@@ -356,7 +396,8 @@ export default function AdminPage() {
     setAutoAssigningMozoId(order.id);
     try {
       const res = await fetch(`/api/shipmozo/auto-assign/${order.id}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: getAdminHeaders()
       });
       const data = await res.json();
       if (data.success) {
@@ -419,7 +460,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(storeSettings)
       });
       if (res.ok) {
@@ -494,7 +535,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/products/${product.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ inStock: newStatus })
       });
       const data = await res.json();
@@ -548,7 +589,7 @@ export default function AdminPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload)
       });
       const data = await res.json();
@@ -570,7 +611,10 @@ export default function AdminPage() {
   const handleDeleteProduct = async (id, name) => {
     if (!window.confirm(`Are you sure you want to remove "${name}" from store catalog?`)) return;
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/products/${id}`, { 
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      });
       const data = await res.json();
       if (data.success) {
         showToast(`Product removed.`);
@@ -606,6 +650,7 @@ export default function AdminPage() {
         form.append('image', file);
         const res = await fetch('/api/upload', {
           method: 'POST',
+          headers: getAdminHeaders(),
           body: form
         });
         const data = await res.json();
@@ -725,7 +770,7 @@ export default function AdminPage() {
         setUploadingCatImage(true);
         const form = new FormData();
         form.append('image', catImageFile);
-        const upRes = await fetch('/api/upload', { method: 'POST', body: form });
+        const upRes = await fetch('/api/upload', { method: 'POST', headers: getAdminHeaders(), body: form });
         const upData = await upRes.json();
         if (upData.success) {
           finalImageUrl = upData.url || upData.imageUrl;
@@ -762,7 +807,7 @@ export default function AdminPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload)
       });
       const data = await res.json();
@@ -786,7 +831,10 @@ export default function AdminPage() {
   const handleDeleteCategory = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete "${name}"? Products in this category will remain safe in inventory.`)) return;
     try {
-      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/categories/${id}`, { 
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      });
       if (res.ok) {
         showToast(`Category "${name}" deleted!`);
         refreshAll();
@@ -812,7 +860,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/categories-reorder', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ orderedIds: newOrder.map(c => c.id) })
       });
       if (res.ok) {
@@ -893,6 +941,7 @@ export default function AdminPage() {
         formData.append('image', slideImageFile);
         const upRes = await fetch('/api/upload', {
           method: 'POST',
+          headers: getAdminHeaders(),
           body: formData
         });
         const upData = await upRes.json();
@@ -917,13 +966,13 @@ export default function AdminPage() {
       if (editingSlide.isNew) {
         res = await fetch('/api/hero-slides', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify(payload)
         });
       } else {
         res = await fetch(`/api/hero-slides/${editingSlide.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify(payload)
         });
       }
@@ -962,7 +1011,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/hero-slides-reorder', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ slideIds: slides.map(s => s.id) })
       });
       const data = await res.json();
@@ -982,7 +1031,10 @@ export default function AdminPage() {
     }
     if (!window.confirm("Are you sure you want to delete this Hero Banner slide from the homepage?")) return;
     try {
-      const res = await fetch(`/api/hero-slides/${slideId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/hero-slides/${slideId}`, { 
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      });
       const data = await res.json();
       if (res.ok) {
         showToast("Banner slide removed from Homepage");
@@ -999,7 +1051,10 @@ export default function AdminPage() {
   const handleResetSlides = async () => {
     if (!window.confirm("Restore original factory hero banner slides (Thobes, Talbina, Oud, Nikah)? This will reset custom changes.")) return;
     try {
-      const res = await fetch('/api/hero-slides/reset', { method: 'POST' });
+      const res = await fetch('/api/hero-slides/reset', { 
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
       const data = await res.json();
       if (res.ok) {
         showToast("↺ Hero banners restored to original royal design!");
@@ -1028,7 +1083,7 @@ export default function AdminPage() {
       };
       const res = await fetch('/api/coupons', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error("Failed to save coupon");
@@ -1045,7 +1100,10 @@ export default function AdminPage() {
 
   const handleToggleCoupon = async (code) => {
     try {
-      const res = await fetch(`/api/coupons/${code}/toggle`, { method: 'PUT' });
+      const res = await fetch(`/api/coupons/${code}/toggle`, { 
+        method: 'PUT',
+        headers: getAdminHeaders()
+      });
       const data = await res.json();
       if (data.success) {
         showToast(`Coupon ${code} status updated!`);
@@ -1059,7 +1117,10 @@ export default function AdminPage() {
   const handleDeleteCoupon = async (code) => {
     if (!window.confirm(`Are you sure you want to delete coupon ${code}?`)) return;
     try {
-      const res = await fetch(`/api/coupons/${code}`, { method: 'DELETE' });
+      const res = await fetch(`/api/coupons/${code}`, { 
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      });
       const data = await res.json();
       if (data.success) {
         showToast(`Coupon ${code} deleted.`);

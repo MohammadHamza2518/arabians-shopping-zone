@@ -94,6 +94,9 @@ export default function CheckoutModal() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            items: orderPayload.items,
+            couponCode: appliedCoupon ? appliedCoupon.code : '',
+            customer: orderPayload.customer,
             amount: cartTotal,
             receipt: `rcpt_${Date.now().toString().slice(-8)}`,
             notes: {

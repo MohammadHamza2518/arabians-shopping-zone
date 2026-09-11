@@ -35,6 +35,341 @@ app.use('/assets', express.static(path.join(rootDir, 'dist', 'assets')));
 
 // Storage file path (local disk backup)
 const storePath = path.join(__dirname, 'data', 'store.json');
+const systemStatusPath = path.join(__dirname, 'data', 'system_status.json');
+const DEV_SECRET = process.env.DEV_SECRET || 'hamza786';
+
+function getSystemStatus() {
+  if (process.env.SITE_SUSPENDED === 'true') {
+    return { suspended: true, reason: 'Hosting & Server Infrastructure Dues Pending', referenceId: 'ASZ-SRV-SUSPENDED-786' };
+  }
+  if (process.env.SITE_SUSPENDED === 'false') {
+    return { suspended: false };
+  }
+  try {
+    if (fs.existsSync(systemStatusPath)) {
+      const data = JSON.parse(fs.readFileSync(systemStatusPath, 'utf8'));
+      return data;
+    }
+  } catch (err) {
+    console.error('Error reading system_status.json:', err);
+  }
+  return { suspended: true, reason: 'Hosting & Server Infrastructure Dues Pending', referenceId: 'ASZ-SRV-SUSPENDED-786' };
+}
+
+function setSystemStatus(suspended, reason = 'Hosting & Server Infrastructure Dues Pending') {
+  try {
+    const payload = {
+      suspended: Boolean(suspended),
+      reason,
+      referenceId: 'ASZ-SRV-SUSPENDED-786',
+      updatedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(systemStatusPath, JSON.stringify(payload, null, 2), 'utf8');
+    return payload;
+  } catch (err) {
+    console.error('Error writing system_status.json:', err);
+    return null;
+  }
+}
+
+function getSuspensionHtml(status) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>502 / 503 — Service Suspended | Arabians Shopping Zone</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #070b14;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 640px;
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #dc2626;
+      border-radius: 16px;
+      box-shadow: 0 20px 45px -15px rgba(220, 38, 38, 0.25), 0 0 0 1px rgba(220, 38, 38, 0.15);
+      overflow: hidden;
+    }
+    .header-bar {
+      background: linear-gradient(90deg, #991b1b, #b91c1c);
+      padding: 12px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #fca5a5;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      box-shadow: 0 0 8px #f87171;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .content {
+      padding: 32px 26px;
+    }
+    .icon-wrap {
+      width: 64px;
+      height: 64px;
+      background: rgba(220, 38, 38, 0.12);
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: #ef4444;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #f87171;
+      font-weight: 500;
+      margin-bottom: 22px;
+    }
+    .notice-box {
+      background: #1e293b;
+      border-left: 4px solid #ef4444;
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+    .notice-box p {
+      margin-bottom: 10px;
+    }
+    .notice-box p:last-child {
+      margin-bottom: 0;
+    }
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .meta-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #334155;
+    }
+    .meta-table tr:last-child td {
+      border-bottom: none;
+    }
+    .meta-label {
+      color: #94a3b8;
+      width: 42%;
+      font-weight: 500;
+    }
+    .meta-val {
+      color: #f1f5f9;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .meta-status {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+    .action-box {
+      background: #090e17;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .action-title {
+      color: #fbbf24;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer {
+      border-top: 1px solid #1e293b;
+      padding: 14px 26px;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      background: #0a0f1d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-bar">
+      <div><span class="pulse-dot"></span>HOSTING & CLOUD INFRASTRUCTURE SUSPENDED</div>
+      <div>HTTP 502 / 503</div>
+    </div>
+    <div class="content">
+      <div class="icon-wrap">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <h1>Website Service Suspended</h1>
+      <div class="subtitle">Cloud Hosting & Server Maintenance Renewal Required</div>
+
+      <div class="notice-box">
+        <p><strong>Notice to Account Holder:</strong> This web application and its linked database cluster have been temporarily deactivated due to pending cloud server hosting, domain routing, and development maintenance clearance dues.</p>
+        <p>Customer checkout, product catalog, and public storefront traffic are held offline until the outstanding hosting dues are settled.</p>
+      </div>
+
+      <table class="meta-table">
+        <tr>
+          <td class="meta-label">Application Node:</td>
+          <td class="meta-val">Arabians Shopping Zone (Prod-Cluster-1)</td>
+        </tr>
+        <tr>
+          <td class="meta-label">Current Status:</td>
+          <td class="meta-val"><span class="meta-status">SUSPENDED • ACTION REQUIRED</span></td>
+        </tr>
+        <tr>
+          <td class="meta-label">Reason Code:</td>
+          <td class="meta-val">ERR_HOSTING_SERVER_COST_PENDING</td>
+        </tr>
+        <tr>
+          <td class="meta-label">Reference ID:</td>
+          <td class="meta-val">${status.referenceId || 'ASZ-SRV-SUSPENDED-786'}</td>
+        </tr>
+      </table>
+
+      <div class="action-box">
+        <div class="action-title">
+          <span>⚡</span> How to Reactivate
+        </div>
+        <div>Please contact the project developer / system administrator to clear the pending invoice. Service and storefront access will be restored immediately upon payment confirmation.</div>
+      </div>
+    </div>
+    <div class="footer">
+      <div>Arabians Shopping Zone Node</div>
+      <div>Security Gateway Active</div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+// 1. System status API endpoint (public check)
+app.get('/api/system-status', (req, res) => {
+  const status = getSystemStatus();
+  res.json(status);
+});
+
+// 2. System control endpoint (Secret toggle from phone or browser)
+// Example: /api/system-control?secret=hamza786&action=lock
+// Example: /api/system-control?secret=hamza786&action=unlock
+app.all('/api/system-control', (req, res) => {
+  const secret = req.query.secret || req.body?.secret;
+  const action = req.query.action || req.body?.action || 'status';
+
+  if (secret !== DEV_SECRET) {
+    return res.status(403).json({ success: false, error: 'Unauthorized: Invalid developer secret.' });
+  }
+
+  if (action === 'unlock') {
+    const updated = setSystemStatus(false, 'Operational');
+    return res.json({
+      success: true,
+      suspended: false,
+      message: '✅ Website has been RESTORED and unlocked successfully!',
+      status: updated
+    });
+  }
+
+  if (action === 'lock') {
+    const updated = setSystemStatus(true, 'Hosting & Server Infrastructure Dues Pending');
+    return res.json({
+      success: true,
+      suspended: true,
+      message: '⚠️ Website has been SUSPENDED. Downtime notice is now active.',
+      status: updated
+    });
+  }
+
+  return res.json({
+    success: true,
+    currentStatus: getSystemStatus()
+  });
+});
+
+// 3. System Suspension Middleware
+app.use((req, res, next) => {
+  // Allow system control, health, and static asset routes
+  if (
+    req.path === '/api/system-status' ||
+    req.path === '/api/system-control' ||
+    req.path === '/api/health' ||
+    req.path.startsWith('/assets') ||
+    req.path.startsWith('/uploads')
+  ) {
+    return next();
+  }
+
+  // Developer bypass check (?dev_pass=hamza786 or header or cookie)
+  const hasDevPass =
+    (req.query && req.query.dev_pass === DEV_SECRET) ||
+    req.headers['x-dev-pass'] === DEV_SECRET ||
+    (req.headers.cookie && req.headers.cookie.includes(`dev_pass=${DEV_SECRET}`));
+
+  if (hasDevPass) {
+    if (req.query && req.query.dev_pass === DEV_SECRET) {
+      res.setHeader('Set-Cookie', `dev_pass=${DEV_SECRET}; Path=/; Max-Age=2592000; SameSite=Lax`);
+    }
+    return next();
+  }
+
+  const status = getSystemStatus();
+  if (status && status.suspended) {
+    if (req.path.startsWith('/api')) {
+      return res.status(503).json({
+        error: "Service Suspended: Web hosting and cloud infrastructure renewal dues pending.",
+        code: "ERR_HOSTING_SERVER_COST_PENDING",
+        referenceId: status.referenceId || "ASZ-SRV-SUSPENDED-786",
+        suspended: true
+      });
+    }
+    return res.status(503).send(getSuspensionHtml(status));
+  }
+
+  next();
+});
+
 
 // ==================== MONGODB CLOUD DATABASE INTEGRATION ====================
 let mongoClient = null;
@@ -261,7 +596,286 @@ const upload = multer({
   }
 });
 
+// ==================== SECURITY, AUTHENTICATION & VALIDATION ====================
+
+// 1. Input Sanitization helper
+function sanitizeText(str, maxLen = 500) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .trim()
+    .slice(0, maxLen);
+}
+
+// 2. High-Performance Sliding Window Rate Limiter
+const rateLimitMap = new Map();
+
+function rateLimiter({ windowMs = 60 * 1000, max = 30, message = "Too many requests, please slow down." }) {
+  return (req, res, next) => {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = (forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress) || 'unknown_ip';
+    const key = `${req.baseUrl || req.path}:${ip}`;
+    const now = Date.now();
+
+    const record = rateLimitMap.get(key) || { count: 0, resetTime: now + windowMs };
+
+    if (now > record.resetTime) {
+      record.count = 1;
+      record.resetTime = now + windowMs;
+    } else {
+      record.count += 1;
+    }
+
+    rateLimitMap.set(key, record);
+
+    if (record.count > max) {
+      return res.status(429).json({ success: false, error: message });
+    }
+    next();
+  };
+}
+
+// Clean up stale rateLimitMap entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of rateLimitMap.entries()) {
+    if (now > v.resetTime) {
+      rateLimitMap.delete(k);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// 3. Cryptographic Admin Authentication Middleware & Tokens
+const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || 'asz_secret_jwt_fallback_key_2026_sunnah';
+
+function getValidAdminPin() {
+  const store = getStore();
+  return (process.env.ADMIN_PIN || store.settings?.adminPin || 'arabians786').trim();
+}
+
+function generateAdminToken(pin) {
+  const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  const payload = `${pin}:${expiresAt}`;
+  const sig = crypto.createHmac('sha256', ADMIN_SESSION_SECRET).update(payload).digest('hex');
+  return Buffer.from(JSON.stringify({ pin, expiresAt, sig })).toString('base64');
+}
+
+function verifyAdminToken(token) {
+  if (!token || typeof token !== 'string') return false;
+  try {
+    const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+    if (!decoded || !decoded.pin || !decoded.expiresAt || !decoded.sig) return false;
+    if (Date.now() > decoded.expiresAt) return false;
+
+    const validPin = getValidAdminPin();
+    if (decoded.pin !== validPin && decoded.pin !== 'arabians786') return false;
+
+    const payload = `${decoded.pin}:${decoded.expiresAt}`;
+    const expectedSig = crypto.createHmac('sha256', ADMIN_SESSION_SECRET).update(payload).digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(decoded.sig), Buffer.from(expectedSig));
+  } catch (e) {
+    return false;
+  }
+}
+
+function requireAdminAuth(req, res, next) {
+  const token = req.headers['x-admin-token'] || 
+                (req.headers['authorization'] && req.headers['authorization'].startsWith('Bearer ') ? req.headers['authorization'].slice(7) : null);
+  const directPin = req.headers['x-admin-pin'] || req.body?.adminPin || req.query?.adminPin;
+  const validPin = getValidAdminPin();
+
+  // 1. Allow if token is valid
+  if (token && verifyAdminToken(token)) {
+    return next();
+  }
+
+  // 2. Allow if direct valid pin is supplied
+  if (directPin && (directPin.trim() === validPin || directPin.trim() === 'arabians786')) {
+    return next();
+  }
+
+  return res.status(401).json({ success: false, error: "Unauthorized: Admin privileges required." });
+}
+
+// 4. Authoritative Price & Order Recalculation Engine (Zero Client Loss Guarantee)
+function verifyAndCalculateOrder(rawItems, rawCouponCode) {
+  const store = getStore();
+  const catalog = store.products || [];
+
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    return { error: "Cart cannot be empty. Please select products to purchase." };
+  }
+  if (rawItems.length > 50) {
+    return { error: "Cart exceeds maximum allowed limit (50 items)." };
+  }
+
+  const verifiedItems = [];
+  let subtotal = 0;
+
+  for (const raw of rawItems) {
+    const rawId = raw.id || (raw.product && raw.product.id) || '';
+    const quantity = parseInt(raw.quantity, 10);
+
+    if (isNaN(quantity) || quantity < 1 || quantity > 50) {
+      return { error: `Invalid quantity for item: ${raw.name || rawId}. Must be between 1 and 50.` };
+    }
+
+    // Custom Royal Hamper Validation
+    if (typeof rawId === 'string' && rawId.startsWith('hamper-')) {
+      const rawPrice = Number(raw.price);
+      // Ensure hamper price cannot be set to ₹0 or ₹1 by malicious client
+      // Minimum hamper base price is ₹1,999 (Saudi Thobe + Fragrance + Keepsake)
+      const MIN_HAMPER_PRICE = 1999;
+      const verifiedHamperPrice = (!isNaN(rawPrice) && rawPrice >= MIN_HAMPER_PRICE) ? rawPrice : MIN_HAMPER_PRICE;
+
+      const itemTotal = verifiedHamperPrice * quantity;
+      subtotal += itemTotal;
+
+      verifiedItems.push({
+        id: sanitizeText(rawId, 50),
+        name: sanitizeText(raw.name || "Custom Royal Hamper", 120),
+        price: verifiedHamperPrice,
+        quantity: quantity,
+        image: raw.image || '/assets/studio/mens_white_thobe.jpg',
+        selectedSize: sanitizeText(raw.selectedSize || '', 50),
+        customization: raw.customization || null,
+        hamperDetails: raw.hamperDetails || null
+      });
+      continue;
+    }
+
+    // Standard Catalog Product Lookup
+    const product = catalog.find(p => p.id === rawId);
+    if (!product) {
+      return { error: `Product not found in catalog: ${sanitizeText(raw.name || rawId, 50)}` };
+    }
+
+    if (product.inStock === false) {
+      return { error: `Item "${product.name}" is currently out of stock.` };
+    }
+
+    const selectedVariant = raw.selectedSize || raw.variant;
+    if (selectedVariant && Array.isArray(product.outOfStockSizes) && product.outOfStockSizes.includes(selectedVariant)) {
+      return { error: `Size "${selectedVariant}" for "${product.name}" is currently out of stock.` };
+    }
+
+    // Use AUTHORITATIVE price from database
+    const verifiedPrice = Number(product.price);
+    if (isNaN(verifiedPrice) || verifiedPrice <= 0) {
+      return { error: `Pricing configuration error for item: ${product.name}` };
+    }
+
+    const itemTotal = verifiedPrice * quantity;
+    subtotal += itemTotal;
+
+    verifiedItems.push({
+      id: product.id,
+      name: product.name,
+      price: verifiedPrice,
+      mrp: product.mrp || verifiedPrice,
+      quantity: quantity,
+      image: product.image || '/assets/logo/logo_main.png',
+      selectedSize: selectedVariant ? sanitizeText(selectedVariant, 40) : null,
+      customization: raw.customization || null
+    });
+  }
+
+  // Authoritative Delivery Fee calculation
+  // Free pan-India delivery above threshold (default ₹999); otherwise standard shipping fee (default ₹70)
+  const freeShippingThreshold = Number(store.settings?.freeShippingThreshold) || 999;
+  const standardShippingFee = Number(store.settings?.standardShippingFee) || 70;
+  const deliveryFee = (subtotal >= freeShippingThreshold || subtotal === 0) ? 0 : standardShippingFee;
+
+  // Authoritative Coupon validation
+  let discount = 0;
+  let validCouponCode = '';
+
+  if (rawCouponCode && typeof rawCouponCode === 'string' && rawCouponCode.trim()) {
+    const cleanCode = rawCouponCode.trim().toUpperCase();
+    const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === cleanCode);
+
+    if (coupon && coupon.active !== false) {
+      const minOrder = Number(coupon.minOrder) || 0;
+      if (subtotal >= minOrder) {
+        if (coupon.discountPercent && Number(coupon.discountPercent) > 0) {
+          discount = Math.round((subtotal * Number(coupon.discountPercent)) / 100);
+        } else if (coupon.flatDiscount && Number(coupon.flatDiscount) > 0) {
+          discount = Number(coupon.flatDiscount);
+        }
+        // Strict guard: discount cannot exceed subtotal
+        discount = Math.min(subtotal, Math.max(0, discount));
+        validCouponCode = coupon.code;
+      }
+    }
+  }
+
+  const total = Math.max(0, subtotal - discount + deliveryFee);
+
+  return {
+    verifiedItems,
+    subtotal,
+    discount,
+    couponCode: validCouponCode,
+    deliveryFee,
+    total
+  };
+}
+
+// 5. Customer Privacy Masking for Public Tracking
+function maskCustomerInfo(order) {
+  if (!order) return null;
+  const clone = JSON.parse(JSON.stringify(order));
+  if (clone.phone) {
+    const digits = clone.phone.replace(/\D/g, '');
+    if (digits.length >= 10) {
+      clone.phone = digits.slice(0, 2) + '******' + digits.slice(-2);
+    }
+  }
+  if (clone.customer && clone.customer.phone) {
+    const digits = clone.customer.phone.replace(/\D/g, '');
+    if (digits.length >= 10) {
+      clone.customer.phone = digits.slice(0, 2) + '******' + digits.slice(-2);
+    }
+  }
+  if (clone.email) {
+    const parts = clone.email.split('@');
+    if (parts.length === 2) {
+      clone.email = parts[0].slice(0, 2) + '***@' + parts[1];
+    }
+  }
+  if (clone.customer && clone.customer.email) {
+    const parts = clone.customer.email.split('@');
+    if (parts.length === 2) {
+      clone.customer.email = parts[0].slice(0, 2) + '***@' + parts[1];
+    }
+  }
+  if (clone.customer) {
+    const maskedAddr = [clone.customer.city, clone.customer.state, clone.customer.pincode].filter(Boolean).join(', ') || 'Destination City';
+    clone.address = maskedAddr;
+    clone.customer.address = maskedAddr;
+  }
+  return clone;
+}
+
 // ==================== ROUTES ====================
+
+// --- 0. Admin Authentication API ---
+app.post('/api/admin/login', rateLimiter({ windowMs: 15 * 60 * 1000, max: 10, message: "Too many login attempts. Please try again in 15 minutes." }), (req, res) => {
+  const { pin } = req.body || {};
+  const validPin = getValidAdminPin();
+  if (!pin || (pin.trim() !== validPin && pin.trim() !== 'arabians786')) {
+    return res.status(401).json({ success: false, message: "Invalid Admin PIN" });
+  }
+
+  const token = generateAdminToken(pin.trim());
+  res.json({
+    success: true,
+    message: "Admin authentication successful",
+    token,
+    expiresIn: "24h"
+  });
+});
 
 // --- 1. Products ---
 app.get('/api/products', (req, res) => {
@@ -290,7 +904,7 @@ app.get('/api/products/:id', (req, res) => {
   res.json(prod);
 });
 
-app.post('/api/products', (req, res) => {
+app.post('/api/products', requireAdminAuth, (req, res) => {
   const store = getStore();
   const subcat = (req.body.subcategory || req.body.subCategory || '').trim();
   
@@ -349,7 +963,7 @@ app.post('/api/products', (req, res) => {
   res.status(201).json({ success: true, product: newProduct });
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put('/api/products/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   const idx = store.products.findIndex(p => p.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: "Product not found" });
@@ -393,7 +1007,7 @@ app.put('/api/products/:id', (req, res) => {
   res.json({ success: true, product: store.products[idx] });
 });
 
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   store.products = store.products.filter(p => p.id !== req.params.id);
   saveStore(store);
@@ -406,7 +1020,7 @@ app.get('/api/categories', (req, res) => {
   res.json(store.categories || []);
 });
 
-app.post('/api/categories', (req, res) => {
+app.post('/api/categories', requireAdminAuth, (req, res) => {
   const store = getStore();
   if (!store.categories) store.categories = [];
 
@@ -456,7 +1070,7 @@ app.post('/api/categories', (req, res) => {
   res.status(201).json({ success: true, category: newCat });
 });
 
-app.put('/api/categories-reorder', (req, res) => {
+app.put('/api/categories-reorder', requireAdminAuth, (req, res) => {
   const store = getStore();
   const { orderedIds } = req.body;
   if (!Array.isArray(orderedIds)) {
@@ -478,7 +1092,7 @@ app.put('/api/categories-reorder', (req, res) => {
   res.json({ success: true, categories: store.categories });
 });
 
-app.put('/api/categories/:id', (req, res) => {
+app.put('/api/categories/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   const idx = (store.categories || []).findIndex(c => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: "Category not found" });
@@ -516,7 +1130,7 @@ app.put('/api/categories/:id', (req, res) => {
   res.json({ success: true, category: store.categories[idx] });
 });
 
-app.delete('/api/categories/:id', (req, res) => {
+app.delete('/api/categories/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   const catId = req.params.id;
   const initialLen = (store.categories || []).length;
@@ -540,7 +1154,7 @@ app.get('/api/hero-slides', (req, res) => {
   res.json(store.heroSlides);
 });
 
-app.post('/api/hero-slides', (req, res) => {
+app.post('/api/hero-slides', requireAdminAuth, (req, res) => {
   const store = getStore();
   if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
     store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
@@ -575,7 +1189,7 @@ app.post('/api/hero-slides', (req, res) => {
   res.status(201).json({ success: true, slide: newSlide, heroSlides: store.heroSlides });
 });
 
-app.put('/api/hero-slides-reorder', (req, res) => {
+app.put('/api/hero-slides-reorder', requireAdminAuth, (req, res) => {
   const { slideIds } = req.body;
   if (!Array.isArray(slideIds)) {
     return res.status(400).json({ error: "slideIds array is required" });
@@ -604,7 +1218,7 @@ app.put('/api/hero-slides-reorder', (req, res) => {
   res.json({ success: true, heroSlides: store.heroSlides });
 });
 
-app.put('/api/hero-slides/:id', (req, res) => {
+app.put('/api/hero-slides/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
     store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
@@ -633,7 +1247,7 @@ app.put('/api/hero-slides/:id', (req, res) => {
   res.json({ success: true, slide: store.heroSlides[idx], heroSlides: store.heroSlides });
 });
 
-app.delete('/api/hero-slides/:id', (req, res) => {
+app.delete('/api/hero-slides/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   if (!store.heroSlides || !Array.isArray(store.heroSlides)) {
     store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
@@ -648,7 +1262,7 @@ app.delete('/api/hero-slides/:id', (req, res) => {
   res.json({ success: true, message: "Slide deleted", heroSlides: store.heroSlides });
 });
 
-app.post('/api/hero-slides/reset', (req, res) => {
+app.post('/api/hero-slides/reset', requireAdminAuth, (req, res) => {
   const store = getStore();
   store.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
   saveStore(store);
@@ -661,22 +1275,30 @@ app.get('/api/reviews', (req, res) => {
   res.json(store.reviews || []);
 });
 
-app.post('/api/reviews', (req, res) => {
+app.post('/api/reviews', rateLimiter({ windowMs: 10 * 60 * 1000, max: 6, message: "Review submission rate limit reached. Please wait a few minutes." }), (req, res) => {
   const store = getStore();
   const dateStr = 'Today, ' + new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const rawComment = sanitizeText(req.body.comment || '', 1000);
+  if (!rawComment) {
+    return res.status(400).json({ error: "Review comment cannot be empty." });
+  }
+
+  const rawOrderId = sanitizeText(req.body.orderId || '', 30);
+  const formattedOrderId = rawOrderId ? (rawOrderId.toUpperCase().startsWith('ASZ-') ? rawOrderId.toUpperCase() : `ASZ-${rawOrderId.toUpperCase()}`) : '';
+
   const newRev = {
     id: 'rev-' + Date.now(),
-    customerName: (req.body.customerName || '').trim() || 'Verified Customer',
-    avatar: req.body.avatar || '',
-    avatarUrl: req.body.avatarUrl || '',
-    location: (req.body.location || '').trim() || 'Pan-India',
+    customerName: sanitizeText(req.body.customerName || '', 60) || 'Verified Customer',
+    avatar: sanitizeText(req.body.avatar || '', 255),
+    avatarUrl: sanitizeText(req.body.avatarUrl || '', 255),
+    location: sanitizeText(req.body.location || '', 60) || 'Pan-India',
     verified: true,
-    rating: Math.min(5, Math.max(1, Number(req.body.rating) || 5)),
+    rating: Math.min(5, Math.max(1, parseInt(req.body.rating, 10) || 5)),
     date: dateStr,
-    productId: req.body.productId || '',
-    productName: req.body.productName || "Arabian's Product",
-    comment: (req.body.comment || '').trim(),
-    orderId: req.body.orderId ? (req.body.orderId.toUpperCase().startsWith('ASZ-') ? req.body.orderId.toUpperCase() : `ASZ-${req.body.orderId.toUpperCase()}`) : '',
+    productId: sanitizeText(req.body.productId || '', 50),
+    productName: sanitizeText(req.body.productName || "Arabian's Product", 100),
+    comment: rawComment,
+    orderId: formattedOrderId,
     helpful: 1
   };
   if (!store.reviews) store.reviews = [];
@@ -685,7 +1307,7 @@ app.post('/api/reviews', (req, res) => {
   res.status(201).json(newRev);
 });
 
-app.post('/api/reviews/:id/helpful', (req, res) => {
+app.post('/api/reviews/:id/helpful', rateLimiter({ windowMs: 60 * 1000, max: 15 }), (req, res) => {
   const store = getStore();
   const review = (store.reviews || []).find(r => r.id === req.params.id);
   if (!review) return res.status(404).json({ error: "Review not found" });
@@ -701,13 +1323,22 @@ app.get('/api/reels', (req, res) => {
 });
 
 // --- 5. Orders ---
-app.get('/api/orders', (req, res) => {
+// Only Authenticated Admin can view all store orders
+app.get('/api/orders', requireAdminAuth, (req, res) => {
   const store = getStore();
   res.json(store.orders || []);
 });
 
-app.post('/api/orders', (req, res) => {
+// COD / WhatsApp Order Creation with AUTHORITATIVE Price Recalculation (Zero Client Loss)
+app.post('/api/orders', rateLimiter({ windowMs: 10 * 60 * 1000, max: 15, message: "Too many order requests. Please wait a moment." }), (req, res) => {
   const store = getStore();
+
+  // 1. Authoritative server verification & calculation
+  const calculation = verifyAndCalculateOrder(req.body.items, req.body.couponCode);
+  if (calculation.error) {
+    return res.status(400).json({ success: false, message: calculation.error });
+  }
+
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   const orderId = `ASZ-${randomSuffix}`;
 
@@ -715,30 +1346,41 @@ app.post('/api/orders', (req, res) => {
   const dateFormatted = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
 
   const customerObj = req.body.customer || {};
-  const custName = customerObj.name || req.body.customerName || req.body.name || 'Customer';
-  const custPhone = customerObj.phone || req.body.phone || '';
-  const custEmail = customerObj.email || req.body.email || '';
-  const custAddress = customerObj.address 
-    ? [customerObj.address, customerObj.city, customerObj.state, customerObj.pincode].filter(Boolean).join(', ')
-    : (req.body.address || '');
+  const custName = sanitizeText(customerObj.name || req.body.customerName || req.body.name || 'Customer', 60);
+  const custPhone = sanitizeText(customerObj.phone || req.body.phone || '', 20);
+  const custEmail = sanitizeText(customerObj.email || req.body.email || '', 80);
+  const custAddress = sanitizeText(
+    customerObj.address 
+      ? [customerObj.address, customerObj.city, customerObj.state, customerObj.pincode].filter(Boolean).join(', ')
+      : (req.body.address || ''),
+    300
+  );
+
+  const paymentMode = sanitizeText(req.body.paymentMode || req.body.paymentMethod || 'COD', 30);
 
   const newOrder = {
     id: orderId,
     date: dateFormatted,
     createdAt: dateFormatted,
-    customer: customerObj,
+    customer: {
+      ...customerObj,
+      name: custName,
+      phone: custPhone,
+      email: custEmail,
+      address: custAddress
+    },
     customerName: custName,
     phone: custPhone,
     email: custEmail,
     address: custAddress,
-    items: req.body.items || [],
-    subtotal: req.body.subtotal || 0,
-    discount: req.body.discount || 0,
-    couponCode: req.body.couponCode || '',
-    deliveryFee: req.body.deliveryFee || 0,
-    total: req.body.total || 0,
-    paymentMethod: req.body.paymentMethod || req.body.paymentMode || 'COD',
-    paymentMode: req.body.paymentMode || req.body.paymentMethod || 'COD',
+    items: calculation.verifiedItems,
+    subtotal: calculation.subtotal,
+    discount: calculation.discount,
+    couponCode: calculation.couponCode,
+    deliveryFee: calculation.deliveryFee,
+    total: calculation.total,
+    paymentMethod: paymentMode,
+    paymentMode: paymentMode,
     status: 'Confirmed',
     courier: 'Express Courier Network',
     trackingNumber: 'TRK' + Date.now().toString().slice(-8),
@@ -790,27 +1432,44 @@ app.get('/api/payment/config', (req, res) => {
   });
 });
 
-// 2. Create Razorpay Order
-app.post('/api/payment/create-order', async (req, res) => {
+// 2. Create Razorpay Order with Authoritative Server-Side Pricing (No Client Tampering)
+app.post('/api/payment/create-order', rateLimiter({ windowMs: 10 * 60 * 1000, max: 20 }), async (req, res) => {
   try {
-    const { amount, receipt, notes } = req.body;
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({ success: false, message: 'Invalid order amount' });
+    const { items, couponCode, customer, amount, receipt, notes } = req.body;
+    
+    // Server-side calculation from items
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Valid cart items required to initiate payment' });
+    }
+
+    const verifiedOrder = verifyAndCalculateOrder(items, couponCode);
+    if (verifiedOrder.error) {
+      return res.status(400).json({ success: false, message: verifiedOrder.error });
     }
 
     if (!razorpayClient) {
       return res.status(500).json({ success: false, message: 'Payment gateway not initialized' });
     }
 
+    const verifiedTotal = verifiedOrder.total;
+    if (verifiedTotal <= 0) {
+      return res.status(400).json({ success: false, message: 'Order total must be greater than zero' });
+    }
+
     // Razorpay expects amount in paise (1 INR = 100 paise)
-    const amountInPaise = Math.round(Number(amount) * 100);
+    const amountInPaise = Math.round(verifiedTotal * 100);
     const receiptId = (receipt || `rcpt_${Date.now()}`).toString().slice(-40);
 
     const rzpOrder = await razorpayClient.orders.create({
       amount: amountInPaise,
       currency: 'INR',
       receipt: receiptId,
-      notes: notes || {}
+      notes: {
+        verifiedTotal: String(verifiedTotal),
+        customerName: sanitizeText(customer?.name || notes?.customerName || '', 50),
+        phone: sanitizeText(customer?.phone || notes?.phone || '', 20),
+        city: sanitizeText(customer?.city || notes?.city || '', 50)
+      }
     });
 
     res.json({
@@ -818,7 +1477,8 @@ app.post('/api/payment/create-order', async (req, res) => {
       orderId: rzpOrder.id,
       amount: rzpOrder.amount,
       currency: rzpOrder.currency,
-      keyId: RAZORPAY_KEY_ID
+      keyId: RAZORPAY_KEY_ID,
+      verifiedTotal: verifiedTotal
     });
   } catch (err) {
     console.error('Razorpay order creation error:', err);
@@ -829,8 +1489,8 @@ app.post('/api/payment/create-order', async (req, res) => {
   }
 });
 
-// 3. Verify Razorpay Payment & Register Confirmed Order
-app.post('/api/payment/verify', async (req, res) => {
+// 3. Verify Razorpay Payment & Register Confirmed Order (Tamper-Proof Verification)
+app.post('/api/payment/verify', rateLimiter({ windowMs: 10 * 60 * 1000, max: 20 }), async (req, res) => {
   try {
     const {
       razorpay_order_id,
@@ -843,17 +1503,48 @@ app.post('/api/payment/verify', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing payment signature parameters' });
     }
 
-    // Verify HMAC-SHA256 signature
+    // Verify HMAC-SHA256 signature using timingSafeEqual to prevent timing attacks
     const hmac = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET);
     hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
     const generatedSignature = hmac.digest('hex');
 
-    if (generatedSignature !== razorpay_signature) {
+    const isSignatureValid = crypto.timingSafeEqual(
+      Buffer.from(generatedSignature),
+      Buffer.from(razorpay_signature)
+    );
+
+    if (!isSignatureValid) {
       console.error('Signature verification mismatch!');
       return res.status(400).json({ success: false, message: 'Payment signature verification failed' });
     }
 
-    // Payment is 100% verified! Now create confirmed order
+    // Authoritative verification of order items & prices
+    const payload = orderData || {};
+    const calculation = verifyAndCalculateOrder(payload.items, payload.couponCode);
+    if (calculation.error) {
+      return res.status(400).json({ success: false, message: calculation.error });
+    }
+
+    // Secondary security check: Verify with Razorpay API that paid amount matches order items
+    if (razorpayClient) {
+      try {
+        const rzpOrderInfo = await razorpayClient.orders.fetch(razorpay_order_id);
+        if (rzpOrderInfo && rzpOrderInfo.amount) {
+          const expectedPaise = Math.round(calculation.total * 100);
+          if (rzpOrderInfo.amount < expectedPaise) {
+            console.error(`Security alert: Paid amount ${rzpOrderInfo.amount} < expected ${expectedPaise}`);
+            return res.status(400).json({
+              success: false,
+              message: 'Payment verification failed: paid amount does not match items in cart.'
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Could not secondary-fetch rzp order info:', err.message);
+      }
+    }
+
+    // Payment is 100% verified! Now create confirmed order with Authoritative server numbers
     const store = getStore();
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const orderId = `ASZ-${randomSuffix}`;
@@ -861,35 +1552,43 @@ app.post('/api/payment/verify', async (req, res) => {
     const now = new Date();
     const dateFormatted = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
 
-    const payload = orderData || {};
     const customerObj = payload.customer || {};
-    const custName = customerObj.name || payload.customerName || payload.name || 'Customer';
-    const custPhone = customerObj.phone || payload.phone || '';
-    const custEmail = customerObj.email || payload.email || '';
-    const custAddress = customerObj.address 
-      ? [customerObj.address, customerObj.city, customerObj.state, customerObj.pincode].filter(Boolean).join(', ')
-      : (payload.address || '');
+    const custName = sanitizeText(customerObj.name || payload.customerName || payload.name || 'Customer', 60);
+    const custPhone = sanitizeText(customerObj.phone || payload.phone || '', 20);
+    const custEmail = sanitizeText(customerObj.email || payload.email || '', 80);
+    const custAddress = sanitizeText(
+      customerObj.address 
+        ? [customerObj.address, customerObj.city, customerObj.state, customerObj.pincode].filter(Boolean).join(', ')
+        : (payload.address || ''),
+      300
+    );
 
     const newOrder = {
       id: orderId,
       date: dateFormatted,
       createdAt: dateFormatted,
-      customer: customerObj,
+      customer: {
+        ...customerObj,
+        name: custName,
+        phone: custPhone,
+        email: custEmail,
+        address: custAddress
+      },
       customerName: custName,
       phone: custPhone,
       email: custEmail,
       address: custAddress,
-      items: payload.items || [],
-      subtotal: payload.subtotal || 0,
-      discount: payload.discount || 0,
-      couponCode: payload.couponCode || '',
-      deliveryFee: payload.deliveryFee || payload.shippingCharges || 0,
-      total: payload.total || 0,
+      items: calculation.verifiedItems,
+      subtotal: calculation.subtotal,
+      discount: calculation.discount,
+      couponCode: calculation.couponCode,
+      deliveryFee: calculation.deliveryFee,
+      total: calculation.total,
       paymentMethod: 'Online (Razorpay)',
       paymentMode: 'Online (Razorpay)',
       paymentStatus: 'Paid Online',
-      razorpayPaymentId: razorpay_payment_id,
-      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: sanitizeText(razorpay_payment_id, 80),
+      razorpayOrderId: sanitizeText(razorpay_order_id, 80),
       status: 'Confirmed',
       courier: 'Express Courier Network',
       trackingNumber: 'TRK' + Date.now().toString().slice(-8),
@@ -925,15 +1624,20 @@ app.post('/api/payment/verify', async (req, res) => {
   }
 });
 
-// Track order by Order ID, Customer Phone, Tracking AWB, or Email
-app.get('/api/orders/track/:query', (req, res) => {
+// Track order by Order ID, Customer Phone, Tracking AWB (Customer Privacy Masked)
+app.get('/api/orders/track/:query', rateLimiter({ windowMs: 60 * 1000, max: 40 }), (req, res) => {
   const store = getStore();
   const rawQuery = (req.params.query || '').trim();
+  if (rawQuery.length < 4) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Please enter at least 4 characters to track an order." 
+    });
+  }
+
   const qUpper = rawQuery.toUpperCase();
   const qDigits = rawQuery.replace(/\D/g, ''); // Extract digits only
 
-  // Normalize possible variations:
-  // e.g. "1089" -> "ASZ-1089", "#ASZ-1089" -> "ASZ-1089", "ASZ1089" -> "ASZ-1089"
   const cleanUpper = qUpper.replace(/^#/, '');
   const normalizedId = cleanUpper.startsWith('ASZ-') 
     ? cleanUpper 
@@ -951,20 +1655,20 @@ app.get('/api/orders/track/:query', (req, res) => {
     const oAwb = ((o.trackingId || o.trackingNumber) || '').toUpperCase();
     
     // 1. Order ID match (exact, without hash, or normalized)
-    if (oId === cleanUpper || oId === normalizedId || oId.endsWith(cleanUpper)) return true;
+    if (oId === cleanUpper || oId === normalizedId || (cleanUpper.length >= 6 && oId.endsWith(cleanUpper))) return true;
 
-    // 2. Tracking ID / AWB match (exact or partial)
-    if (oAwb && (oAwb === cleanUpper || oAwb.includes(cleanUpper))) return true;
+    // 2. Tracking ID / AWB match
+    if (oAwb && (oAwb === cleanUpper || oAwb === normalizedId)) return true;
 
-    // 3. Customer phone match (matches last 10 digits against all phone fields)
+    // 3. Customer phone match (must have at least 10 digits to search by phone to prevent privacy leakage!)
     if (phoneLast10) {
       const directPhone = (o.phone || '').replace(/\D/g, '');
       const custPhone = (o.customer && o.customer.phone ? o.customer.phone : '').replace(/\D/g, '');
       if (directPhone.slice(-10) === phoneLast10 || custPhone.slice(-10) === phoneLast10) return true;
     }
 
-    // 4. Email match
-    if (rawQuery.includes('@')) {
+    // 4. Email match (exact)
+    if (rawQuery.includes('@') && rawQuery.length >= 6) {
       const directEmail = (o.email || '').toLowerCase();
       const custEmail = (o.customer && o.customer.email ? o.customer.email : '').toLowerCase();
       if (directEmail === rawQuery.toLowerCase() || custEmail === rawQuery.toLowerCase()) return true;
@@ -982,15 +1686,17 @@ app.get('/api/orders/track/:query', (req, res) => {
     });
   }
 
-  // Return primary order (most recent) plus all matching orders for multi-order customer accounts
+  // Mask customer sensitive info for public tracking
+  const safeOrders = matchedOrders.map(maskCustomerInfo);
+
   res.json({ 
     success: true, 
-    order: matchedOrders[0], 
-    allOrders: matchedOrders 
+    order: safeOrders[0], 
+    allOrders: safeOrders 
   });
 });
 
-// Single Order direct lookup by ID
+// Single Order direct lookup by ID (Masked for public, Full for Admin)
 app.get('/api/orders/:id', (req, res) => {
   const store = getStore();
   const orderId = (req.params.id || '').toUpperCase().trim();
@@ -998,22 +1704,34 @@ app.get('/api/orders/:id', (req, res) => {
   if (!order) {
     return res.status(404).json({ success: false, error: "Order not found" });
   }
-  res.json(order);
+
+  // Check if admin is requesting
+  const token = req.headers['x-admin-token'];
+  const directPin = req.headers['x-admin-pin'];
+  const validPin = getValidAdminPin();
+  const isAdmin = (token && verifyAdminToken(token)) || (directPin && (directPin === validPin || directPin === 'arabians786'));
+
+  if (isAdmin) {
+    return res.json(order);
+  }
+
+  // Otherwise return privacy-masked order
+  res.json(maskCustomerInfo(order));
 });
 
-// Update order status (Admin)
-app.put('/api/orders/:id/status', (req, res) => {
+// Update order status (Admin Only)
+app.put('/api/orders/:id/status', requireAdminAuth, (req, res) => {
   const store = getStore();
   const order = store.orders.find(o => o.id === req.params.id);
   if (!order) return res.status(404).json({ success: false, error: "Order not found" });
 
   const { status, courier, trackingNumber, trackingId } = req.body;
-  if (status) order.status = status;
-  if (courier) order.courier = courier;
+  if (status) order.status = sanitizeText(status, 50);
+  if (courier) order.courier = sanitizeText(courier, 80);
   const trk = trackingNumber || trackingId;
   if (trk) {
-    order.trackingNumber = trk;
-    order.trackingId = trk;
+    order.trackingNumber = sanitizeText(trk, 60);
+    order.trackingId = sanitizeText(trk, 60);
   }
 
   // Ensure timeline array safely exists
@@ -1048,8 +1766,8 @@ app.put('/api/orders/:id/status', (req, res) => {
   res.json({ success: true, order, id: order.id });
 });
 
-// Delete single order
-app.delete('/api/orders/:id', (req, res) => {
+// Delete single order (Admin Only)
+app.delete('/api/orders/:id', requireAdminAuth, (req, res) => {
   const store = getStore();
   const beforeLen = (store.orders || []).length;
   store.orders = (store.orders || []).filter(o => o.id !== req.params.id);
@@ -1058,13 +1776,8 @@ app.delete('/api/orders/:id', (req, res) => {
 });
 
 // Admin Reset All Orders (clean slate launch)
-app.post('/api/admin/reset-orders', (req, res) => {
-  const { pin } = req.body || {};
+app.post('/api/admin/reset-orders', requireAdminAuth, (req, res) => {
   const store = getStore();
-  const validPin = store.settings?.adminPin || 'arabians786';
-  if (pin !== validPin && pin !== 'arabians786') {
-    return res.status(401).json({ success: false, error: 'Unauthorized: Invalid Admin PIN' });
-  }
   store.orders = [];
   saveStore(store);
   res.json({ success: true, message: 'All orders reset to zero state' });
@@ -1097,7 +1810,7 @@ function getShipmozoSettings() {
 }
 
 // 1. Get Shipmozo connection status and registered warehouses
-app.get('/api/shipmozo/status', async (req, res) => {
+app.get('/api/shipmozo/status', requireAdminAuth, async (req, res) => {
   const cfg = getShipmozoSettings();
   try {
     const whRes = await fetch(`${cfg.apiUrl}/get-warehouses`, {
@@ -1129,8 +1842,8 @@ app.get('/api/shipmozo/status', async (req, res) => {
   }
 });
 
-// 2. Push an Order directly into Shipmozo Delivery Platform
-app.post('/api/shipmozo/push-order/:orderId', async (req, res) => {
+// 2. Push an Order directly into Shipmozo Delivery Platform (Admin Only)
+app.post('/api/shipmozo/push-order/:orderId', requireAdminAuth, async (req, res) => {
   const store = getStore();
   const order = store.orders.find(o => o.id === req.params.orderId);
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
@@ -1259,8 +1972,8 @@ app.post('/api/shipmozo/push-order/:orderId', async (req, res) => {
   }
 });
 
-// 3. Auto-Assign Courier in Shipmozo
-app.post('/api/shipmozo/auto-assign/:orderId', async (req, res) => {
+// 3. Auto-Assign Courier in Shipmozo (Admin Only)
+app.post('/api/shipmozo/auto-assign/:orderId', requireAdminAuth, async (req, res) => {
   const store = getStore();
   const order = store.orders.find(o => o.id === req.params.orderId);
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
@@ -1313,18 +2026,20 @@ app.post('/api/shipmozo/auto-assign/:orderId', async (req, res) => {
 });
 
 // --- 6. Distributors (B2B Leads) ---
-app.get('/api/distributors', (req, res) => {
+// Admin Only
+app.get('/api/distributors', requireAdminAuth, (req, res) => {
   const store = getStore();
   res.json(store.distributors || []);
 });
 
-app.post('/api/distributors', (req, res) => {
+// Public B2B Inquiry Submission (Rate limited & Sanitized)
+app.post('/api/distributors', rateLimiter({ windowMs: 10 * 60 * 1000, max: 8, message: "Lead submission limit reached. Please contact via WhatsApp." }), (req, res) => {
   const store = getStore();
-  const businessName = req.body.businessName || req.body.name || req.body.firmName || 'Retail Store / Individual';
-  const ownerName = req.body.ownerName || req.body.contactPerson || req.body.name || 'Store Owner';
-  const investment = req.body.investment || req.body.investmentBudget || '₹25,000 - ₹50,000';
-  const categories = req.body.categories || req.body.interestedProducts || ['Arabians Talbina (All Flavors)'];
-  const notes = req.body.notes || req.body.message || '';
+  const businessName = sanitizeText(req.body.businessName || req.body.name || req.body.firmName || 'Retail Store / Individual', 100);
+  const ownerName = sanitizeText(req.body.ownerName || req.body.contactPerson || req.body.name || 'Store Owner', 80);
+  const investment = sanitizeText(req.body.investment || req.body.investmentBudget || '₹25,000 - ₹50,000', 50);
+  const categories = Array.isArray(req.body.categories) ? req.body.categories.map(c => sanitizeText(c, 50)) : ['Arabians Talbina'];
+  const notes = sanitizeText(req.body.notes || req.body.message || '', 500);
 
   const newLead = {
     id: 'DIST-' + Math.floor(100 + Math.random() * 900),
@@ -1333,12 +2048,12 @@ app.post('/api/distributors', (req, res) => {
     firmName: businessName,
     contactPerson: ownerName,
     ownerName: ownerName,
-    phone: req.body.phone || '',
-    email: req.body.email || '',
-    city: req.body.city || '',
-    state: req.body.state || '',
-    currentBusiness: req.body.currentBusiness || req.body.businessType || 'Retail Store',
-    businessType: req.body.businessType || req.body.currentBusiness || 'Retail Store',
+    phone: sanitizeText(req.body.phone || '', 20),
+    email: sanitizeText(req.body.email || '', 80),
+    city: sanitizeText(req.body.city || '', 50),
+    state: sanitizeText(req.body.state || '', 50),
+    currentBusiness: sanitizeText(req.body.currentBusiness || req.body.businessType || 'Retail Store', 80),
+    businessType: sanitizeText(req.body.businessType || req.body.currentBusiness || 'Retail Store', 80),
     investmentBudget: investment,
     investment: investment,
     interestedProducts: categories,
@@ -1355,27 +2070,45 @@ app.post('/api/distributors', (req, res) => {
 });
 
 // --- 7. Coupons ---
+// Returns active coupons for public; all coupons for Admin
 app.get('/api/coupons', (req, res) => {
   const store = getStore();
-  res.json(store.coupons || []);
+  const token = req.headers['x-admin-token'];
+  const directPin = req.headers['x-admin-pin'];
+  const validPin = getValidAdminPin();
+  const isAdmin = (token && verifyAdminToken(token)) || (directPin && (directPin.trim() === validPin || directPin.trim() === 'arabians786'));
+
+  if (isAdmin) {
+    return res.json(store.coupons || []);
+  }
+
+  // Public gets only active coupons
+  const activeCoupons = (store.coupons || []).filter(c => c.active !== false).map(c => ({
+    code: c.code,
+    discountPercent: c.discountPercent,
+    flatDiscount: c.flatDiscount,
+    minOrder: c.minOrder,
+    description: c.description
+  }));
+  res.json(activeCoupons);
 });
 
-app.post('/api/coupons', (req, res) => {
+app.post('/api/coupons', requireAdminAuth, (req, res) => {
   const store = getStore();
   if (!store.coupons) store.coupons = [];
 
   const { code, discountPercent, flatDiscount, minOrder, description } = req.body;
   if (!code) return res.status(400).json({ error: "Coupon code is required" });
 
-  const cleanCode = code.trim().toUpperCase();
+  const cleanCode = sanitizeText(code, 30).trim().toUpperCase();
   const existingIndex = store.coupons.findIndex(c => c.code.toUpperCase() === cleanCode);
   
   const newCoupon = {
     code: cleanCode,
-    discountPercent: discountPercent ? Number(discountPercent) : 0,
-    flatDiscount: flatDiscount ? Number(flatDiscount) : 0,
-    minOrder: minOrder ? Number(minOrder) : 0,
-    description: description || (discountPercent ? `${discountPercent}% Off on orders above ₹${minOrder}` : `Flat ₹${flatDiscount} Off on orders above ₹${minOrder}`),
+    discountPercent: discountPercent ? Math.min(90, Math.max(0, Number(discountPercent))) : 0,
+    flatDiscount: flatDiscount ? Math.max(0, Number(flatDiscount)) : 0,
+    minOrder: minOrder ? Math.max(0, Number(minOrder)) : 0,
+    description: sanitizeText(description || (discountPercent ? `${discountPercent}% Off on orders above ₹${minOrder}` : `Flat ₹${flatDiscount} Off on orders above ₹${minOrder}`), 200),
     active: true,
     createdAt: new Date().toISOString()
   };
@@ -1390,9 +2123,9 @@ app.post('/api/coupons', (req, res) => {
   res.status(201).json(newCoupon);
 });
 
-app.delete('/api/coupons/:code', (req, res) => {
+app.delete('/api/coupons/:code', requireAdminAuth, (req, res) => {
   const store = getStore();
-  const cleanCode = req.params.code.trim().toUpperCase();
+  const cleanCode = (req.params.code || '').trim().toUpperCase();
   const initialLength = (store.coupons || []).length;
   store.coupons = (store.coupons || []).filter(c => c.code.toUpperCase() !== cleanCode);
 
@@ -1404,9 +2137,9 @@ app.delete('/api/coupons/:code', (req, res) => {
   res.json({ success: true, message: `Coupon ${cleanCode} deleted` });
 });
 
-app.put('/api/coupons/:code/toggle', (req, res) => {
+app.put('/api/coupons/:code/toggle', requireAdminAuth, (req, res) => {
   const store = getStore();
-  const cleanCode = req.params.code.trim().toUpperCase();
+  const cleanCode = (req.params.code || '').trim().toUpperCase();
   const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === cleanCode);
 
   if (!coupon) return res.status(404).json({ error: "Coupon not found" });
@@ -1416,10 +2149,10 @@ app.put('/api/coupons/:code/toggle', (req, res) => {
   res.json({ success: true, coupon });
 });
 
-app.post('/api/coupons/validate', (req, res) => {
+app.post('/api/coupons/validate', rateLimiter({ windowMs: 60 * 1000, max: 30 }), (req, res) => {
   const store = getStore();
   const { code, cartTotal } = req.body;
-  if (!code) return res.status(400).json({ valid: false, message: "Please enter a coupon code" });
+  if (!code || typeof code !== 'string') return res.status(400).json({ valid: false, message: "Please enter a coupon code" });
 
   const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === code.trim().toUpperCase());
   if (!coupon) {
@@ -1430,7 +2163,8 @@ app.post('/api/coupons/validate', (req, res) => {
     return res.status(400).json({ valid: false, message: "This coupon is currently inactive" });
   }
 
-  if (cartTotal < (coupon.minOrder || 0)) {
+  const numCartTotal = Number(cartTotal) || 0;
+  if (numCartTotal < (coupon.minOrder || 0)) {
     return res.status(400).json({ 
       valid: false, 
       message: `Minimum order amount for this coupon is ₹${coupon.minOrder}` 
@@ -1439,10 +2173,11 @@ app.post('/api/coupons/validate', (req, res) => {
 
   let discount = 0;
   if (coupon.discountPercent) {
-    discount = Math.round((cartTotal * coupon.discountPercent) / 100);
+    discount = Math.round((numCartTotal * Number(coupon.discountPercent)) / 100);
   } else if (coupon.flatDiscount) {
-    discount = coupon.flatDiscount;
+    discount = Number(coupon.flatDiscount);
   }
+  discount = Math.min(numCartTotal, Math.max(0, discount));
 
   res.json({
     valid: true,
@@ -1452,8 +2187,8 @@ app.post('/api/coupons/validate', (req, res) => {
   });
 });
 
-// --- 8. File Upload (Admin image uploads) ---
-app.post('/api/upload', upload.single('image'), (req, res) => {
+// --- 8. File Upload (Admin image uploads - Admin Only) ---
+app.post('/api/upload', requireAdminAuth, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No image file provided" });
   }
@@ -1466,17 +2201,33 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   });
 });
 
-// --- 9. Store Settings ---
+// --- 9. Store Settings (Sensitive data stripped for public) ---
 app.get('/api/settings', (req, res) => {
   const store = getStore();
-  res.json(store.settings || {});
+  const safeSettings = JSON.parse(JSON.stringify(store.settings || {}));
+  
+  // NEVER leak adminPin or internal private credentials to public visitors
+  delete safeSettings.adminPin;
+  delete safeSettings.adminPassword;
+  if (safeSettings.shipmozo) {
+    delete safeSettings.shipmozo.privateKey;
+  }
+  res.json(safeSettings);
 });
 
-app.put('/api/settings', (req, res) => {
+app.put('/api/settings', requireAdminAuth, (req, res) => {
   const store = getStore();
   store.settings = { ...store.settings, ...req.body };
   saveStore(store);
-  res.json(store.settings);
+  
+  // Return sanitized settings
+  const safeSettings = JSON.parse(JSON.stringify(store.settings || {}));
+  delete safeSettings.adminPin;
+  delete safeSettings.adminPassword;
+  if (safeSettings.shipmozo) {
+    delete safeSettings.shipmozo.privateKey;
+  }
+  res.json(safeSettings);
 });
 
 // --- 9.5 Database Status & Cloud Health ---

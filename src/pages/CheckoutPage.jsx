@@ -145,6 +145,9 @@ export default function CheckoutPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            items: orderPayload.items,
+            couponCode: couponCode || null,
+            customer: orderPayload.customer,
             amount: finalTotal,
             receipt: `rcpt_${Date.now().toString().slice(-8)}`,
             notes: {
