@@ -334,28 +334,25 @@ app.use((req, res, next) => {
   if (
     req.path === '/api/system-status' ||
     req.path === '/api/system-control' ||
-    req.path === '/api/health' ||
-    req.path.startsWith('/assets') ||
-    req.path.startsWith('/uploads')
+    req.path === '/api/health'
   ) {
-    return next();
-  }
-
-  // Developer bypass check (?dev_pass=hamza786 or header or cookie)
-  const hasDevPass =
-    (req.query && req.query.dev_pass === DEV_SECRET) ||
-    req.headers['x-dev-pass'] === DEV_SECRET ||
-    (req.headers.cookie && req.headers.cookie.includes(`dev_pass=${DEV_SECRET}`));
-
-  if (hasDevPass) {
-    if (req.query && req.query.dev_pass === DEV_SECRET) {
-      res.setHeader('Set-Cookie', `dev_pass=${DEV_SECRET}; Path=/; Max-Age=2592000; SameSite=Lax`);
-    }
     return next();
   }
 
   const status = getSystemStatus();
   if (status && status.suspended) {
+    // Only bypass if explicitly requested with ?dev_pass in current query
+    if (req.query && req.query.dev_pass === DEV_SECRET) {
+      return next();
+    }
+
+    // Aggressive No-Cache headers to defeat browser and CDN caching
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+    res.setHeader('Clear-Site-Data', '"cache"');
+
     if (req.path.startsWith('/api')) {
       return res.status(503).json({
         error: "Service Suspended: Web hosting and cloud infrastructure renewal dues pending.",
@@ -369,6 +366,7 @@ app.use((req, res, next) => {
 
   next();
 });
+
 
 
 // ==================== MONGODB CLOUD DATABASE INTEGRATION ====================

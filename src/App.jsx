@@ -31,20 +31,22 @@ function AppContent() {
   const [isSuspended, setIsSuspended] = React.useState(null);
 
   React.useEffect(() => {
-    // 1. Check if dev_pass is in URL query or hash
+    // 1. Check if dev_pass is in current URL query or hash
     const params = new URLSearchParams(window.location.search);
     const hashSplit = window.location.hash.split('?');
     const hashParams = new URLSearchParams(hashSplit[1] || '');
     const devPass = params.get('dev_pass') || hashParams.get('dev_pass');
 
+    // If explicit dev bypass in URL, allow through
     if (devPass === 'hamza786') {
-      localStorage.setItem('dev_pass', 'hamza786');
-    }
-
-    if (localStorage.getItem('dev_pass') === 'hamza786') {
       setIsSuspended(false);
       return;
     }
+
+    // Otherwise clear any leftover bypass and enforce system status
+    try {
+      localStorage.removeItem('dev_pass');
+    } catch(e) {}
 
     // 2. Check server system status
     fetch('/api/system-status')
