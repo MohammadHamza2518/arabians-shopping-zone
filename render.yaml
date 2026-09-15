@@ -16,8 +16,8 @@ services:
       - key: DEV_SECRET
         value: hamza786
       - key: MONGODB_URI
-        sync: false
+        value: mongodb+srv://mohammadhamza2518_db_user:H6t7ji6iIQOoO4ME@cluster0.xfjp4y5.mongodb.net/arabians_shopping_zone?retryWrites=true&w=majority&appName=Cluster0
       - key: RAZORPAY_KEY_ID
-        sync: false
+        value: rzp_live_TaICrfbpvjAX2q
       - key: RAZORPAY_KEY_SECRET
-        sync: false
+        value: OP3A8g7vKiYzHmtNRJpqWDlv
