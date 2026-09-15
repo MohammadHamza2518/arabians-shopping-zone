@@ -337,43 +337,9 @@ app.all('/api/system-control', (req, res) => {
   });
 });
 
-// 3. System Suspension Middleware
-app.use((req, res, next) => {
-  // Allow system control, health, and static asset routes
-  if (
-    req.path === '/api/system-status' ||
-    req.path === '/api/system-control' ||
-    req.path === '/api/health'
-  ) {
-    return next();
-  }
-
-  const status = getSystemStatus();
-  if (status && status.suspended) {
-    // Only bypass if explicitly requested with ?dev_pass in current query
-    if (req.query && req.query.dev_pass === DEV_SECRET) {
-      return next();
-    }
-
-    // Aggressive No-Cache headers to defeat browser and CDN caching
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
-    res.setHeader('Clear-Site-Data', '"cache"');
-
-    if (req.path.startsWith('/api')) {
-      return res.status(503).json({
-        error: "Service Suspended: Web hosting and cloud infrastructure renewal dues pending.",
-        code: "ERR_HOSTING_SERVER_COST_PENDING",
-        referenceId: status.referenceId || "ASZ-SRV-SUSPENDED-786",
-        suspended: true
-      });
-    }
-    return res.status(503).send(getSuspensionHtml(status));
-  }
-
-  next();
+// System Status endpoint (Always Operational)
+app.get('/api/system-status', (req, res) => {
+  res.json({ suspended: false, operational: true });
 });
 
 
