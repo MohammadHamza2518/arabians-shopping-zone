@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: arabians-shopping-zone
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm run build
+    startCommand: node server/index.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DEV_SECRET
+        value: hamza786
+      - key: MONGODB_URI
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false

@@ -22,6 +22,15 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Strict Zero-Cache policy for all API endpoints to guarantee instant real-time synchronization
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
 // Ensure uploads folder exists
 const uploadsDir = path.join(rootDir, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -53,7 +62,7 @@ function getSystemStatus() {
   } catch (err) {
     console.error('Error reading system_status.json:', err);
   }
-  return { suspended: true, reason: 'Hosting & Server Infrastructure Dues Pending', referenceId: 'ASZ-SRV-SUSPENDED-786' };
+  return { suspended: false };
 }
 
 function setSystemStatus(suspended, reason = 'Hosting & Server Infrastructure Dues Pending') {
@@ -2314,9 +2323,22 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 
-// Health check
+// Health check for Render Keep-Alive & UptimeRobot monitoring
 app.get('/api/health', (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  const store = getStore();
+  res.json({ 
+    status: "ok", 
+    service: "Arabians Shopping Zone Live Engine",
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    liveStats: {
+      products: (store.products || []).length,
+      categories: (store.categories || []).length,
+      orders: (store.orders || []).length,
+      mongoConnected: isMongoConnected
+    }
+  });
 });
 
 app.get('/api/debug-assets', (req, res) => {

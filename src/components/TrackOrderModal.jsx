@@ -46,7 +46,7 @@ export default function TrackOrderModal() {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`/api/orders/track/${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/orders/track/${encodeURIComponent(q)}`, { cache: 'no-store' });
       if (!res.ok) {
         const data = await res.json();
         setError(data.error || 'No matching order found. Please check Order ID or Phone.');

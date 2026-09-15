@@ -90,17 +90,23 @@ export function StoreProvider({ children }) {
     localStorage.setItem('asz_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  // Load initial store data
-  const refreshAll = async (showLoading = false) => {
+  // Real-time Cross-tab synchronization channel
+  const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
+    ? new BroadcastChannel('asz_realtime_sync')
+    : null;
+
+  // Load initial store data with zero cache
+  const refreshAll = async (showLoading = false, broadcast = false) => {
     try {
       if (showLoading) setLoading(true);
+      const noCache = { cache: 'no-store' };
       const [prodRes, catRes, revRes, reelRes, setRes, heroRes] = await Promise.all([
-        fetch('/api/products').then(r => r.json()).catch(() => []),
-        fetch('/api/categories').then(r => r.json()).catch(() => []),
-        fetch('/api/reviews').then(r => r.json()).catch(() => []),
-        fetch('/api/reels').then(r => r.json()).catch(() => []),
-        fetch('/api/settings').then(r => r.json()).catch(() => ({})),
-        fetch('/api/hero-slides').then(r => r.json()).catch(() => [])
+        fetch('/api/products', noCache).then(r => r.json()).catch(() => []),
+        fetch('/api/categories', noCache).then(r => r.json()).catch(() => []),
+        fetch('/api/reviews', noCache).then(r => r.json()).catch(() => []),
+        fetch('/api/reels', noCache).then(r => r.json()).catch(() => []),
+        fetch('/api/settings', noCache).then(r => r.json()).catch(() => ({})),
+        fetch('/api/hero-slides', noCache).then(r => r.json()).catch(() => [])
       ]);
       setProducts(prodRes || []);
       setCategories(catRes || []);
@@ -108,6 +114,10 @@ export function StoreProvider({ children }) {
       setReels(reelRes || []);
       if (Array.isArray(heroRes) && heroRes.length > 0) setHeroSlides(heroRes);
       if (setRes && setRes.storeName) setSettings(setRes);
+
+      if (broadcast && syncChannel) {
+        syncChannel.postMessage({ type: 'STORE_UPDATED', timestamp: Date.now() });
+      }
     } catch (err) {
       console.error("Failed to fetch store data:", err);
     } finally {
@@ -117,6 +127,25 @@ export function StoreProvider({ children }) {
 
   useEffect(() => {
     refreshAll(true);
+
+    // Cross-tab real-time listener: when admin or another tab changes data, update instantly
+    if (syncChannel) {
+      syncChannel.onmessage = (e) => {
+        if (e.data?.type === 'STORE_UPDATED' || e.data?.type === 'ORDER_PLACED') {
+          refreshAll(false, false);
+        }
+      };
+    }
+
+    // Auto-sync whenever user or admin switches back into this tab
+    const handleFocus = () => {
+      refreshAll(false, false);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // Real dynamic reviews analytics hub (auto-calculates when reviews change)
@@ -406,8 +435,11 @@ export function StoreProvider({ children }) {
       clearCart();
       setIsCheckoutOpen(false);
 
-      // Refresh background orders list
-      refreshAll();
+      // Refresh background orders list and broadcast
+      refreshAll(false, true);
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'ORDER_PLACED', orderId: orderData?.id, total: orderData?.total });
+      }
       return orderData;
     } catch (err) {
       console.error(err);
