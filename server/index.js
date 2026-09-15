@@ -475,7 +475,7 @@ function loadLocalStore() {
 memoryStore = loadLocalStore();
 
 async function initMongoDB() {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || process.env.NONGODB_URI;
   if (!uri || !uri.trim()) {
     console.log("ℹ️  MONGODB_URI not detected. Running in Local JSON Persistence mode.");
     return;
