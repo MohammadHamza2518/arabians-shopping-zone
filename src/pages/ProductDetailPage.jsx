@@ -26,7 +26,7 @@ import { getProductOrderWhatsAppUrl, getRestockInquiryWhatsAppUrl } from '../uti
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, categories, addToCart, wishlist, toggleWishlist, settings } = useStore();
+  const { products, categories, addToCart, wishlist, toggleWishlist, settings, loading } = useStore();
 
   const product = products.find((p) => p.id === id);
 
@@ -93,6 +93,15 @@ export default function ProductDetailPage() {
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-28 text-center space-y-4">
+        <div className="inline-block w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xs text-slate-500 font-medium">Loading authentic product details...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
