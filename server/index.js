@@ -1750,6 +1750,23 @@ app.post('/api/distributors', rateLimiter({ windowMs: 10 * 60 * 1000, max: 8, me
   res.status(201).json(newLead);
 });
 
+// Admin Delete single distributor lead
+app.delete('/api/distributors/:id', requireAdminAuth, (req, res) => {
+  const store = getStore();
+  const beforeLen = (store.distributors || []).length;
+  store.distributors = (store.distributors || []).filter(d => d.id !== req.params.id);
+  saveStore(store);
+  res.json({ success: true, deleted: beforeLen !== store.distributors.length });
+});
+
+// Admin Reset All Distributor Leads (clean slate launch)
+app.post('/api/admin/reset-distributors', requireAdminAuth, (req, res) => {
+  const store = getStore();
+  store.distributors = [];
+  saveStore(store);
+  res.json({ success: true, message: 'All distributor leads reset to zero state' });
+});
+
 // --- 7. Coupons ---
 // Returns active coupons for public; all coupons for Admin
 app.get('/api/coupons', (req, res) => {

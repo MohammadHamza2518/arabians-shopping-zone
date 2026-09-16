@@ -422,6 +422,74 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm(`Are you sure you want to delete order ${orderId}?`)) return;
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+        showToast(`Order ${orderId} deleted successfully.`);
+      }
+    } catch {
+      showToast("Error deleting order", "error");
+    }
+  };
+
+  const handleResetOrders = async () => {
+    if (!window.confirm("Are you sure you want to reset all orders to 0? This will clear all test bookings for clean launch.")) return;
+    try {
+      const res = await fetch('/api/admin/reset-orders', {
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders([]);
+        showToast("All orders reset to zero state.");
+      }
+    } catch {
+      showToast("Error resetting orders", "error");
+    }
+  };
+
+  const handleDeleteDistributor = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this dealer lead?")) return;
+    try {
+      const res = await fetch(`/api/distributors/${id}`, {
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDistributors(prev => prev.filter(d => d.id !== id));
+        showToast("Dealer lead removed successfully.");
+      }
+    } catch {
+      showToast("Error deleting distributor lead", "error");
+    }
+  };
+
+  const handleResetDistributors = async () => {
+    if (!window.confirm("Are you sure you want to clear all dealer leads to 0 for launch?")) return;
+    try {
+      const res = await fetch('/api/admin/reset-distributors', {
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDistributors([]);
+        showToast("All dealer leads reset to zero state.");
+      }
+    } catch {
+      showToast("Error resetting distributor leads", "error");
+    }
+  };
+
   // Shipmozo Official Delivery Dispatch Handlers
   const handlePushToShipmozo = async (order, customWeight = 500, warehouseId = '66952') => {
     setPushingMozoId(order.id);
@@ -1996,6 +2064,17 @@ export default function AdminPage() {
                   <Download className="w-3.5 h-3.5 text-amber-400" />
                   <span>Bulk CSV</span>
                 </button>
+
+                {orders.length > 0 && (
+                  <button
+                    onClick={handleResetOrders}
+                    className="px-3.5 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900 border border-rose-700/60 text-rose-200 text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
+                    title="Reset all orders to 0 for fresh store launch"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Reset Orders</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -2067,6 +2146,15 @@ export default function AdminPage() {
                       >
                         <Printer className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Print Slip</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteOrder(ord.id)}
+                        className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-900/80 text-slate-400 hover:text-rose-200 border border-slate-700 hover:border-rose-700 transition flex items-center gap-1 text-xs font-bold"
+                        title="Delete Order Record"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Delete</span>
                       </button>
 
                       {/* SHIPMOZO DIRECT DELIVERY DISPATCH BUTTONS */}
@@ -2764,35 +2852,61 @@ export default function AdminPage() {
               </h3>
               <p className="text-xs text-slate-400">Direct inquiries from store owners and regional distributors.</p>
             </div>
+            {distributors.length > 0 && (
+              <button
+                onClick={handleResetDistributors}
+                className="px-3.5 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                title="Clear all test leads for launch"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear All Leads ({distributors.length})</span>
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {distributors.map((d) => {
-              const bName = d.businessName || d.name || d.firmName || 'Retail Store';
-              const oName = d.ownerName || d.contactPerson || 'Applicant';
-              const invest = d.investment || d.investmentBudget || '₹25,000 - ₹50,000';
-              const prods = d.categories || d.interestedProducts || [];
-              const notesText = d.notes || d.message || '';
+          {distributors.length === 0 ? (
+            <div className="bg-[#0c1620] rounded-3xl border border-slate-800 p-12 text-center space-y-3">
+              <Users className="w-12 h-12 text-slate-600 mx-auto" />
+              <h3 className="font-serif font-bold text-white">No Wholesale Applications Yet</h3>
+              <p className="text-xs text-slate-400">New distributor and franchise inquiries from the store will appear here in real-time.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {distributors.map((d) => {
+                const bName = d.businessName || d.name || d.firmName || 'Retail Store';
+                const oName = d.ownerName || d.contactPerson || 'Applicant';
+                const invest = d.investment || d.investmentBudget || '₹25,000 - ₹50,000';
+                const prods = d.categories || d.interestedProducts || [];
+                const notesText = d.notes || d.message || '';
 
-              return (
-                <div key={d.id} className="bg-[#0c1620] rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-sm space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-serif font-bold text-base text-white">{bName}</h4>
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">{d.id}</span>
+                return (
+                  <div key={d.id} className="bg-[#0c1620] rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-sm space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-serif font-bold text-base text-white">{bName}</h4>
+                          <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">{d.id}</span>
+                        </div>
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">
+                          Owner / Contact: <span className="text-slate-200 font-bold">{oName}</span>
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-400 font-medium mt-0.5">
-                        Owner / Contact: <span className="text-slate-200 font-bold">{oName}</span>
-                      </p>
+                      <div className="text-right shrink-0 flex items-center gap-2">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+                            {d.status || 'New Lead'}
+                          </span>
+                          {d.date && <div className="text-[10px] text-slate-500 mt-1">{d.date}</div>}
+                        </div>
+                        <button
+                          onClick={() => handleDeleteDistributor(d.id)}
+                          className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-900/80 text-slate-400 hover:text-rose-200 border border-slate-700 hover:border-rose-700 transition"
+                          title="Delete Lead"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
-                        {d.status || 'New Lead'}
-                      </span>
-                      {d.date && <div className="text-[10px] text-slate-500 mt-1">{d.date}</div>}
-                    </div>
-                  </div>
 
                   <div className="text-xs text-slate-300 space-y-1.5 bg-[#070d12] p-3.5 rounded-2xl border border-slate-800/80">
                     <div className="flex justify-between items-center">
@@ -2844,7 +2958,8 @@ export default function AdminPage() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
