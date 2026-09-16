@@ -8,6 +8,9 @@ services:
     startCommand: node server/index.js
     healthCheckPath: /api/health
     autoDeploy: true
+    domains:
+      - arabiansshoppingzone.shop
+      - www.arabiansshoppingzone.shop
     envVars:
       - key: NODE_ENV
         value: production
