@@ -222,36 +222,243 @@ export const initialData = {
     {
       "id": "skincare",
       "name": "Natural & Sunnah Skin Care",
-      "subtitle": "Organic Soaps, Pure Kalonji Oil, Face Serums, Rose Water & Herbal Care",
+      "subtitle": "Kashmiri Ubtan Body Pack, Herbal Soaps, Night Creams & Pure Saffron Care",
       "icon": "Sparkles",
-      "badge": "100% Organic",
-      "image": "/assets/products/pure_kalonji_blackseed_oil.jpg",
+      "badge": "100% Herbal & Organic",
+      "image": "/assets/categories/skincare_kashmiri_herbs.jpg",
       "subcategories": [
         {
           "id": "face-care",
-          "name": "Face Care & Serums"
+          "name": "Face Care & Packs"
         },
         {
           "id": "organic-soaps",
-          "name": "Organic Herbal Soaps"
+          "name": "Kashmiri Herbal Soaps"
         },
         {
-          "id": "beard-hair-oil",
-          "name": "Sunnah Hair & Beard Oils"
-        },
-        {
-          "id": "rose-water",
-          "name": "Pure Arq-e-Gulab & Toners"
-        },
-        {
-          "id": "body-lotions",
-          "name": "Natural Body Care"
+          "id": "body-pack",
+          "name": "Ubtan Body Packs"
         }
       ],
       "shortName": "Skin Care"
     }
   ],
   "products": [
+    {
+      "id": "skin-secret-herbal-facepack",
+      "name": "Skin Secret Herbal Face Pack — Pure Natural Herbal Glow",
+      "category": "skincare",
+      "subcategory": "face-care",
+      "subCategory": "face-care",
+      "price": 299,
+      "mrp": 499,
+      "rating": 5,
+      "reviewsCount": 84,
+      "stock": 50,
+      "badge": "Pure Herbal Glow",
+      "image": "/assets/products/skin_secret_facepack.jpg",
+      "imageFit": "contain",
+      "gallery": [
+        "/assets/products/skin_secret_facepack.jpg"
+      ],
+      "description": "Skin Secret Pure Natural Herbal Glow Face Pack enriched with natural herbal extracts, botanical minerals, and gentle skin-loving clays to restore instant radiant luminosity, deeply purify clogged pores, and nourish sensitive facial skin without chemicals.",
+      "benefits": [
+        "100% Pure Natural Herbal formulation for radiant facial glow",
+        "Deeply purifies pores, clears excess sebum & dirt",
+        "Helps fade tanning and evens out skin texture",
+        "Zero harmful parabens, sulfates, or artificial fragrances"
+      ],
+      "tags": [
+        "Skin Secret",
+        "Face Pack",
+        "Herbal Glow",
+        "Skin Care",
+        "Natural Ubtan",
+        "skincare",
+        "face-care",
+        "Pure Herbal Glow"
+      ],
+      "sizes": [
+        "Standard Pouch (100g)"
+      ],
+      "outOfStockSizes": [],
+      "inStock": true,
+      "createdAt": "2026-09-16T13:20:00.000Z",
+      "updatedAt": "2026-09-16T13:20:00.000Z"
+    },
+    {
+      "id": "kashmiri-ubtan-body-soap",
+      "name": "Kashmiri Ubtan Luxury Body Soap (Saffron, Sandalwood & Honey)",
+      "category": "skincare",
+      "subcategory": "organic-soaps",
+      "subCategory": "organic-soaps",
+      "price": 199,
+      "mrp": 240,
+      "rating": 5,
+      "reviewsCount": 112,
+      "stock": 65,
+      "badge": "Saffron & Honey",
+      "image": "/assets/products/kashmiri_ubtan_body_soap_box.jpg",
+      "imageFit": "contain",
+      "gallery": [
+        "/assets/products/kashmiri_ubtan_body_soap_box.jpg",
+        "/assets/products/kashmiri_body_soap_rose.jpg"
+      ],
+      "description": "Handcrafted Kashmiri Ubtan Body Soap enriched with real Kashmiri Saffron (Kesar), Pure Sandalwood (Chandan), Turmeric (Haldi), Chickpea Flour (Besan), Almond Oil, and Pure Honey. Cleanses gently, removes dullness, and leaves a silky smooth feel with divine herbal fragrance.",
+      "benefits": [
+        "Authentic Kashmiri Saffron & Red Sandalwood blend",
+        "Gentle chickpea & turmeric daily exfoliating care",
+        "Rich almond oil & pure natural honey moisturization",
+        "100% Chemical-free, suitable for face and whole body"
+      ],
+      "tags": [
+        "Kashmiri",
+        "Ubtan",
+        "Body Soap",
+        "Saffron",
+        "Sandalwood",
+        "Honey",
+        "Herbal Soap",
+        "skincare",
+        "organic-soaps",
+        "Saffron & Honey"
+      ],
+      "sizes": [
+        "100g Soap Bar"
+      ],
+      "outOfStockSizes": [],
+      "inStock": true,
+      "createdAt": "2026-09-16T13:20:00.000Z",
+      "updatedAt": "2026-09-16T13:20:00.000Z"
+    },
+    {
+      "id": "kashmiri-rose-body-soap-charcoal",
+      "name": "Kashmiri Rose Body Soap — Tan & Dark Spot Cleansing Bar",
+      "category": "skincare",
+      "subcategory": "organic-soaps",
+      "subCategory": "organic-soaps",
+      "price": 249,
+      "mrp": 349,
+      "rating": 5,
+      "reviewsCount": 96,
+      "stock": 45,
+      "badge": "100% Chemical Free",
+      "image": "/assets/products/kashmiri_body_soap_rose.jpg",
+      "imageFit": "contain",
+      "gallery": [
+        "/assets/products/kashmiri_body_soap_rose.jpg",
+        "/assets/products/kashmiri_ubtan_body_soap_box.jpg"
+      ],
+      "description": "Artisan sculpted rose-shaped Kashmiri Deep Cleansing Body Soap. Specially designed to lighten stubborn darkness, neck pigmentation, dark knees, elbows, and underarms while wrapping your skin in delicate floral freshness and deep moisture.",
+      "benefits": [
+        "Targeted formula for reducing dark patches on neck, knees, elbows & underarms",
+        "Softens and smoothens rough, sun-damaged skin texture",
+        "100% Chemical Free gentle formulation without harsh side-effects",
+        "Long-lasting royal Kashmiri fragrance and refreshing shower feel"
+      ],
+      "tags": [
+        "Kashmiri Soap",
+        "Rose Soap",
+        "Tan Removal",
+        "Dark Spots",
+        "Body Soap",
+        "100% Chemical Free",
+        "skincare",
+        "organic-soaps"
+      ],
+      "sizes": [
+        "Artisan Rose Bar (125g)"
+      ],
+      "outOfStockSizes": [],
+      "inStock": true,
+      "createdAt": "2026-09-16T13:20:00.000Z",
+      "updatedAt": "2026-09-16T13:20:00.000Z"
+    },
+    {
+      "id": "skin-secret-kashmiri-night-cream",
+      "name": "Skin Secret Kashmiri Night Cream (100% Result & Glowing Formula)",
+      "category": "skincare",
+      "subcategory": "face-care",
+      "subCategory": "face-care",
+      "price": 399,
+      "mrp": 699,
+      "rating": 5,
+      "reviewsCount": 154,
+      "stock": 40,
+      "badge": "100% Result • No Side Effects",
+      "image": "/assets/products/kashmiri_night_cream.jpg",
+      "imageFit": "contain",
+      "gallery": [
+        "/assets/products/kashmiri_night_cream.jpg"
+      ],
+      "description": "Skin Secret Kashmiri Night Cream is an ultra-nourishing overnight treatment packed with pure botanical extracts and natural glow boosters. Works while you sleep to repair daytime environmental stress, diminish blemishes, and wake up to luminous glass-like skin.",
+      "benefits": [
+        "100% Proven Result with zero side-effects guarantee",
+        "Intense overnight cell renewal and deep hydration",
+        "Evens out skin tone, blemishes, and pigmentation marks",
+        "Lightweight, non-greasy absorption suitable for all skin types"
+      ],
+      "tags": [
+        "Skin Secret",
+        "Night Cream",
+        "Kashmiri Cream",
+        "Glowing Skin",
+        "Anti Pigmentation",
+        "skincare",
+        "face-care",
+        "100% Result"
+      ],
+      "sizes": [
+        "50g Luxury Jar"
+      ],
+      "outOfStockSizes": [],
+      "inStock": true,
+      "createdAt": "2026-09-16T13:20:00.000Z",
+      "updatedAt": "2026-09-16T13:20:00.000Z"
+    },
+    {
+      "id": "skin-secret-kashmiri-ubtan-body-pack",
+      "name": "Skin Secret Kashmiri Herbs Ubtan Body Pack (Bridal & Groom Special)",
+      "category": "skincare",
+      "subcategory": "face-care",
+      "subCategory": "face-care",
+      "price": 499,
+      "mrp": 799,
+      "rating": 5,
+      "reviewsCount": 128,
+      "stock": 35,
+      "badge": "Red Sandalwood & Saffron",
+      "image": "/assets/products/kashmiri_ubtan_body_pack.jpg",
+      "imageFit": "contain",
+      "gallery": [
+        "/assets/products/kashmiri_ubtan_body_pack.jpg"
+      ],
+      "description": "Skin Secret Kashmiri Herbs Ubtan Body Pack — Authentic Himalayan bridal and groom pre-wedding radiance secret. Infused with Pure Red Sandalwood (Lal Chandan), Pure Saffron (Kesar), and sacred Ayurvedic herbs to polish skin, remove stubborn sun tan, and impart bridal glow.",
+      "benefits": [
+        "Handcrafted with Pure Red Sandalwood (Lal Chandan) & Kashmiri Saffron",
+        "Traditional pre-wedding bridal & groom royal beauty care ritual",
+        "Exfoliates dead skin cells and reverses sun tanning completely",
+        "100% Pure, authentic, and free from any synthetic additives"
+      ],
+      "tags": [
+        "Kashmiri Herbs",
+        "Ubtan Body Pack",
+        "Red Sandalwood",
+        "Saffron",
+        "Bridal Care",
+        "Groom Care",
+        "Sunnah Beauty",
+        "skincare",
+        "face-care"
+      ],
+      "sizes": [
+        "200g Luxury Pack"
+      ],
+      "outOfStockSizes": [],
+      "inStock": true,
+      "createdAt": "2026-09-16T13:20:00.000Z",
+      "updatedAt": "2026-09-16T13:20:00.000Z"
+    },
     {
       "id": "thobe-saudi-classic-white",
       "name": "Luxury Saudi Cut Pure White Arabian Thobe",

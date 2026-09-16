@@ -36,7 +36,7 @@ const DEFAULT_STORIES = [
   {
     id: 'skincare',
     name: 'Skin Care',
-    image: '/assets/products/pure_kalonji_blackseed_oil.jpg',
+    image: '/assets/categories/skincare_kashmiri_herbs.jpg',
     link: '/shop?category=skincare'
   }
 ];
@@ -64,7 +64,7 @@ const STORY_DISPLAY_MAP = {
   },
   skincare: {
     name: 'Skin Care',
-    image: '/assets/products/pure_kalonji_blackseed_oil.jpg'
+    image: '/assets/categories/skincare_kashmiri_herbs.jpg'
   }
 };
 

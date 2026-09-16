@@ -118,6 +118,14 @@ const PRODUCT_TILES = [
     badge: 'Year-Round',
     emoji: '💍',
     desc: 'Embossed Nikah namas, velvet ring boxes, and handmade feather quills.'
+  },
+  {
+    id: 'skincare',
+    name: 'Natural & Sunnah Skin Care',
+    category: 'Herbal & Organic',
+    badge: 'High Repeat',
+    emoji: '✨',
+    desc: 'Kashmiri Ubtan Body Pack, Saffron & Sandalwood Soaps, Night Creams & Herbal Care.'
   }
 ];
 

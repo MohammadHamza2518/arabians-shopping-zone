@@ -261,6 +261,7 @@ export default function ShopPage() {
     if (selectedCategory === 'decor') return "Islamic Wall Art & 3D Acrylic Ayatul Kursi Clocks | Arabians Shopping Zone";
     if (selectedCategory === 'fragrance') return "Pure Dehnul Oud, Alcohol-Free Attars & Bakhoor | Arabians Shopping Zone";
     if (selectedCategory === 'health') return "Authentic Sunnah Talbina & Pure Sidr Honey | Arabians Shopping Zone";
+    if (selectedCategory === 'skincare') return "Natural & Sunnah Skin Care, Kashmiri Ubtan & Soaps | Arabians Shopping Zone";
     if (currentCategoryObj) return `${currentCategoryObj.name} | Arabians Shopping Zone`;
     return "Shop Royal Sunnah Lifestyle & Authentic Islamic Essentials | Arabians Shopping Zone";
   }, [selectedCategory, searchQuery, currentCategoryObj]);
@@ -271,7 +272,7 @@ export default function ShopPage() {
     if (selectedCategory === 'decor') return "Transform your home with 3D gold mirror acrylic Ayatul Kursi Tugra wall art, resin geode silent sweep clocks, and handcrafted Quran rehal stands.";
     if (selectedCategory === 'fragrance') return "Discover pure aged Dehnul Oud, royal concentrated attars, Arabian bakhoor muattar, and electric brass mabkhara burners.";
     if (selectedCategory === 'health') return "Authentic Sunnah Talbina packed with roasted dry fruits and 100% pure raw Sidr honey for vital energy and holistic wellbeing.";
-    if (selectedCategory === 'skincare') return "Explore organic herbal soaps, pure Kalonji oil, nourishing face serums, and pure Arq-e-Gulab for natural Sunnah skin care.";
+    if (selectedCategory === 'skincare') return "Shop Kashmiri Ubtan body packs, artisan rose cleansing soaps, 100% result night creams, and pure red sandalwood face care for radiant Sunnah beauty.";
     return "Browse Arabians Shopping Zone complete catalog of royal Islamic lifestyle products, 100% Halal certified with express Pan-India Cash on Delivery.";
   }, [selectedCategory]);
 

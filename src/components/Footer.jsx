@@ -289,6 +289,12 @@ export default function Footer() {
                   <span className="text-[10px] text-amber-400/70 group-hover:translate-x-1 transition-transform">→</span>
                 </Link>
               </li>
+              <li>
+                <Link to="/shop?category=skincare" className="text-emerald-200/80 hover:text-amber-300 transition flex items-center justify-between py-1 border-b border-emerald-900/40 group">
+                  <span>Natural & Sunnah Skin Care</span>
+                  <span className="text-[10px] text-amber-400/70 group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </li>
             </ul>
           </div>
 

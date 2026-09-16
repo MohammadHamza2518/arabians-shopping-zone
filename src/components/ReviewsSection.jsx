@@ -151,6 +151,7 @@ export default function ReviewsSection() {
     if (activeFilter === 'health') return reviews.filter(r => r.category === 'health' || (r.productName && r.productName.toLowerCase().includes('talb')));
     if (activeFilter === 'wearing') return reviews.filter(r => r.category === 'wearing' || (r.productName && r.productName.toLowerCase().includes('thobe')));
     if (activeFilter === 'fragrance') return reviews.filter(r => r.category === 'fragrance' || (r.productName && (r.productName.toLowerCase().includes('oud') || r.productName.toLowerCase().includes('bakhoor'))));
+    if (activeFilter === 'skincare') return reviews.filter(r => r.category === 'skincare' || (r.productName && (r.productName.toLowerCase().includes('skin') || r.productName.toLowerCase().includes('soap') || r.productName.toLowerCase().includes('cream') || r.productName.toLowerCase().includes('ubtan'))));
     return reviews;
   }, [reviews, activeFilter]);
 
@@ -286,7 +287,8 @@ export default function ReviewsSection() {
             { id: '5stars', label: '⭐ 5 Stars' },
             { id: 'health', label: '🥣 Sunnah Talbina' },
             { id: 'wearing', label: '👑 Men\'s Thobes' },
-            { id: 'fragrance', label: '✨ Dehnul Oud & Bakhoor' }
+            { id: 'fragrance', label: '✨ Dehnul Oud & Bakhoor' },
+            { id: 'skincare', label: '🌿 Skin Care' }
           ].map(chip => (
             <button
               key={chip.id}

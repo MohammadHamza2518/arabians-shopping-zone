@@ -182,6 +182,7 @@ export default function ReviewsPage() {
       if (selectedCategory === 'wearing' && rev.category !== 'wearing' && !rev.productName?.toLowerCase().includes('thobe')) return false;
       if (selectedCategory === 'fragrance' && rev.category !== 'fragrance' && !rev.productName?.toLowerCase().includes('oud') && !rev.productName?.toLowerCase().includes('bakhoor')) return false;
       if (selectedCategory === 'gifts' && rev.category !== 'gifts' && !rev.productName?.toLowerCase().includes('nikah') && !rev.productName?.toLowerCase().includes('ayat')) return false;
+      if (selectedCategory === 'skincare' && rev.category !== 'skincare' && !rev.productName?.toLowerCase().includes('skin') && !rev.productName?.toLowerCase().includes('soap') && !rev.productName?.toLowerCase().includes('cream') && !rev.productName?.toLowerCase().includes('ubtan')) return false;
 
       // Language filter
       if (selectedLanguage !== 'all' && (rev.language || 'hinglish') !== selectedLanguage) return false;
@@ -449,6 +450,7 @@ export default function ReviewsPage() {
               { id: 'health', label: '🥣 Talbina' },
               { id: 'wearing', label: '👑 Men\'s Thobes' },
               { id: 'fragrance', label: '✨ Oud & Bakhoor' },
+              { id: 'skincare', label: '🌿 Skin Care' },
               { id: 'gifts', label: '🎁 Gifts & Nikah' },
               { id: '5stars', label: '⭐ 5 Stars' }
             ].map(cat => (

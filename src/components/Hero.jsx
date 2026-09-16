@@ -62,6 +62,18 @@ const HERO_SLIDES = [
     ctaText: "View Nikah Collection",
     ctaLink: "/shop?category=wedding",
     image: "/assets/studio/nikah_nama_banner_43.jpg"
+  },
+  {
+    id: 'skincare',
+    badge: '🌿 Natural & Sunnah Skin Care',
+    title: "Kashmiri Ubtan, Herbal Soaps & Night Creams",
+    subtitle: "Pure Red Sandalwood, Kashmiri Saffron, and 100% chemical-free herbal formulas to restore radiant glow, fade tanning, and nourish delicate skin with Sunnah purity.",
+    highlight: "100% Herbal & Organic • Zero Harsh Chemicals",
+    price: "From ₹199",
+    mrp: "₹240",
+    ctaText: "Shop Skin Care",
+    ctaLink: "/shop?category=skincare",
+    image: "/assets/categories/skincare_kashmiri_herbs.jpg"
   }
 ];
 

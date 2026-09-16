@@ -185,7 +185,7 @@ async function initMongoDB() {
           fragrance: '/assets/categories/fragrance_mukh_malaki.jpg',
           decor: '/assets/categories/decor_islamic_wall_clock.jpg',
           wedding: '/assets/categories/wedding_nikah_frame.jpg',
-          skincare: '/assets/products/pure_kalonji_blackseed_oil.jpg'
+          skincare: '/assets/categories/skincare_kashmiri_herbs.jpg'
         };
         memoryStore.categories.forEach(c => {
           if (!c.image && catImages[c.id]) {

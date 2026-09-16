@@ -16,7 +16,7 @@ const CATEGORY_NAMES_MAP = {
   fragrance: ["fragrance", "oud", "attar", "perfume", "bakhoor", "mabkhara", "scent", "khushbu"],
   decor: ["islamic home decor", "home decor", "decor", "wall art", "clock", "clocks", "frame", "frames", "tugra"],
   wedding: ["muslim wedding", "wedding", "nikah", "nikahnama", "marriage", "dulha", "groom", "bride"],
-  skincare: ["skin care", "skincare", "soap", "herbal soap", "serum", "kalonji oil", "rose water", "arq-e-gulab", "face wash", "lotion", "cream"]
+  skincare: ["skin care", "skincare", "soap", "herbal soap", "kashmiri", "ubtan", "face pack", "facepack", "night cream", "body pack", "body soap", "skin secret", "lal chandan", "sandalwood", "saffron", "serum", "kalonji oil", "rose water", "face wash", "cream"]
 };
 
 const SUBCATEGORY_NAMES_MAP = {
@@ -57,8 +57,9 @@ const SUBCATEGORY_NAMES_MAP = {
   'nikah-sehra': ["nikah sehra", "groom sehra", "dulha sehra"],
   'haq-mehar': ["haq mehar", "mehar box", "mehr trunk"],
   
-  'face-care': ["face care", "face serum", "skin serum", "glowing skin", "face wash"],
-  'organic-soaps': ["organic soap", "herbal soap", "kalonji soap", "natural soap", "handmade soap"],
+  'face-care': ["face care", "face pack", "facepack", "night cream", "kashmiri night cream", "skin secret", "face serum", "glowing skin"],
+  'organic-soaps': ["organic soap", "kashmiri soap", "body soap", "rose soap", "ubtan soap", "herbal soap", "tan removal soap", "dark spot soap", "handmade soap"],
+  'body-pack': ["body pack", "ubtan", "ubtan body pack", "kashmiri ubtan", "bridal ubtan", "lal chandan", "red sandalwood"],
   'beard-hair-oil': ["beard oil", "hair oil", "sunnah oil", "kalonji oil", "blackseed oil"],
   'rose-water': ["rose water", "arq-e-gulab", "gulab jal", "facial mist", "toner"],
   'body-lotions': ["body lotion", "body care", "skin cream", "natural moisturiser"]

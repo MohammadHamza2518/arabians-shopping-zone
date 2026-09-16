@@ -15,11 +15,12 @@ const STORE_HOURS = [
 ];
 
 const CATEGORIES_AT_STORE = [
-  { emoji: '\uD83D\uDC58', name: "Men's Thobes & Attire", count: '20+ Styles' },
-  { emoji: '\uD83C\uDF38', name: 'Arabic Fragrances & Oud', count: '30+ Attars' },
-  { emoji: '\uD83C\uDF6F', name: 'Talbina & Sunnah Foods', count: '5 Variants' },
-  { emoji: '\uD83D\uDD4C', name: 'Islamic Home Decor', count: '10+ Designs' },
-  { emoji: '\uD83D\uDC8D', name: 'Muslim Wedding Products', count: 'Full Range' },
+  { emoji: '👔', name: "Men's Thobes & Attire", count: '20+ Styles' },
+  { emoji: '🌸', name: 'Arabic Fragrances & Oud', count: '30+ Attars' },
+  { emoji: '🍯', name: 'Talbina & Sunnah Foods', count: '5 Variants' },
+  { emoji: '✨', name: 'Natural & Sunnah Skin Care', count: 'Herbal Range' },
+  { emoji: '🕌', name: 'Islamic Home Decor', count: '10+ Designs' },
+  { emoji: '💍', name: 'Muslim Wedding Products', count: 'Full Range' },
 ];
 
 export default function StoreLocatorPage() {
