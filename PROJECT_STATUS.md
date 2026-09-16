@@ -1,4 +1,4 @@
-﻿# Arabians Shopping Zone — Project Status & Handover Guide
+# Arabians Shopping Zone — Project Status & Handover Guide
 **Last Updated:** Friday, 4 September 2026, 4:25 PM IST
 **Author/Owner:** Mohammad Hamza
 
@@ -9,11 +9,20 @@ If the terminal is closed, run:
 ```powershell
 npm run dev
 ```
-- **Storefront URL:** http://localhost:3000
+- **Storefront URL (Local):** http://localhost:3000
 - **Dedicated Reviews Page:** http://localhost:3000/#/reviews
 - **Admin Dashboard:** http://localhost:3000/#/admin
   - **Admin PIN:** `arabians786`
-- **Backend API:** http://localhost:5000 (Port 5000)
+- **Backend API (Local):** http://localhost:5000 (Port 5000)
+
+---
+
+## 🌐 1.1 Live Production Hosting (Render — Active Primary)
+* **Primary Live Production URL:** **https://arabians-shopping-zone.onrender.com**
+* **Deployment System:** Render Web Service (`render.yaml`)
+* **Auto-Deploy:** Enabled on push to `main` branch
+* **Database:** MongoDB Atlas Cloud (`arabians_shopping_zone`)
+* **Status:** 100% Operational, suspension notice permanently removed, all 6 categories & 75 products active.
 
 ---
 
