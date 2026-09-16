@@ -202,6 +202,12 @@ export default function ReviewsPage() {
 
       return true;
     }).sort((a, b) => {
+      // Prioritize reviews with real customer DP / photo at the very top
+      const aHasDp = Boolean(a.avatarUrl && a.avatarUrl.trim());
+      const bHasDp = Boolean(b.avatarUrl && b.avatarUrl.trim());
+      if (aHasDp && !bHasDp) return -1;
+      if (!aHasDp && bHasDp) return 1;
+
       if (sortBy === 'helpful') return (b.helpful || 0) - (a.helpful || 0);
       if (sortBy === 'rating') return (b.rating || 5) - (a.rating || 5);
       // default: newest first (reviews are already ordered newest to oldest in store)

@@ -146,13 +146,21 @@ export default function ReviewsSection() {
   };
 
   const filteredReviews = useMemo(() => {
-    if (activeFilter === 'all') return reviews;
-    if (activeFilter === '5stars') return reviews.filter(r => r.rating === 5);
-    if (activeFilter === 'health') return reviews.filter(r => r.category === 'health' || (r.productName && r.productName.toLowerCase().includes('talb')));
-    if (activeFilter === 'wearing') return reviews.filter(r => r.category === 'wearing' || (r.productName && r.productName.toLowerCase().includes('thobe')));
-    if (activeFilter === 'fragrance') return reviews.filter(r => r.category === 'fragrance' || (r.productName && (r.productName.toLowerCase().includes('oud') || r.productName.toLowerCase().includes('bakhoor'))));
-    if (activeFilter === 'skincare') return reviews.filter(r => r.category === 'skincare' || (r.productName && (r.productName.toLowerCase().includes('skin') || r.productName.toLowerCase().includes('soap') || r.productName.toLowerCase().includes('cream') || r.productName.toLowerCase().includes('ubtan'))));
-    return reviews;
+    let list = reviews;
+    if (activeFilter === '5stars') list = reviews.filter(r => r.rating === 5);
+    else if (activeFilter === 'health') list = reviews.filter(r => r.category === 'health' || (r.productName && r.productName.toLowerCase().includes('talb')));
+    else if (activeFilter === 'wearing') list = reviews.filter(r => r.category === 'wearing' || (r.productName && r.productName.toLowerCase().includes('thobe')));
+    else if (activeFilter === 'fragrance') list = reviews.filter(r => r.category === 'fragrance' || (r.productName && (r.productName.toLowerCase().includes('oud') || r.productName.toLowerCase().includes('bakhoor'))));
+    else if (activeFilter === 'skincare') list = reviews.filter(r => r.category === 'skincare' || (r.productName && (r.productName.toLowerCase().includes('skin') || r.productName.toLowerCase().includes('soap') || r.productName.toLowerCase().includes('cream') || r.productName.toLowerCase().includes('ubtan'))));
+
+    // Always sort reviews with real customer DP to the top
+    return [...list].sort((a, b) => {
+      const aHasDp = Boolean(a.avatarUrl && a.avatarUrl.trim());
+      const bHasDp = Boolean(b.avatarUrl && b.avatarUrl.trim());
+      if (aHasDp && !bHasDp) return -1;
+      if (!aHasDp && bHasDp) return 1;
+      return 0;
+    });
   }, [reviews, activeFilter]);
 
   const displayedReviews = useMemo(() => {
