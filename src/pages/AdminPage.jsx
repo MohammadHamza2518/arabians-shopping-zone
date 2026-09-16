@@ -1911,12 +1911,24 @@ export default function AdminPage() {
                   <h3 className="font-serif font-bold text-base text-white">
                     Recent Customer Orders ({orders.length} Total Bookings)
                   </h3>
-                  <button
-                    onClick={() => setActiveTab('orders')}
-                    className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1"
-                  >
-                    <span>View All Orders →</span>
-                  </button>
+                  <div className="flex items-center gap-2.5">
+                    {orders.length > 0 && (
+                      <button
+                        onClick={handleResetOrders}
+                        className="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                        title="Clear all test bookings for clean launch"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Reset All Orders</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setActiveTab('orders')}
+                      className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                    >
+                      <span>View All Orders →</span>
+                    </button>
+                  </div>
                 </div>
 
                 {orders.length === 0 ? (
@@ -1957,6 +1969,15 @@ export default function AdminPage() {
                             title="Print Packing Slip"
                           >
                             <Printer className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteOrder(o.id)}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-900/80 text-slate-400 hover:text-rose-200 border border-slate-700 hover:border-rose-700 transition flex items-center gap-1 text-xs font-bold"
+                            title="Delete Order Record"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                            <span className="hidden sm:inline text-rose-300">Delete</span>
                           </button>
                         </div>
                       </div>
