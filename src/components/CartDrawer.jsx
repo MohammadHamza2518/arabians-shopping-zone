@@ -32,7 +32,8 @@ export default function CartDrawer() {
     couponError, 
     couponDiscount, 
     setIsCheckoutOpen,
-    setSelectedProduct
+    setSelectedProduct,
+    settings
   } = useStore();
 
   const [couponInput, setCouponInput] = useState('');
@@ -294,6 +295,13 @@ export default function CartDrawer() {
                   <span className="text-lg font-extrabold text-[#064e3b]">₹{cartTotal}</span>
                 </div>
               </div>
+
+              {/* Online Payment Extra Discount Tip */}
+              {settings?.onlineDiscountEnabled !== false && (
+                <div className="flex items-center gap-1.5 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-bold">
+                  <span>⚡ Pay Online at checkout to save extra {settings?.onlineDiscountType === 'percentage' ? `${settings?.onlineDiscountValue || 5}%` : `₹${settings?.onlineDiscountValue || 50}`}!</span>
+                </div>
+              )}
 
               {/* Checkout CTA */}
               <button

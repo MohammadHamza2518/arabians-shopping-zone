@@ -8351,6 +8351,11 @@
       "subtitle": "Revive the pristine Sunnah of Friday prayers in one complete set: a pristine tailored Saudi thobe, handcrafted Turkish velvet cap, and aged alcohol-free Cambodian oud.",
       "comboPrice": 2299,
       "originalPrice": 2797
-    }
+    },
+    "onlineDiscountEnabled": true,
+    "onlineDiscountType": "flat",
+    "onlineDiscountValue": 50,
+    "codFeeEnabled": false,
+    "codExtraFee": 50
   }
 }

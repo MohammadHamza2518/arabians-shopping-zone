@@ -331,6 +331,42 @@ export default function TrackPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* Order Financial Breakdown */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Subtotal</span>
+                    <span className="font-mono font-bold">₹{order.subtotal || order.total}</span>
+                  </div>
+                  {order.discount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-medium">
+                      <span>Coupon Discount ({order.couponCode || 'PROMO'})</span>
+                      <span className="font-mono">-₹{order.discount}</span>
+                    </div>
+                  )}
+                  {order.onlineDiscount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span>Online Payment Savings</span>
+                      <span className="font-mono">-₹{order.onlineDiscount}</span>
+                    </div>
+                  )}
+                  {order.codFee > 0 && (
+                    <div className="flex justify-between text-amber-700 font-bold">
+                      <span>COD Handling Fee</span>
+                      <span className="font-mono">+₹{order.codFee}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-slate-600">
+                    <span>Pan-India Delivery</span>
+                    <span className={order.deliveryFee === 0 || !order.deliveryFee ? "text-emerald-700 font-bold" : "font-mono font-bold text-slate-800"}>
+                      {order.deliveryFee === 0 || !order.deliveryFee ? 'FREE' : `₹${order.deliveryFee}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-black text-slate-950 pt-2 border-t border-slate-200 text-sm">
+                    <span>Total Amount ({order.paymentMode?.toUpperCase() || order.paymentMethod?.toUpperCase() || 'COD'})</span>
+                    <span className="text-emerald-800 font-mono text-base">₹{order.total}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Direct WhatsApp Support */}

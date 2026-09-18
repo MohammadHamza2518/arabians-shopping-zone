@@ -323,8 +323,19 @@ export default function ProductDetailPage() {
                 )}
               </div>
             </div>
-            <div className="text-right text-[11px] text-emerald-800 font-semibold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-              Tax Included • Free Shipping Available
+            <div className="text-right text-[11px] font-semibold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+              {Boolean(product.freeDelivery || product.deliveryChargeType === 'free') ? (
+                <div className="text-emerald-800 font-bold">🚚 100% FREE Delivery</div>
+              ) : product.deliveryChargeType === 'custom' && product.customDeliveryCharge !== undefined && product.customDeliveryCharge !== null ? (
+                <div className="text-emerald-800 font-bold">🚚 Delivery: ₹{product.customDeliveryCharge}</div>
+              ) : (
+                <div className="text-emerald-800 font-bold">🚚 Free Delivery &gt; ₹{settings?.freeShippingThreshold !== undefined ? settings.freeShippingThreshold : 999}</div>
+              )}
+              {settings?.onlineDiscountEnabled !== false && (
+                <div className="text-emerald-700 text-[10px] font-bold mt-0.5">
+                  ⚡ Pay Online & Save {settings?.onlineDiscountType === 'percentage' ? `${settings?.onlineDiscountValue || 5}%` : `₹${settings?.onlineDiscountValue || 50}`}
+                </div>
+              )}
             </div>
           </div>
 

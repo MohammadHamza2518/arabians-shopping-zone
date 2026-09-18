@@ -126,6 +126,11 @@ function loadLocalStore() {
       parsed.heroSlides = JSON.parse(JSON.stringify(DEFAULT_HERO_SLIDES));
     }
     if (!parsed.settings) parsed.settings = {};
+    if (parsed.settings.onlineDiscountEnabled === undefined) parsed.settings.onlineDiscountEnabled = true;
+    if (parsed.settings.onlineDiscountType === undefined) parsed.settings.onlineDiscountType = 'flat';
+    if (parsed.settings.onlineDiscountValue === undefined) parsed.settings.onlineDiscountValue = 50;
+    if (parsed.settings.codFeeEnabled === undefined) parsed.settings.codFeeEnabled = false;
+    if (parsed.settings.codExtraFee === undefined) parsed.settings.codExtraFee = 50;
     if (!parsed.settings.shipmozo) {
       parsed.settings.shipmozo = {
         enabled: true,
@@ -380,7 +385,7 @@ function requireAdminAuth(req, res, next) {
 }
 
 // 4. Authoritative Price & Order Recalculation Engine (Zero Client Loss Guarantee)
-function verifyAndCalculateOrder(rawItems, rawCouponCode) {
+function verifyAndCalculateOrder(rawItems, rawCouponCode, rawPaymentMode) {
   const store = getStore();
   const catalog = store.products || [];
 
@@ -421,7 +426,10 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode) {
         image: raw.image || '/assets/studio/mens_white_thobe.jpg',
         selectedSize: sanitizeText(raw.selectedSize || '', 50),
         customization: raw.customization || null,
-        hamperDetails: raw.hamperDetails || null
+        hamperDetails: raw.hamperDetails || null,
+        freeDelivery: true,
+        deliveryChargeType: 'free',
+        customDeliveryCharge: null
       });
       continue;
     }
@@ -450,6 +458,11 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode) {
     const itemTotal = verifiedPrice * quantity;
     subtotal += itemTotal;
 
+    const isFree = Boolean(product.freeDelivery || product.deliveryChargeType === 'free');
+    const customCharge = (product.customDeliveryCharge !== undefined && product.customDeliveryCharge !== null && product.deliveryChargeType === 'custom')
+      ? Number(product.customDeliveryCharge)
+      : null;
+
     verifiedItems.push({
       id: product.id,
       name: product.name,
@@ -458,15 +471,41 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode) {
       quantity: quantity,
       image: product.image || '/assets/logo/logo_main.png',
       selectedSize: selectedVariant ? sanitizeText(selectedVariant, 40) : null,
-      customization: raw.customization || null
+      customization: raw.customization || null,
+      freeDelivery: isFree,
+      deliveryChargeType: product.deliveryChargeType || (isFree ? 'free' : 'default'),
+      customDeliveryCharge: customCharge
     });
   }
 
   // Authoritative Delivery Fee calculation
-  // Free pan-India delivery above threshold (default ₹999); otherwise standard shipping fee (default ₹70)
-  const freeShippingThreshold = Number(store.settings?.freeShippingThreshold) || 999;
-  const standardShippingFee = Number(store.settings?.standardShippingFee) || 70;
-  const deliveryFee = (subtotal >= freeShippingThreshold || subtotal === 0) ? 0 : standardShippingFee;
+  // 1. If cart is empty: 0
+  // 2. If store-wide free threshold reached: 0
+  // 3. If all items in cart qualify for Free Delivery: 0
+  // 4. If any items have custom delivery charge, pick the highest custom charge among non-free items
+  // 5. Otherwise standard shipping fee
+  const freeShippingThreshold = store.settings?.freeShippingThreshold !== undefined ? Number(store.settings.freeShippingThreshold) : 999;
+  const standardShippingFee = store.settings?.standardShippingFee !== undefined ? Number(store.settings.standardShippingFee) : 70;
+
+  let deliveryFee = standardShippingFee;
+  if (subtotal === 0) {
+    deliveryFee = 0;
+  } else if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold) {
+    deliveryFee = 0;
+  } else if (verifiedItems.length > 0 && verifiedItems.every(i => i.freeDelivery)) {
+    deliveryFee = 0;
+  } else {
+    const nonFreeItems = verifiedItems.filter(i => !i.freeDelivery);
+    const customCharges = nonFreeItems
+      .map(i => i.customDeliveryCharge)
+      .filter(f => typeof f === 'number' && !isNaN(f) && f >= 0);
+    
+    if (customCharges.length > 0) {
+      deliveryFee = Math.max(...customCharges);
+    } else {
+      deliveryFee = standardShippingFee;
+    }
+  }
 
   // Authoritative Coupon validation
   let discount = 0;
@@ -491,7 +530,35 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode) {
     }
   }
 
-  const total = Math.max(0, subtotal - discount + deliveryFee);
+  // Authoritative Payment Mode Pricing: Online Discount vs COD Pricing
+  const paymentMode = String(rawPaymentMode || 'COD').trim();
+  const isOnline = paymentMode.toLowerCase() === 'online' || paymentMode.toLowerCase().includes('razorpay');
+  const isCod = paymentMode.toLowerCase() === 'cod';
+
+  let onlineDiscount = 0;
+  let codFee = 0;
+
+  const onlineDiscountEnabled = store.settings?.onlineDiscountEnabled !== false;
+  const onlineDiscountType = store.settings?.onlineDiscountType || 'flat';
+  const onlineDiscountVal = Number(store.settings?.onlineDiscountValue !== undefined ? store.settings.onlineDiscountValue : 50);
+
+  if (isOnline && onlineDiscountEnabled && onlineDiscountVal > 0) {
+    if (onlineDiscountType === 'percentage') {
+      onlineDiscount = Math.round((subtotal * onlineDiscountVal) / 100);
+    } else {
+      onlineDiscount = onlineDiscountVal;
+    }
+    // Cannot exceed remaining subtotal after coupon discount
+    onlineDiscount = Math.min(onlineDiscount, Math.max(0, subtotal - discount));
+  }
+
+  const codFeeEnabled = Boolean(store.settings?.codFeeEnabled);
+  const codExtraVal = Number(store.settings?.codExtraFee || 0);
+  if (isCod && codFeeEnabled && codExtraVal > 0) {
+    codFee = codExtraVal;
+  }
+
+  const total = Math.max(0, subtotal - discount + deliveryFee - onlineDiscount + codFee);
 
   return {
     verifiedItems,
@@ -499,7 +566,10 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode) {
     discount,
     couponCode: validCouponCode,
     deliveryFee,
-    total
+    onlineDiscount,
+    codFee,
+    total,
+    paymentMode
   };
 }
 
@@ -635,6 +705,9 @@ app.post('/api/products', requireAdminAuth, (req, res) => {
     sizes: Array.isArray(req.body.sizes) ? req.body.sizes : [],
     outOfStockSizes: Array.isArray(req.body.outOfStockSizes) ? req.body.outOfStockSizes : [],
     inStock: req.body.inStock !== undefined ? Boolean(req.body.inStock) : true,
+    deliveryChargeType: req.body.deliveryChargeType || (req.body.freeDelivery ? 'free' : 'default'),
+    freeDelivery: Boolean(req.body.freeDelivery || req.body.deliveryChargeType === 'free'),
+    customDeliveryCharge: (req.body.customDeliveryCharge !== undefined && req.body.customDeliveryCharge !== null && req.body.customDeliveryCharge !== '') ? Number(req.body.customDeliveryCharge) : null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -666,6 +739,17 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
   const safeImage = cleanGallery[0] || (req.body.image && req.body.image.trim()) || store.products[idx].image || '/assets/logo/logo_main.png';
   const finalGallery = cleanGallery.length > 0 ? cleanGallery : [safeImage];
 
+  const currentProd = store.products[idx];
+  const newDeliveryType = req.body.deliveryChargeType !== undefined 
+    ? req.body.deliveryChargeType 
+    : (req.body.freeDelivery !== undefined ? (req.body.freeDelivery ? 'free' : 'default') : (currentProd.deliveryChargeType || (currentProd.freeDelivery ? 'free' : 'default')));
+  const isFreeDelivery = req.body.freeDelivery !== undefined 
+    ? Boolean(req.body.freeDelivery) 
+    : (newDeliveryType === 'free' ? true : Boolean(currentProd.freeDelivery));
+  const newCustomDelivery = req.body.customDeliveryCharge !== undefined 
+    ? (req.body.customDeliveryCharge === null || req.body.customDeliveryCharge === '' ? null : Number(req.body.customDeliveryCharge)) 
+    : (currentProd.customDeliveryCharge ?? null);
+
   store.products[idx] = {
     ...store.products[idx],
     ...req.body,
@@ -681,6 +765,9 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
     sizes: req.body.sizes !== undefined ? (Array.isArray(req.body.sizes) ? req.body.sizes : []) : (store.products[idx].sizes || []),
     outOfStockSizes: req.body.outOfStockSizes !== undefined ? (Array.isArray(req.body.outOfStockSizes) ? req.body.outOfStockSizes : []) : (store.products[idx].outOfStockSizes || []),
     inStock: req.body.inStock !== undefined ? Boolean(req.body.inStock) : (store.products[idx].inStock !== false),
+    deliveryChargeType: newDeliveryType,
+    freeDelivery: isFreeDelivery,
+    customDeliveryCharge: newCustomDelivery,
     updatedAt: new Date().toISOString()
   };
 
@@ -1015,7 +1102,8 @@ app.post('/api/orders', rateLimiter({ windowMs: 10 * 60 * 1000, max: 15, message
   const store = getStore();
 
   // 1. Authoritative server verification & calculation
-  const calculation = verifyAndCalculateOrder(req.body.items, req.body.couponCode);
+  const paymentMode = sanitizeText(req.body.paymentMode || req.body.paymentMethod || 'COD', 30);
+  const calculation = verifyAndCalculateOrder(req.body.items, req.body.couponCode, paymentMode);
   if (calculation.error) {
     return res.status(400).json({ success: false, message: calculation.error });
   }
@@ -1037,8 +1125,6 @@ app.post('/api/orders', rateLimiter({ windowMs: 10 * 60 * 1000, max: 15, message
     300
   );
 
-  const paymentMode = sanitizeText(req.body.paymentMode || req.body.paymentMethod || 'COD', 30);
-
   const newOrder = {
     id: orderId,
     date: dateFormatted,
@@ -1059,6 +1145,8 @@ app.post('/api/orders', rateLimiter({ windowMs: 10 * 60 * 1000, max: 15, message
     discount: calculation.discount,
     couponCode: calculation.couponCode,
     deliveryFee: calculation.deliveryFee,
+    onlineDiscount: calculation.onlineDiscount || 0,
+    codFee: calculation.codFee || 0,
     total: calculation.total,
     paymentMethod: paymentMode,
     paymentMode: paymentMode,
@@ -1123,7 +1211,7 @@ app.post('/api/payment/create-order', rateLimiter({ windowMs: 10 * 60 * 1000, ma
       return res.status(400).json({ success: false, message: 'Valid cart items required to initiate payment' });
     }
 
-    const verifiedOrder = verifyAndCalculateOrder(items, couponCode);
+    const verifiedOrder = verifyAndCalculateOrder(items, couponCode, 'online');
     if (verifiedOrder.error) {
       return res.status(400).json({ success: false, message: verifiedOrder.error });
     }
@@ -1159,7 +1247,9 @@ app.post('/api/payment/create-order', rateLimiter({ windowMs: 10 * 60 * 1000, ma
       amount: rzpOrder.amount,
       currency: rzpOrder.currency,
       keyId: RAZORPAY_KEY_ID,
-      verifiedTotal: verifiedTotal
+      verifiedTotal: verifiedTotal,
+      onlineDiscount: verifiedOrder.onlineDiscount || 0,
+      deliveryFee: verifiedOrder.deliveryFee || 0
     });
   } catch (err) {
     console.error('Razorpay order creation error:', err);
@@ -1201,7 +1291,7 @@ app.post('/api/payment/verify', rateLimiter({ windowMs: 10 * 60 * 1000, max: 20 
 
     // Authoritative verification of order items & prices
     const payload = orderData || {};
-    const calculation = verifyAndCalculateOrder(payload.items, payload.couponCode);
+    const calculation = verifyAndCalculateOrder(payload.items, payload.couponCode, 'online');
     if (calculation.error) {
       return res.status(400).json({ success: false, message: calculation.error });
     }
@@ -1264,6 +1354,8 @@ app.post('/api/payment/verify', rateLimiter({ windowMs: 10 * 60 * 1000, max: 20 
       discount: calculation.discount,
       couponCode: calculation.couponCode,
       deliveryFee: calculation.deliveryFee,
+      onlineDiscount: calculation.onlineDiscount || 0,
+      codFee: 0,
       total: calculation.total,
       paymentMethod: 'Online (Razorpay)',
       paymentMode: 'Online (Razorpay)',

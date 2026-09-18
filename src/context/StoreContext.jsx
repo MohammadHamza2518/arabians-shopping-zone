@@ -295,8 +295,42 @@ export function StoreProvider({ children }) {
 
   // Calculations
   const cartSubtotal = cart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
-  const freeShippingThreshold = 999;
-  const deliveryFee = cartSubtotal >= freeShippingThreshold || cartSubtotal === 0 ? 0 : 70;
+  const freeShippingThreshold = settings?.freeShippingThreshold !== undefined ? Number(settings.freeShippingThreshold) : 999;
+  const standardShippingFee = settings?.standardShippingFee !== undefined ? Number(settings.standardShippingFee) : 70;
+
+  // Check if every item in cart has freeDelivery
+  const allCartItemsFreeDelivery = cart.length > 0 && cart.every(i => {
+    const prod = i.product || i;
+    return Boolean(prod.freeDelivery || prod.deliveryChargeType === 'free');
+  });
+
+  // Check custom delivery charges among non-free items
+  const nonFreeCartItems = cart.filter(i => {
+    const prod = i.product || i;
+    return !(prod.freeDelivery || prod.deliveryChargeType === 'free');
+  });
+
+  const customDeliveryCharges = nonFreeCartItems
+    .map(i => {
+      const prod = i.product || i;
+      return (prod.customDeliveryCharge !== undefined && prod.customDeliveryCharge !== null && prod.deliveryChargeType === 'custom')
+        ? Number(prod.customDeliveryCharge)
+        : null;
+    })
+    .filter(f => typeof f === 'number' && !isNaN(f) && f >= 0);
+
+  let deliveryFee = standardShippingFee;
+  if (cartSubtotal === 0) {
+    deliveryFee = 0;
+  } else if (freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold) {
+    deliveryFee = 0;
+  } else if (allCartItemsFreeDelivery) {
+    deliveryFee = 0;
+  } else if (customDeliveryCharges.length > 0) {
+    deliveryFee = Math.max(...customDeliveryCharges);
+  } else {
+    deliveryFee = standardShippingFee;
+  }
   
   let couponDiscount = 0;
   if (appliedCoupon) {
@@ -309,7 +343,50 @@ export function StoreProvider({ children }) {
     }
   }
 
-  const cartTotal = Math.max(0, cartSubtotal - couponDiscount + deliveryFee);
+  // Helper to compute order breakdown given paymentMode ('online' vs 'cod')
+  const getOrderBreakdown = (paymentMode = 'online') => {
+    const mode = String(paymentMode || 'online').toLowerCase();
+    const isOnline = mode === 'online' || mode.includes('razorpay');
+    const isCod = mode === 'cod';
+
+    let onlineDiscount = 0;
+    const onlineDiscountEnabled = settings?.onlineDiscountEnabled !== false;
+    const onlineDiscountType = settings?.onlineDiscountType || 'flat';
+    const onlineDiscountVal = Number(settings?.onlineDiscountValue !== undefined ? settings.onlineDiscountValue : 50);
+
+    if (isOnline && onlineDiscountEnabled && onlineDiscountVal > 0) {
+      if (onlineDiscountType === 'percentage') {
+        onlineDiscount = Math.round((cartSubtotal * onlineDiscountVal) / 100);
+      } else {
+        onlineDiscount = onlineDiscountVal;
+      }
+      onlineDiscount = Math.min(onlineDiscount, Math.max(0, cartSubtotal - couponDiscount));
+    }
+
+    let codFee = 0;
+    const codFeeEnabled = Boolean(settings?.codFeeEnabled);
+    const codExtraVal = Number(settings?.codExtraFee || 0);
+    if (isCod && codFeeEnabled && codExtraVal > 0) {
+      codFee = codExtraVal;
+    }
+
+    const total = Math.max(0, cartSubtotal - couponDiscount + deliveryFee - onlineDiscount + codFee);
+
+    return {
+      subtotal: cartSubtotal,
+      discount: couponDiscount,
+      deliveryFee,
+      onlineDiscount,
+      codFee,
+      total,
+      paymentMode: mode
+    };
+  };
+
+  const defaultBreakdown = getOrderBreakdown('online');
+  const onlineDiscount = defaultBreakdown.onlineDiscount;
+  const codFee = settings?.codFeeEnabled ? Number(settings?.codExtraFee || 0) : 0;
+  const cartTotal = defaultBreakdown.total;
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   // Validate and apply coupon
@@ -367,6 +444,9 @@ export function StoreProvider({ children }) {
       const custEmail = custObj.email || customerDetails?.email || '';
       const custAddress = customerDetails?.address || custObj.address || '';
 
+      const effectiveMode = (customerDetails?.paymentMode || customerDetails?.paymentMethod || paymentMethod || 'COD');
+      const breakdown = getOrderBreakdown(effectiveMode);
+
       const orderPayload = isFullPayload ? {
         ...customerDetails,
         customer: custObj,
@@ -383,13 +463,15 @@ export function StoreProvider({ children }) {
           selectedSize: i.variant !== 'standard' ? i.variant : null,
           customization: i.customization || null
         })),
-        subtotal: customerDetails.subtotal ?? cartSubtotal,
-        discount: customerDetails.discount ?? couponDiscount,
+        subtotal: customerDetails.subtotal ?? breakdown.subtotal,
+        discount: customerDetails.discount ?? breakdown.discount,
         couponCode: customerDetails.couponCode ?? (appliedCoupon ? appliedCoupon.code : ''),
-        deliveryFee: customerDetails.shippingCharges ?? customerDetails.deliveryFee ?? deliveryFee,
-        total: customerDetails.total ?? cartTotal,
-        paymentMethod: customerDetails.paymentMode || customerDetails.paymentMethod || paymentMethod || 'COD',
-        paymentMode: customerDetails.paymentMode || customerDetails.paymentMethod || paymentMethod || 'COD'
+        deliveryFee: customerDetails.shippingCharges ?? customerDetails.deliveryFee ?? breakdown.deliveryFee,
+        onlineDiscount: customerDetails.onlineDiscount ?? breakdown.onlineDiscount,
+        codFee: customerDetails.codFee ?? breakdown.codFee,
+        total: customerDetails.total ?? breakdown.total,
+        paymentMethod: effectiveMode,
+        paymentMode: effectiveMode
       } : {
         customer: custObj,
         customerName: custName,
@@ -398,20 +480,22 @@ export function StoreProvider({ children }) {
         address: custAddress,
         items: cart.map(i => ({
           id: i.product?.id || i.id,
-          name: (i.product?.name || i.name) + (i.variant !== 'standard' ? ` (${i.variant})` : ''),
+          name: (i.product?.name || i.name) + (i.variant && i.variant !== 'standard' ? ` (${i.variant})` : ''),
           price: i.product?.price || i.price,
           quantity: i.quantity,
           image: i.product?.image || i.image,
           selectedSize: i.variant !== 'standard' ? i.variant : null,
           customization: i.customization || null
         })),
-        subtotal: cartSubtotal,
-        discount: couponDiscount,
+        subtotal: breakdown.subtotal,
+        discount: breakdown.discount,
         couponCode: appliedCoupon ? appliedCoupon.code : '',
-        deliveryFee,
-        total: cartTotal,
-        paymentMethod: paymentMethod || 'COD',
-        paymentMode: paymentMethod || 'COD'
+        deliveryFee: breakdown.deliveryFee,
+        onlineDiscount: breakdown.onlineDiscount,
+        codFee: breakdown.codFee,
+        total: breakdown.total,
+        paymentMethod: effectiveMode,
+        paymentMode: effectiveMode
       };
 
       const res = await fetch('/api/orders', {
@@ -473,11 +557,15 @@ export function StoreProvider({ children }) {
       cartCount,
       cartSubtotal,
       deliveryFee,
+      standardShippingFee,
       freeShippingThreshold,
       couponDiscount,
       appliedCoupon,
       couponError,
+      onlineDiscount,
+      codFee,
       cartTotal,
+      getOrderBreakdown,
       addToCart,
       updateCartQuantity,
       removeFromCart,

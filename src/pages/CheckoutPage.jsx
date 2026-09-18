@@ -24,10 +24,11 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { 
     cart, 
-    cartTotal, 
     cartCount, 
     cartSubtotal,
     deliveryFee,
+    cartTotal,
+    getOrderBreakdown,
     updateCartQuantity, 
     removeFromCart, 
     clearCart,
@@ -40,9 +41,26 @@ export default function CheckoutPage() {
     showToast
   } = useStore();
 
+  const [paymentMode, setPaymentMode] = useState('online'); // 'online' (Razorpay), 'cod', 'whatsapp'
+
+  // Dynamic order breakdown based on paymentMode
+  const currentBreakdown = getOrderBreakdown ? getOrderBreakdown(paymentMode) : {
+    subtotal: cartSubtotal,
+    discount: couponDiscount,
+    deliveryFee,
+    onlineDiscount: 0,
+    codFee: 0,
+    total: cartTotal
+  };
+
+  const onlineBreakdown = getOrderBreakdown ? getOrderBreakdown('online') : currentBreakdown;
+  const codBreakdown = getOrderBreakdown ? getOrderBreakdown('cod') : currentBreakdown;
+
   const couponCode = appliedCoupon?.code || '';
-  const shippingCharges = deliveryFee;
-  const finalTotal = cartTotal;
+  const shippingCharges = currentBreakdown.deliveryFee;
+  const activeOnlineDiscount = currentBreakdown.onlineDiscount;
+  const activeCodFee = currentBreakdown.codFee;
+  const finalTotal = currentBreakdown.total;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -54,7 +72,6 @@ export default function CheckoutPage() {
     pincode: ''
   });
 
-  const [paymentMode, setPaymentMode] = useState('online'); // 'online' (Razorpay), 'cod', 'whatsapp'
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -130,10 +147,12 @@ export default function CheckoutPage() {
             image: p.image
           };
         }),
-        subtotal: cartTotal,
+        subtotal: cartSubtotal,
         discount: couponDiscount,
         couponCode: couponCode || null,
         shippingCharges,
+        onlineDiscount: activeOnlineDiscount,
+        codFee: activeCodFee,
         total: finalTotal,
         paymentMode,
         paymentStatus: paymentMode === 'online' ? 'Paid Online' : 'Pending Verification'
@@ -557,8 +576,13 @@ export default function CheckoutPage() {
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-bold text-xs text-slate-900">Pay Online (Instant)</span>
-                      <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-200/70 text-emerald-900 border border-emerald-300">Fast & Safe</span>
+                      {onlineBreakdown.onlineDiscount > 0 && (
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-950 border border-emerald-400">
+                          ⚡ SAVE ₹{onlineBreakdown.onlineDiscount}
+                        </span>
+                      )}
                     </div>
+                    <div className="text-emerald-800 font-bold font-mono text-sm mt-0.5">₹{onlineBreakdown.total}</div>
                     <p className="text-[10px] text-slate-500 mt-0.5">UPI, GPay, PhonePe, Cards, NetBanking</p>
                   </div>
                 </label>
@@ -580,7 +604,15 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <div className="font-bold text-xs text-slate-900">Cash On Delivery (COD)</div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-xs text-slate-900">Cash On Delivery (COD)</span>
+                      {codBreakdown.codFee > 0 && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-200 text-amber-950">
+                          +₹{codBreakdown.codFee} COD
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-slate-800 font-bold font-mono text-sm mt-0.5">₹{codBreakdown.total}</div>
                     <p className="text-[10px] text-slate-500 mt-0.5">Pay cash or UPI at your doorstep</p>
                   </div>
                 </label>
@@ -765,20 +797,32 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-slate-900">₹{cartTotal}</span>
+                  <span className="font-semibold text-slate-900">₹{cartSubtotal}</span>
                 </div>
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-emerald-700">
-                    <span>Discount</span>
+                    <span>Coupon Discount</span>
                     <span className="font-semibold">-₹{couponDiscount}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>Pan-India Delivery</span>
                   <span className="font-semibold text-slate-900">
-                    {shippingCharges === 0 ? <span className="text-emerald-700">FREE</span> : `₹${shippingCharges}`}
+                    {shippingCharges === 0 ? <span className="text-emerald-700 font-bold">FREE</span> : `₹${shippingCharges}`}
                   </span>
                 </div>
+                {activeOnlineDiscount > 0 && paymentMode === 'online' && (
+                  <div className="flex justify-between text-emerald-700 font-bold">
+                    <span>Online Payment Savings</span>
+                    <span>-₹{activeOnlineDiscount}</span>
+                  </div>
+                )}
+                {activeCodFee > 0 && paymentMode === 'cod' && (
+                  <div className="flex justify-between text-amber-700 font-bold">
+                    <span>COD Handling Fee</span>
+                    <span>+₹{activeCodFee}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-base font-black text-slate-950 pt-2 border-t border-slate-200">
                   <span>Total Payable</span>
                   <span className="text-emerald-800 font-serif text-lg">₹{finalTotal}</span>

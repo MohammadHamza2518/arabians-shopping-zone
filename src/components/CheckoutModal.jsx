@@ -24,6 +24,7 @@ export default function CheckoutModal() {
     couponDiscount, 
     deliveryFee, 
     cartTotal, 
+    getOrderBreakdown,
     appliedCoupon, 
     createOrder,
     settings,
@@ -42,6 +43,19 @@ export default function CheckoutModal() {
     state: '',
     pincode: ''
   });
+
+  const currentMode = paymentMethod === 'ONLINE' ? 'online' : (paymentMethod === 'COD' ? 'cod' : 'whatsapp');
+  const currentBreakdown = getOrderBreakdown ? getOrderBreakdown(currentMode) : {
+    subtotal: cartSubtotal,
+    discount: couponDiscount,
+    deliveryFee,
+    onlineDiscount: 0,
+    codFee: 0,
+    total: cartTotal
+  };
+  const onlineBreakdown = getOrderBreakdown ? getOrderBreakdown('online') : currentBreakdown;
+  const codBreakdown = getOrderBreakdown ? getOrderBreakdown('cod') : currentBreakdown;
+  const modalFinalTotal = currentBreakdown.total;
 
   if (!isCheckoutOpen) return null;
 
@@ -80,11 +94,13 @@ export default function CheckoutModal() {
             selectedSize: i.variant !== 'standard' ? i.variant : null,
             customization: i.customization || null
           })),
-          subtotal: cartSubtotal,
-          discount: couponDiscount,
+          subtotal: currentBreakdown.subtotal,
+          discount: currentBreakdown.discount,
           couponCode: appliedCoupon ? appliedCoupon.code : '',
-          deliveryFee,
-          total: cartTotal,
+          deliveryFee: currentBreakdown.deliveryFee,
+          onlineDiscount: currentBreakdown.onlineDiscount,
+          codFee: 0,
+          total: currentBreakdown.total,
           paymentMethod: 'Online (Razorpay)',
           paymentMode: 'Online (Razorpay)',
           paymentStatus: 'Paid Online'
@@ -97,7 +113,7 @@ export default function CheckoutModal() {
             items: orderPayload.items,
             couponCode: appliedCoupon ? appliedCoupon.code : '',
             customer: orderPayload.customer,
-            amount: cartTotal,
+            amount: currentBreakdown.total,
             receipt: `rcpt_${Date.now().toString().slice(-8)}`,
             notes: {
               customerName: customer.name,
@@ -378,8 +394,13 @@ export default function CheckoutModal() {
                     </div>
                     <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1">
                       <span>Pay Online</span>
-                      <span className="text-[9px] bg-emerald-200 text-emerald-900 px-1 py-0.2 rounded font-black">FAST</span>
+                      {onlineBreakdown.onlineDiscount > 0 && (
+                        <span className="text-[9px] bg-emerald-200 text-emerald-950 px-1 py-0.2 rounded font-black">
+                          SAVE ₹{onlineBreakdown.onlineDiscount}
+                        </span>
+                      )}
                     </div>
+                    <div className="text-emerald-800 font-bold font-mono text-xs mt-0.5">₹{onlineBreakdown.total}</div>
                     <div className="text-[11px] text-slate-500 mt-0.5">UPI, Cards, NetBanking</div>
                   </div>
 
@@ -402,7 +423,15 @@ export default function CheckoutModal() {
                         className="text-amber-600 focus:ring-amber-500"
                       />
                     </div>
-                    <div className="font-bold text-xs sm:text-sm text-slate-900">Cash On Delivery</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1">
+                      <span>Cash On Delivery</span>
+                      {codBreakdown.codFee > 0 && (
+                        <span className="text-[9px] bg-amber-200 text-amber-950 px-1 py-0.2 rounded font-bold">
+                          +₹{codBreakdown.codFee}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-slate-800 font-bold font-mono text-xs mt-0.5">₹{codBreakdown.total}</div>
                     <div className="text-[11px] text-slate-500 mt-0.5">Pay at your doorstep</div>
                   </div>
 
@@ -494,11 +523,23 @@ export default function CheckoutModal() {
                   )}
                   <div className="flex justify-between">
                     <span>Delivery Charges</span>
-                    <span>{deliveryFee === 0 ? <strong className="text-emerald-700">FREE</strong> : `₹${deliveryFee}`}</span>
+                    <span>{currentBreakdown.deliveryFee === 0 ? <strong className="text-emerald-700">FREE</strong> : `₹${currentBreakdown.deliveryFee}`}</span>
                   </div>
+                  {currentBreakdown.onlineDiscount > 0 && paymentMethod === 'ONLINE' && (
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span>Online Payment Savings</span>
+                      <span>-₹{currentBreakdown.onlineDiscount}</span>
+                    </div>
+                  )}
+                  {currentBreakdown.codFee > 0 && paymentMethod === 'COD' && (
+                    <div className="flex justify-between text-amber-700 font-bold">
+                      <span>COD Handling Fee</span>
+                      <span>+₹{currentBreakdown.codFee}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-base font-black text-slate-950 pt-2 border-t border-slate-300">
                     <span>Total Payable</span>
-                    <span className="text-xl font-extrabold text-[#064e3b]">₹{cartTotal}</span>
+                    <span className="text-xl font-extrabold text-[#064e3b]">₹{modalFinalTotal}</span>
                   </div>
                 </div>
               </div>
@@ -522,18 +563,18 @@ export default function CheckoutModal() {
                   ) : paymentMethod === 'ONLINE' ? (
                     <>
                       <Lock className="w-4 h-4" />
-                      <span>Pay Online Now • ₹{cartTotal}</span>
+                      <span>Pay Online Now • ₹{modalFinalTotal}</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   ) : paymentMethod === 'WHATSAPP' ? (
                     <>
                       <MessageSquare className="w-4 h-4" />
-                      <span>Order on WhatsApp (₹{cartTotal})</span>
+                      <span>Order on WhatsApp (₹{modalFinalTotal})</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Confirm & Place Order (₹{cartTotal})</span>
+                      <span>Confirm & Place Order (₹{modalFinalTotal})</span>
                     </>
                   )}
                 </button>

@@ -80,6 +80,13 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
+        {/* Free Delivery Tag */}
+        {Boolean(product.freeDelivery || product.deliveryChargeType === 'free') && (
+          <div className="absolute bottom-2.5 left-2.5 bg-emerald-700/95 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow-sm z-10 flex items-center gap-1 backdrop-blur-xs">
+            <span>🚚 FREE Delivery</span>
+          </div>
+        )}
+
         {/* Wishlist Button */}
         <button
           type="button"

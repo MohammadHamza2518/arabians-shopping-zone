@@ -53,8 +53,14 @@ export default function TrackOrderModal() {
         setOrder(null);
       } else {
         const data = await res.json();
-        setOrder(data);
-        setError('');
+        const resolved = data.order || (data.id ? data : null);
+        if (resolved) {
+          setOrder(resolved);
+          setError('');
+        } else {
+          setError(data.message || data.error || 'No matching order found.');
+          setOrder(null);
+        }
       }
     } catch {
       setError('Connection error. Please try again.');
@@ -182,6 +188,42 @@ export default function TrackOrderModal() {
                       <span className="font-bold text-slate-900">₹{item.price * item.quantity}</span>
                     </div>
                   ))}
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1 mt-2">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Subtotal:</span>
+                    <span className="font-mono">₹{order.subtotal || order.total}</span>
+                  </div>
+                  {order.discount > 0 && (
+                    <div className="flex justify-between text-emerald-700">
+                      <span>Coupon Discount:</span>
+                      <span className="font-mono">-₹{order.discount}</span>
+                    </div>
+                  )}
+                  {order.onlineDiscount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span>Online Payment Discount:</span>
+                      <span className="font-mono">-₹{order.onlineDiscount}</span>
+                    </div>
+                  )}
+                  {order.codFee > 0 && (
+                    <div className="flex justify-between text-amber-700 font-bold">
+                      <span>COD Handling Fee:</span>
+                      <span className="font-mono">+₹{order.codFee}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-slate-600">
+                    <span>Pan-India Delivery:</span>
+                    <span className={order.deliveryFee === 0 || !order.deliveryFee ? "text-emerald-700 font-bold" : "font-mono font-bold"}>
+                      {order.deliveryFee === 0 || !order.deliveryFee ? 'FREE' : `₹${order.deliveryFee}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-black text-slate-950 pt-1.5 border-t border-slate-200 text-sm">
+                    <span>Total Amount ({order.paymentMode?.toUpperCase() || order.paymentMethod?.toUpperCase() || 'COD'}):</span>
+                    <span className="text-emerald-800 font-mono text-base">₹{order.total}</span>
+                  </div>
                 </div>
               </div>
 

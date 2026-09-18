@@ -161,6 +161,11 @@ export default function AdminPage() {
     announcement: "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
     freeShippingThreshold: 999,
     standardShippingFee: 70,
+    onlineDiscountEnabled: true,
+    onlineDiscountType: 'flat',
+    onlineDiscountValue: 50,
+    codFeeEnabled: false,
+    codExtraFee: 50,
     flashSale: {
       enabled: true,
       badge: "Special Sunnah Blessing Deal",
@@ -637,7 +642,10 @@ export default function AdminPage() {
         tags: [],
         sizes: [],
         outOfStockSizes: [],
-        inStock: true
+        inStock: true,
+        deliveryChargeType: 'default',
+        freeDelivery: false,
+        customDeliveryCharge: ''
       });
     } else {
       const photos = getProductPhotos(productToEdit);
@@ -649,7 +657,10 @@ export default function AdminPage() {
         imageFit: productToEdit.imageFit || 'auto',
         sizes: Array.isArray(productToEdit.sizes) ? [...productToEdit.sizes] : [],
         outOfStockSizes: Array.isArray(productToEdit.outOfStockSizes) ? [...productToEdit.outOfStockSizes] : [],
-        inStock: productToEdit.inStock !== false
+        inStock: productToEdit.inStock !== false,
+        deliveryChargeType: productToEdit.deliveryChargeType || (productToEdit.freeDelivery ? 'free' : (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null ? 'custom' : 'default')),
+        freeDelivery: Boolean(productToEdit.freeDelivery || productToEdit.deliveryChargeType === 'free'),
+        customDeliveryCharge: (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null) ? productToEdit.customDeliveryCharge : ''
       });
     }
     setIsProductModalOpen(true);
@@ -695,6 +706,11 @@ export default function AdminPage() {
       const method = editingProduct.isNew ? 'POST' : 'PUT';
       
       const subcatValue = (editingProduct.subcategory || editingProduct.subCategory || '').trim();
+      const isFreeDelivery = Boolean(editingProduct.freeDelivery || editingProduct.deliveryChargeType === 'free');
+      const customCharge = editingProduct.deliveryChargeType === 'custom' && editingProduct.customDeliveryCharge !== '' && editingProduct.customDeliveryCharge !== null
+        ? Number(editingProduct.customDeliveryCharge)
+        : null;
+
       const payload = {
         ...editingProduct,
         image: photos[0],
@@ -709,7 +725,10 @@ export default function AdminPage() {
         subCategory: subcatValue,
         sizes: Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [],
         outOfStockSizes: Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : [],
-        inStock: editingProduct.inStock !== false
+        inStock: editingProduct.inStock !== false,
+        deliveryChargeType: isFreeDelivery ? 'free' : (editingProduct.deliveryChargeType || 'default'),
+        freeDelivery: isFreeDelivery,
+        customDeliveryCharge: customCharge
       };
 
       const res = await fetch(url, {
@@ -2406,7 +2425,16 @@ export default function AdminPage() {
                       )}
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {Boolean(p.freeDelivery || p.deliveryChargeType === 'free') ? (
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700">
+                          🚚 Free Delivery
+                        </span>
+                      ) : p.deliveryChargeType === 'custom' && p.customDeliveryCharge !== undefined && p.customDeliveryCharge !== null ? (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700">
+                          🚚 ₹{p.customDeliveryCharge}
+                        </span>
+                      ) : null}
                       {p.badge && (
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 truncate">
                           {p.badge}
@@ -3247,7 +3275,26 @@ export default function AdminPage() {
 
             {/* SECTION 4: SHIPPING CHARGES */}
             <div className="p-5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-4">
-              <h4 className="font-serif font-bold text-sm text-white">Shipping & Delivery Fees</h4>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="font-serif font-bold text-sm text-white flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-amber-500" />
+                  <span>Pan-India Shipping & Delivery Rules</span>
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setStoreSettings({
+                    ...storeSettings,
+                    freeShippingThreshold: storeSettings.freeShippingThreshold === 0 ? 999 : 0
+                  })}
+                  className={`text-[10px] font-bold px-3 py-1 rounded-full border transition ${
+                    storeSettings.freeShippingThreshold === 0
+                      ? 'bg-emerald-950 text-emerald-300 border-emerald-600'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-emerald-500'
+                  }`}
+                >
+                  {storeSettings.freeShippingThreshold === 0 ? '🟢 All Orders FREE Shipping Active' : '⚡ 1-Tap Make All Orders Free Delivery'}
+                </button>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -3256,10 +3303,14 @@ export default function AdminPage() {
                   </label>
                   <input
                     type="number"
+                    min="0"
                     value={storeSettings.freeShippingThreshold}
                     onChange={(e) => setStoreSettings({ ...storeSettings, freeShippingThreshold: Number(e.target.value) })}
                     className="w-full px-4 py-2.5 rounded-2xl bg-[#0c1620] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Set to 0 to make delivery 100% free across entire store.
+                  </p>
                 </div>
 
                 <div>
@@ -3268,10 +3319,135 @@ export default function AdminPage() {
                   </label>
                   <input
                     type="number"
+                    min="0"
                     value={storeSettings.standardShippingFee}
                     onChange={(e) => setStoreSettings({ ...storeSettings, standardShippingFee: Number(e.target.value) })}
                     className="w-full px-4 py-2.5 rounded-2xl bg-[#0c1620] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Applied on orders below the free shipping threshold.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 4.5: PAYMENT METHOD SPECIAL PRICING (ONLINE DISCOUNT VS COD) */}
+            <div className="p-5 rounded-2xl bg-[#070d12] border border-slate-800 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-emerald-400" />
+                  <h4 className="font-serif font-bold text-sm text-white">
+                    Payment Mode Pricing Rules (Online Sasta Pade & COD Pricing)
+                  </h4>
+                </div>
+                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800">
+                  ⚡ Increases Prepaid Conversion
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 1. Online Payment Discount */}
+                <div className="p-4 rounded-2xl bg-[#0c1620] border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span className="text-xs font-bold text-emerald-300">Online Payment Instant Discount</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={storeSettings.onlineDiscountEnabled !== false}
+                        onChange={(e) => setStoreSettings({ ...storeSettings, onlineDiscountEnabled: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400">
+                    Gives customer an instant discount at checkout if they pay online via UPI, GPay, PhonePe, Cards, or NetBanking.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div>
+                      <label className="block text-[10px] text-slate-400 font-bold mb-1">Discount Type</label>
+                      <select
+                        value={storeSettings.onlineDiscountType || 'flat'}
+                        onChange={(e) => setStoreSettings({ ...storeSettings, onlineDiscountType: e.target.value })}
+                        disabled={storeSettings.onlineDiscountEnabled === false}
+                        className="w-full px-3 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs disabled:opacity-50"
+                      >
+                        <option value="flat">Flat ₹ Discount</option>
+                        <option value="percentage">Percentage (%) Discount</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 font-bold mb-1">
+                        {storeSettings.onlineDiscountType === 'percentage' ? 'Discount Percentage (%)' : 'Discount Amount (₹)'}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={storeSettings.onlineDiscountValue !== undefined ? storeSettings.onlineDiscountValue : 50}
+                        onChange={(e) => setStoreSettings({ ...storeSettings, onlineDiscountValue: Number(e.target.value) })}
+                        disabled={storeSettings.onlineDiscountEnabled === false}
+                        className="w-full px-3 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-xs font-bold disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Cash on Delivery (COD) Extra Handling Fee */}
+                <div className="p-4 rounded-2xl bg-[#0c1620] border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                      <span className="text-xs font-bold text-amber-300">Cash on Delivery (COD) Extra Fee</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(storeSettings.codFeeEnabled)}
+                        onChange={(e) => setStoreSettings({ ...storeSettings, codFeeEnabled: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400">
+                    Optional handling charge added to total when customer chooses Cash on Delivery (courier collection fee).
+                  </p>
+
+                  <div className="pt-1">
+                    <label className="block text-[10px] text-slate-400 font-bold mb-1">COD Extra Fee Amount (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={storeSettings.codExtraFee !== undefined ? storeSettings.codExtraFee : 50}
+                      onChange={(e) => setStoreSettings({ ...storeSettings, codExtraFee: Number(e.target.value) })}
+                      disabled={!storeSettings.codFeeEnabled}
+                      className="w-full px-3 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-xs font-bold disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Calculation Live Preview Box */}
+              <div className="p-3.5 rounded-xl bg-[#060c12] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div>
+                  <span className="text-slate-400 block font-bold text-[11px]">💡 Customer Experience Preview (for a ₹1,000 Order):</span>
+                  <div className="flex flex-wrap items-center gap-3 mt-1 text-[11px]">
+                    <span className="text-emerald-400 font-bold">
+                      💳 Pay Online Total: ₹{Math.max(0, 1000 - (storeSettings.onlineDiscountEnabled !== false ? (storeSettings.onlineDiscountType === 'percentage' ? Math.round(1000 * (Number(storeSettings.onlineDiscountValue) || 5) / 100) : (Number(storeSettings.onlineDiscountValue) || 50)) : 0))} 
+                      {storeSettings.onlineDiscountEnabled !== false && ` (Saves ₹${storeSettings.onlineDiscountType === 'percentage' ? Math.round(1000 * (Number(storeSettings.onlineDiscountValue) || 5) / 100) : (Number(storeSettings.onlineDiscountValue) || 50)}!)`}
+                    </span>
+                    <span className="text-slate-500">•</span>
+                    <span className="text-amber-300 font-bold">
+                      💵 COD Total: ₹{1000 + (storeSettings.codFeeEnabled ? (Number(storeSettings.codExtraFee) || 0) : 0)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3840,6 +4016,138 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* SECTION 2.8: PRODUCT DELIVERY & SHIPPING CHARGE */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <Truck className="w-4 h-4 text-amber-500" />
+                <span>2.8. Delivery & Shipping Charge for This Product</span>
+              </div>
+              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                editingProduct.freeDelivery || editingProduct.deliveryChargeType === 'free'
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                  : editingProduct.deliveryChargeType === 'custom'
+                  ? 'bg-amber-950 text-amber-300 border-amber-700'
+                  : 'bg-slate-800 text-slate-300 border-slate-700'
+              }`}>
+                {editingProduct.freeDelivery || editingProduct.deliveryChargeType === 'free'
+                  ? '🚚 100% FREE Delivery'
+                  : editingProduct.deliveryChargeType === 'custom'
+                  ? `🚚 Custom ₹${editingProduct.customDeliveryCharge || 0}`
+                  : `📦 Store Default (₹${storeSettings.standardShippingFee} / Free > ₹${storeSettings.freeShippingThreshold})`}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {/* Option 1: Store Default */}
+              <button
+                type="button"
+                onClick={() => setEditingProduct({
+                  ...editingProduct,
+                  deliveryChargeType: 'default',
+                  freeDelivery: false
+                })}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  !editingProduct.freeDelivery && editingProduct.deliveryChargeType !== 'custom' && editingProduct.deliveryChargeType !== 'free'
+                    ? 'bg-amber-500/15 border-amber-500 text-white shadow-sm'
+                    : 'bg-[#060c12] border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs">Standard Store Policy</span>
+                  <input
+                    type="radio"
+                    checked={!editingProduct.freeDelivery && editingProduct.deliveryChargeType !== 'custom' && editingProduct.deliveryChargeType !== 'free'}
+                    readOnly
+                    className="accent-amber-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Standard ₹{storeSettings.standardShippingFee}, Free on orders above ₹{storeSettings.freeShippingThreshold}
+                </p>
+              </button>
+
+              {/* Option 2: 100% Free Delivery */}
+              <button
+                type="button"
+                onClick={() => setEditingProduct({
+                  ...editingProduct,
+                  deliveryChargeType: 'free',
+                  freeDelivery: true,
+                  customDeliveryCharge: ''
+                })}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  editingProduct.freeDelivery || editingProduct.deliveryChargeType === 'free'
+                    ? 'bg-emerald-950/60 border-emerald-500 text-emerald-200 shadow-sm'
+                    : 'bg-[#060c12] border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-emerald-400">100% FREE Delivery</span>
+                  <input
+                    type="radio"
+                    checked={editingProduct.freeDelivery || editingProduct.deliveryChargeType === 'free'}
+                    readOnly
+                    className="accent-emerald-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Customer pays ₹0 delivery regardless of order amount. Displays "Free Delivery" badge!
+                </p>
+              </button>
+
+              {/* Option 3: Custom Delivery Fee */}
+              <button
+                type="button"
+                onClick={() => setEditingProduct({
+                  ...editingProduct,
+                  deliveryChargeType: 'custom',
+                  freeDelivery: false,
+                  customDeliveryCharge: editingProduct.customDeliveryCharge || 50
+                })}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  editingProduct.deliveryChargeType === 'custom' && !editingProduct.freeDelivery
+                    ? 'bg-amber-950/60 border-amber-500 text-amber-200 shadow-sm'
+                    : 'bg-[#060c12] border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-amber-400">Custom Delivery Charge</span>
+                  <input
+                    type="radio"
+                    checked={editingProduct.deliveryChargeType === 'custom' && !editingProduct.freeDelivery}
+                    readOnly
+                    className="accent-amber-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Set a specific fixed delivery charge for heavy/fragile parcels (e.g. ₹50, ₹100).
+                </p>
+              </button>
+            </div>
+
+            {/* Custom Delivery Charge Input when custom selected */}
+            {editingProduct.deliveryChargeType === 'custom' && !editingProduct.freeDelivery && (
+              <div className="p-3 rounded-xl bg-[#060c12] border border-amber-500/40 flex items-center gap-3">
+                <label className="text-xs font-bold text-amber-300 shrink-0">
+                  Custom Shipping Amount (₹):
+                </label>
+                <div className="relative flex-1 max-w-[200px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 50"
+                    value={editingProduct.customDeliveryCharge}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, customDeliveryCharge: e.target.value })}
+                    className="w-full pl-7 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+                <span className="text-[11px] text-slate-400">This exact amount will be applied as delivery fee.</span>
+              </div>
+            )}
           </div>
 
           {/* SECTION 3: PRODUCT PHOTOS (INTUITIVE & FOOLPROOF) */}
@@ -5011,14 +5319,34 @@ export default function AdminPage() {
 
         {/* Financial Summary */}
         <div className="flex justify-end text-xs">
-          <div className="w-64 space-y-1.5 text-right">
+          <div className="w-72 space-y-1.5 text-right">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal:</span>
-              <span className="font-mono">₹{activeInvoiceOrder.total}</span>
+              <span className="font-mono">₹{activeInvoiceOrder.subtotal || activeInvoiceOrder.total}</span>
             </div>
+            {activeInvoiceOrder.discount > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <span>Coupon ({activeInvoiceOrder.couponCode || 'PROMO'}):</span>
+                <span className="font-mono">-₹{activeInvoiceOrder.discount}</span>
+              </div>
+            )}
+            {activeInvoiceOrder.onlineDiscount > 0 && (
+              <div className="flex justify-between text-emerald-700 font-semibold">
+                <span>Online Payment Discount:</span>
+                <span className="font-mono">-₹{activeInvoiceOrder.onlineDiscount}</span>
+              </div>
+            )}
+            {activeInvoiceOrder.codFee > 0 && (
+              <div className="flex justify-between text-amber-700 font-semibold">
+                <span>COD Handling Fee:</span>
+                <span className="font-mono">+₹{activeInvoiceOrder.codFee}</span>
+              </div>
+            )}
             <div className="flex justify-between text-slate-600">
-              <span>Shipping:</span>
-              <span className="text-emerald-600 font-bold">FREE</span>
+              <span>Shipping / Delivery:</span>
+              <span className={activeInvoiceOrder.deliveryFee === 0 || !activeInvoiceOrder.deliveryFee ? "text-emerald-600 font-bold" : "font-mono font-bold text-slate-800"}>
+                {activeInvoiceOrder.deliveryFee === 0 || !activeInvoiceOrder.deliveryFee ? 'FREE' : `₹${activeInvoiceOrder.deliveryFee}`}
+              </span>
             </div>
             <div className="flex justify-between font-black text-sm text-slate-950 pt-2 border-t border-slate-200">
               <span>Total Amount:</span>
