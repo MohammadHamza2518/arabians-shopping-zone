@@ -257,30 +257,21 @@ function saveStore(data) {
   }
 }
 
-// Multer setup for Admin image uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname) || '.png';
-    cb(null, 'product-' + uniqueSuffix + ext);
-  }
-});
+// ==================== IMAGE UPLOAD SETUP (MongoDB Storage) ====================
+// Images are stored directly in MongoDB Atlas as base64 — permanent, no redeploy loss!
+
 const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  storage: multer.memoryStorage(), // keep image in memory, save to MongoDB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|webp|avif|gif/;
     const extname = allowed.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowed.test(file.mimetype) || file.mimetype.startsWith('image/');
-    if (extname && mimetype) {
-      return cb(null, true);
-    }
-    cb(new Error("Only image files (JPEG, JPG, PNG, WebP, AVIF, GIF) are allowed!"));
+    if (extname && mimetype) return cb(null, true);
+    cb(new Error('Only image files (JPEG, JPG, PNG, WebP, AVIF, GIF) are allowed!'));
   }
 });
+
 
 // ==================== SECURITY, AUTHENTICATION & VALIDATION ====================
 
@@ -1977,19 +1968,53 @@ app.post('/api/coupons/validate', rateLimiter({ windowMs: 60 * 1000, max: 30 }),
   });
 });
 
-// --- 8. File Upload (Admin image uploads - Admin Only) ---
-app.post('/api/upload', requireAdminAuth, upload.single('image'), (req, res) => {
+
+// --- 8. File Upload (Admin image uploads — stored in MongoDB, permanent!) ---
+app.post('/api/upload', requireAdminAuth, upload.single('image'), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "No image file provided" });
+    return res.status(400).json({ error: 'No image file provided' });
   }
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ 
-    success: true, 
-    url: fileUrl,
-    imageUrl: fileUrl,
-    filename: req.file.filename
-  });
+  try {
+    const db = client.db('arabians_shopping_zone');
+    const imagesCol = db.collection('images');
+
+    const imageId = 'img_' + Date.now() + '_' + Math.round(Math.random() * 1e9);
+    const base64 = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype || 'image/jpeg';
+
+    await imagesCol.insertOne({
+      _id: imageId,
+      data: base64,
+      mimeType,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      uploadedAt: new Date()
+    });
+
+    const imageUrl = `/api/image/${imageId}`;
+    res.json({ success: true, url: imageUrl, imageUrl, filename: imageId });
+  } catch (err) {
+    console.error('Image upload to MongoDB failed:', err);
+    res.status(500).json({ error: 'Image upload failed' });
+  }
 });
+
+// --- 8b. Serve images from MongoDB ---
+app.get('/api/image/:id', async (req, res) => {
+  try {
+    const db = client.db('arabians_shopping_zone');
+    const imagesCol = db.collection('images');
+    const img = await imagesCol.findOne({ _id: req.params.id });
+    if (!img) return res.status(404).send('Image not found');
+    const buffer = Buffer.from(img.data, 'base64');
+    res.set('Content-Type', img.mimeType || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=31536000'); // cache 1 year
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).send('Error fetching image');
+  }
+});
+
 
 // --- 9. Store Settings (Sensitive data stripped for public) ---
 app.get('/api/settings', (req, res) => {
