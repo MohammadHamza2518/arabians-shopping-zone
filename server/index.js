@@ -1974,9 +1974,11 @@ app.post('/api/upload', requireAdminAuth, upload.single('image'), async (req, re
   if (!req.file) {
     return res.status(400).json({ error: 'No image file provided' });
   }
+  if (!isMongoConnected || !mongoDb) {
+    return res.status(503).json({ error: 'Database not connected. Please try again.' });
+  }
   try {
-    const db = client.db('arabians_shopping_zone');
-    const imagesCol = db.collection('images');
+    const imagesCol = mongoDb.collection('images');
 
     const imageId = 'img_' + Date.now() + '_' + Math.round(Math.random() * 1e9);
     const base64 = req.file.buffer.toString('base64');
@@ -2001,9 +2003,9 @@ app.post('/api/upload', requireAdminAuth, upload.single('image'), async (req, re
 
 // --- 8b. Serve images from MongoDB ---
 app.get('/api/image/:id', async (req, res) => {
+  if (!isMongoConnected || !mongoDb) return res.status(503).send('Database not connected');
   try {
-    const db = client.db('arabians_shopping_zone');
-    const imagesCol = db.collection('images');
+    const imagesCol = mongoDb.collection('images');
     const img = await imagesCol.findOne({ _id: req.params.id });
     if (!img) return res.status(404).send('Image not found');
     const buffer = Buffer.from(img.data, 'base64');
@@ -2014,6 +2016,7 @@ app.get('/api/image/:id', async (req, res) => {
     res.status(500).send('Error fetching image');
   }
 });
+
 
 
 // --- 9. Store Settings (Sensitive data stripped for public) ---
