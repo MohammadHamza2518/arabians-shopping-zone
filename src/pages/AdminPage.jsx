@@ -3813,10 +3813,19 @@ export default function AdminPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <label className="block font-bold text-slate-200 text-xs">
-                    Product Sizes (e.g. Saudi Thobe Lengths, Kurtas, Clothes)
+                    {(() => {
+                      const catId = (editingProduct.category || '').toLowerCase();
+                      const catName = (categories.find(c => c.id === editingProduct.category)?.name || '').toLowerCase();
+                      const combined = catId + ' ' + catName;
+                      if (/thobe|wear|shirt|jubba|kurta|garment|cloth|dress|kurti/.test(combined)) return 'Product Sizes (e.g. 52, 54, 56, S, M, L, XL)';
+                      if (/attar|oud|dehn|perfume|fragrance|bakhoor|incense/.test(combined)) return 'Product Variants (e.g. 3ml, 6ml, 12ml, 1 Tola)';
+                      if (/skin|care|cream|lotion|serum|face|beauty|hair|scrub|mask|moistur|cosmetic/.test(combined)) return 'Product Variants (e.g. 50ml, 100ml, 200ml, 30g)';
+                      if (/food|talbina|honey|date|ajwa|dry.fruit|nuts|spice|herb|supplement|health/.test(combined)) return 'Pack / Weight Options (e.g. 250g, 500g, 1kg)';
+                      return 'Product Sizes / Variants (e.g. S, M, L, 100ml, 250g)';
+                    })()}
                   </label>
                   <p className="text-[10px] text-slate-400 mt-0.5">
-                    Click on any size chip to toggle it <strong>In Stock</strong> or <strong>Out of Stock</strong> (customers will see a strikethrough just like Flipkart).
+                    Click on any chip to toggle it <strong>In Stock</strong> or <strong>Out of Stock</strong> (customers will see a strikethrough just like Flipkart).
                   </p>
                 </div>
                 
@@ -3847,65 +3856,88 @@ export default function AdminPage() {
                 )}
               </div>
 
-              {/* Quick Presets for Instant Setup */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider block">
-                  ⚡ 1-Click Size Presets:
-                </span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const thobeSizes = ["52 (S)", "54 (M)", "56 (L)", "58 (XL)", "60 (XXL)"];
-                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                      const combined = Array.from(new Set([...current, ...thobeSizes]));
-                      setEditingProduct({ ...editingProduct, sizes: combined });
-                    }}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 transition"
-                  >
-                    + Saudi Thobes (52, 54, 56, 58, 60)
-                  </button>
+              {/* Smart Category-Aware Quick Presets */}
+              {(() => {
+                const catId = (editingProduct.category || '').toLowerCase();
+                const catName = (categories.find(c => c.id === editingProduct.category)?.name || '').toLowerCase();
+                const combined = catId + ' ' + catName;
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const clothingSizes = ["S", "M", "L", "XL", "XXL", "3XL"];
-                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                      const combined = Array.from(new Set([...current, ...clothingSizes]));
-                      setEditingProduct({ ...editingProduct, sizes: combined });
-                    }}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-slate-700 text-slate-300 hover:border-amber-500/50 transition"
-                  >
-                    + Clothing Standard (S, M, L, XL, XXL)
-                  </button>
+                // Detect category type
+                const isClothing  = /thobe|thobes|wear|shirt|jubba|kurta|garment|cloth|dress|kurti/.test(combined);
+                const isAttar     = /attar|oud|dehn|perfume|fragrance|bakhoor|incense/.test(combined);
+                const isSkinCare  = /skin|care|cream|lotion|serum|face|beauty|hair|scrub|mask|moistur|cosmetic/.test(combined);
+                const isFood      = /food|talbina|honey|date|ajwa|dry.fruit|nuts|spice|herb|supplement|health/.test(combined);
+                const isOil       = /oil|essential/.test(combined) && !isAttar;
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const attarSizes = ["3ml (1/4 Tola)", "6ml (1/2 Tola)", "12ml (1 Tola)"];
-                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                      const combined = Array.from(new Set([...current, ...attarSizes]));
-                      setEditingProduct({ ...editingProduct, sizes: combined });
-                    }}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-slate-700 text-slate-300 hover:border-amber-500/50 transition"
-                  >
-                    + Attar / Oils (3ml, 6ml, 12ml)
-                  </button>
+                // Build smart preset groups
+                const presets = [];
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const weightSizes = ["250g", "500g", "1kg"];
-                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                      const combined = Array.from(new Set([...current, ...weightSizes]));
-                      setEditingProduct({ ...editingProduct, sizes: combined });
-                    }}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#060c12] border border-slate-700 text-slate-300 hover:border-amber-500/50 transition"
-                  >
-                    + Weight (250g, 500g, 1kg)
-                  </button>
-                </div>
-              </div>
+                if (isClothing) {
+                  presets.push(
+                    { label: '+ Saudi Thobes (52–60)', sizes: ['52 (S)', '54 (M)', '56 (L)', '58 (XL)', '60 (XXL)'], color: 'amber' },
+                    { label: '+ Standard (S, M, L, XL, XXL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'], color: 'slate' },
+                    { label: '+ Kids (2Y, 4Y, 6Y, 8Y)', sizes: ['2Y', '4Y', '6Y', '8Y', '10Y', '12Y'], color: 'slate' },
+                  );
+                } else if (isAttar) {
+                  presets.push(
+                    { label: '+ Tola (1/4, 1/2, 1 Tola)', sizes: ['3ml (1/4 Tola)', '6ml (1/2 Tola)', '12ml (1 Tola)'], color: 'amber' },
+                    { label: '+ ML Sizes (6ml, 12ml, 25ml)', sizes: ['6ml', '12ml', '25ml', '50ml', '100ml'], color: 'slate' },
+                  );
+                } else if (isSkinCare) {
+                  presets.push(
+                    { label: '+ Volume (50ml, 100ml, 200ml)', sizes: ['30ml', '50ml', '100ml', '150ml', '200ml'], color: 'amber' },
+                    { label: '+ Weight (30g, 50g, 100g)', sizes: ['30g', '50g', '100g', '150g', '200g'], color: 'slate' },
+                    { label: '+ Pack Size (1 Pc, 2 Pc, 3 Pc)', sizes: ['1 Pc', '2 Pc', '3 Pc', '5 Pc'], color: 'slate' },
+                  );
+                } else if (isFood) {
+                  presets.push(
+                    { label: '+ Weight (250g, 500g, 1kg)', sizes: ['250g', '500g', '1kg', '2kg'], color: 'amber' },
+                    { label: '+ Pack (1 Pkt, 2 Pkt, 3 Pkt)', sizes: ['1 Packet', '2 Packets', '3 Packets'], color: 'slate' },
+                    { label: '+ Pieces (3 Pcs, 6 Pcs, 12 Pcs)', sizes: ['3 Pcs', '6 Pcs', '12 Pcs', '24 Pcs'], color: 'slate' },
+                  );
+                } else if (isOil) {
+                  presets.push(
+                    { label: '+ Volume (50ml, 100ml, 250ml)', sizes: ['50ml', '100ml', '200ml', '250ml', '500ml'], color: 'amber' },
+                  );
+                } else {
+                  // Generic fallback — show all presets
+                  presets.push(
+                    { label: '+ Saudi Thobes (52–60)', sizes: ['52 (S)', '54 (M)', '56 (L)', '58 (XL)', '60 (XXL)'], color: 'amber' },
+                    { label: '+ Clothing (S, M, L, XL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'], color: 'slate' },
+                    { label: '+ Attar / Oils (3ml, 6ml, 12ml)', sizes: ['3ml (1/4 Tola)', '6ml (1/2 Tola)', '12ml (1 Tola)'], color: 'slate' },
+                    { label: '+ Volume (50ml, 100ml, 200ml)', sizes: ['50ml', '100ml', '200ml'], color: 'slate' },
+                    { label: '+ Weight (250g, 500g, 1kg)', sizes: ['250g', '500g', '1kg'], color: 'slate' },
+                  );
+                }
+
+                return (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider block">
+                      ⚡ 1-Click Size Presets:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => {
+                            const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                            const merged = Array.from(new Set([...current, ...preset.sizes]));
+                            setEditingProduct({ ...editingProduct, sizes: merged });
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition border ${
+                            preset.color === 'amber'
+                              ? 'bg-[#060c12] border-amber-500/40 text-amber-300 hover:bg-amber-500/10'
+                              : 'bg-[#060c12] border-slate-700 text-slate-300 hover:border-amber-500/50'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Add Custom Size Input */}
               <div className="flex items-center gap-2">
@@ -4101,12 +4133,18 @@ export default function AdminPage() {
               {/* Option 3: Custom Delivery Fee */}
               <button
                 type="button"
-                onClick={() => setEditingProduct({
-                  ...editingProduct,
-                  deliveryChargeType: 'custom',
-                  freeDelivery: false,
-                  customDeliveryCharge: editingProduct.customDeliveryCharge || 50
-                })}
+                onClick={() => {
+                  setEditingProduct({
+                    ...editingProduct,
+                    deliveryChargeType: 'custom',
+                    freeDelivery: false,
+                    customDeliveryCharge: editingProduct.customDeliveryCharge !== undefined && editingProduct.customDeliveryCharge !== '' && editingProduct.customDeliveryCharge !== null ? editingProduct.customDeliveryCharge : ''
+                  });
+                  setTimeout(() => {
+                    const inp = document.getElementById('customDeliveryChargeInput');
+                    if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                  }, 100);
+                }}
                 className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
                   editingProduct.deliveryChargeType === 'custom' && !editingProduct.freeDelivery
                     ? 'bg-amber-950/60 border-amber-500 text-amber-200 shadow-sm'
@@ -4130,22 +4168,30 @@ export default function AdminPage() {
 
             {/* Custom Delivery Charge Input when custom selected */}
             {editingProduct.deliveryChargeType === 'custom' && !editingProduct.freeDelivery && (
-              <div className="p-3 rounded-xl bg-[#060c12] border border-amber-500/40 flex items-center gap-3">
-                <label className="text-xs font-bold text-amber-300 shrink-0">
-                  Custom Shipping Amount (₹):
+              <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/60 space-y-2 animate-pulse-once">
+                <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                  <span>✏️</span>
+                  <span>Custom Delivery Charge Amount (₹) <span className="text-red-400">*</span></span>
                 </label>
-                <div className="relative flex-1 max-w-[200px]">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 50"
-                    value={editingProduct.customDeliveryCharge}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, customDeliveryCharge: e.target.value })}
-                    className="w-full pl-7 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1 max-w-[220px]">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 font-bold text-sm">₹</span>
+                    <input
+                      id="customDeliveryChargeInput"
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Yahan amount likhein (e.g. 50, 100)"
+                      value={editingProduct.customDeliveryCharge}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, customDeliveryCharge: e.target.value })}
+                      className="w-full pl-8 pr-3 py-2 rounded-lg bg-slate-900 border-2 border-amber-500 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-500"
+                    />
+                  </div>
+                  <span className="text-[11px] text-amber-200/70">Yeh exact amount delivery fee hogi is product par.</span>
                 </div>
-                <span className="text-[11px] text-slate-400">This exact amount will be applied as delivery fee.</span>
+                {(editingProduct.customDeliveryCharge === '' || editingProduct.customDeliveryCharge === undefined || editingProduct.customDeliveryCharge === null) && (
+                  <p className="text-[11px] text-red-400 font-semibold">⚠️ Amount zaroor fill karein save karne se pehle.</p>
+                )}
               </div>
             )}
           </div>
