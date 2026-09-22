@@ -1,0 +1,18 @@
+# Arabians Shopping Zone Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/
+
+# Explicit search engine bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+Sitemap: https://arabiansshoppingzone.com/sitemap.xml
