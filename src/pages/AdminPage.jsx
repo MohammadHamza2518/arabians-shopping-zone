@@ -52,7 +52,8 @@ import {
   Compass,
   Image as ImageIcon,
   CreditCard,
-  ShieldCheck
+  ShieldCheck,
+  Ticket
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { searchProducts } from '../utils/searchEngine';
