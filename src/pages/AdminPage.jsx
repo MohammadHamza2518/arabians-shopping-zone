@@ -660,6 +660,7 @@ export default function AdminPage() {
         description: '',
         benefits: [],
         tags: [],
+        hasSizes: false,
         sizes: [],
         outOfStockSizes: [],
         inStock: true,
@@ -675,12 +676,14 @@ export default function AdminPage() {
       });
     } else {
       const photos = getProductPhotos(productToEdit);
+      const hasExistingSizes = Array.isArray(productToEdit.sizes) && productToEdit.sizes.length > 0;
       setEditingProduct({
         ...productToEdit,
         isNew: false,
         gallery: photos,
         image: photos[0] || productToEdit.image || '/assets/logo/logo_main.png',
         imageFit: productToEdit.imageFit || 'auto',
+        hasSizes: productToEdit.hasSizes !== undefined ? Boolean(productToEdit.hasSizes) : hasExistingSizes,
         sizes: Array.isArray(productToEdit.sizes) ? [...productToEdit.sizes] : [],
         outOfStockSizes: Array.isArray(productToEdit.outOfStockSizes) ? [...productToEdit.outOfStockSizes] : [],
         inStock: productToEdit.inStock !== false,
@@ -759,8 +762,9 @@ export default function AdminPage() {
         badge: (editingProduct.badge || '').trim(),
         subcategory: subcatValue,
         subCategory: subcatValue,
-        sizes: Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [],
-        outOfStockSizes: Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : [],
+        hasSizes: Boolean(editingProduct.hasSizes),
+        sizes: editingProduct.hasSizes ? (Array.isArray(editingProduct.sizes) ? editingProduct.sizes : []) : [],
+        outOfStockSizes: editingProduct.hasSizes ? (Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : []) : [],
         inStock: editingProduct.inStock !== false,
         deliveryChargeType: isFreeDelivery ? 'free' : (editingProduct.deliveryChargeType || 'default'),
         freeDelivery: isFreeDelivery,
@@ -4115,243 +4119,290 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* Sizes & Flipkart-Style Out of Stock Variations Manager */}
-            <div className="space-y-3 pt-1">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* SIZES ENABLE / DISABLE MASTER TOGGLE */}
+            <div className="p-4 rounded-xl bg-[#060c12] border border-slate-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <label className="block font-bold text-slate-200 text-xs">
-                    {(() => {
-                      const catId = (editingProduct.category || '').toLowerCase();
-                      const catName = (categories.find(c => c.id === editingProduct.category)?.name || '').toLowerCase();
-                      const combined = catId + ' ' + catName;
-                      if (/thobe|wear|shirt|jubba|kurta|garment|cloth|dress|kurti/.test(combined)) return 'Product Sizes (e.g. 52, 54, 56, S, M, L, XL)';
-                      if (/attar|oud|dehn|perfume|fragrance|bakhoor|incense/.test(combined)) return 'Product Variants (e.g. 3ml, 6ml, 12ml, 1 Tola)';
-                      if (/skin|care|cream|lotion|serum|face|beauty|hair|scrub|mask|moistur|cosmetic/.test(combined)) return 'Product Variants (e.g. 50ml, 100ml, 200ml, 30g)';
-                      if (/food|talbina|honey|date|ajwa|dry.fruit|nuts|spice|herb|supplement|health/.test(combined)) return 'Pack / Weight Options (e.g. 250g, 500g, 1kg)';
-                      return 'Product Sizes / Variants (e.g. S, M, L, 100ml, 250g)';
-                    })()}
-                  </label>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Click on any chip to toggle it <strong>In Stock</strong> or <strong>Out of Stock</strong> (customers will see a strikethrough just like Flipkart).
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">Product Sizes & Variants:</span>
+                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                      editingProduct.hasSizes
+                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                        : 'bg-slate-800 text-slate-400 border-slate-700'
+                    }`}>
+                      {editingProduct.hasSizes ? '🟢 Sizes Active' : '⚪ Disabled (Single Product)'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {editingProduct.hasSizes
+                      ? 'Is product me sizes ya variants hain. Customer ko order karte waqt size choose karna hoga.'
+                      : 'Is product par koi size nahi hai (Standard Single Item). Customer direct bag me add karega.'}
                   </p>
                 </div>
-                
-                {Array.isArray(editingProduct.sizes) && editingProduct.sizes.length > 0 && (
-                  <div className="flex items-center gap-1.5 text-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => setEditingProduct({ ...editingProduct, outOfStockSizes: [] })}
-                      className="px-2 py-1 rounded-lg bg-emerald-950/70 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900 transition font-bold"
-                    >
-                      Mark All In Stock
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingProduct({ ...editingProduct, outOfStockSizes: [...editingProduct.sizes] })}
-                      className="px-2 py-1 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800/80 hover:bg-rose-900 transition font-bold"
-                    >
-                      Mark All Out of Stock
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingProduct({ ...editingProduct, sizes: [], outOfStockSizes: [] })}
-                      className="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition font-medium"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                )}
-              </div>
 
-              {/* Smart Category-Aware Quick Presets */}
-              {(() => {
-                const catId = (editingProduct.category || '').toLowerCase();
-                const catName = (categories.find(c => c.id === editingProduct.category)?.name || '').toLowerCase();
-                const combined = catId + ' ' + catName;
-
-                // Detect category type
-                const isClothing  = /thobe|thobes|wear|shirt|jubba|kurta|garment|cloth|dress|kurti/.test(combined);
-                const isAttar     = /attar|oud|dehn|perfume|fragrance|bakhoor|incense/.test(combined);
-                const isSkinCare  = /skin|care|cream|lotion|serum|face|beauty|hair|scrub|mask|moistur|cosmetic/.test(combined);
-                const isFood      = /food|talbina|honey|date|ajwa|dry.fruit|nuts|spice|herb|supplement|health/.test(combined);
-                const isOil       = /oil|essential/.test(combined) && !isAttar;
-
-                // Build smart preset groups
-                const presets = [];
-
-                if (isClothing) {
-                  presets.push(
-                    { label: '+ Saudi Thobes (52–60)', sizes: ['52 (S)', '54 (M)', '56 (L)', '58 (XL)', '60 (XXL)'], color: 'amber' },
-                    { label: '+ Standard (S, M, L, XL, XXL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'], color: 'slate' },
-                    { label: '+ Kids (2Y, 4Y, 6Y, 8Y)', sizes: ['2Y', '4Y', '6Y', '8Y', '10Y', '12Y'], color: 'slate' },
-                  );
-                } else if (isAttar) {
-                  presets.push(
-                    { label: '+ Tola (1/4, 1/2, 1 Tola)', sizes: ['3ml (1/4 Tola)', '6ml (1/2 Tola)', '12ml (1 Tola)'], color: 'amber' },
-                    { label: '+ ML Sizes (6ml, 12ml, 25ml)', sizes: ['6ml', '12ml', '25ml', '50ml', '100ml'], color: 'slate' },
-                  );
-                } else if (isSkinCare) {
-                  presets.push(
-                    { label: '+ Volume (50ml, 100ml, 200ml)', sizes: ['30ml', '50ml', '100ml', '150ml', '200ml'], color: 'amber' },
-                    { label: '+ Weight (30g, 50g, 100g)', sizes: ['30g', '50g', '100g', '150g', '200g'], color: 'slate' },
-                    { label: '+ Pack Size (1 Pc, 2 Pc, 3 Pc)', sizes: ['1 Pc', '2 Pc', '3 Pc', '5 Pc'], color: 'slate' },
-                  );
-                } else if (isFood) {
-                  presets.push(
-                    { label: '+ Weight (250g, 500g, 1kg)', sizes: ['250g', '500g', '1kg', '2kg'], color: 'amber' },
-                    { label: '+ Pack (1 Pkt, 2 Pkt, 3 Pkt)', sizes: ['1 Packet', '2 Packets', '3 Packets'], color: 'slate' },
-                    { label: '+ Pieces (3 Pcs, 6 Pcs, 12 Pcs)', sizes: ['3 Pcs', '6 Pcs', '12 Pcs', '24 Pcs'], color: 'slate' },
-                  );
-                } else if (isOil) {
-                  presets.push(
-                    { label: '+ Volume (50ml, 100ml, 250ml)', sizes: ['50ml', '100ml', '200ml', '250ml', '500ml'], color: 'amber' },
-                  );
-                } else {
-                  // Generic fallback — show all presets
-                  presets.push(
-                    { label: '+ Saudi Thobes (52–60)', sizes: ['52 (S)', '54 (M)', '56 (L)', '58 (XL)', '60 (XXL)'], color: 'amber' },
-                    { label: '+ Clothing (S, M, L, XL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'], color: 'slate' },
-                    { label: '+ Attar / Oils (3ml, 6ml, 12ml)', sizes: ['3ml (1/4 Tola)', '6ml (1/2 Tola)', '12ml (1 Tola)'], color: 'slate' },
-                    { label: '+ Volume (50ml, 100ml, 200ml)', sizes: ['50ml', '100ml', '200ml'], color: 'slate' },
-                    { label: '+ Weight (250g, 500g, 1kg)', sizes: ['250g', '500g', '1kg'], color: 'slate' },
-                  );
-                }
-
-                return (
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider block">
-                      ⚡ 1-Click Size Presets:
-                    </span>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {presets.map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => {
-                            const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                            const merged = Array.from(new Set([...current, ...preset.sizes]));
-                            setEditingProduct({ ...editingProduct, sizes: merged });
-                          }}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition border ${
-                            preset.color === 'amber'
-                              ? 'bg-[#060c12] border-amber-500/40 text-amber-300 hover:bg-amber-500/10'
-                              : 'bg-[#060c12] border-slate-700 text-slate-300 hover:border-amber-500/50'
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Add Custom Size Input */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Type custom size (e.g. 54, 56, Free Size, 100ml)..."
-                  value={newSizeInput}
-                  onChange={(e) => setNewSizeInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const val = newSizeInput.trim();
-                      if (val) {
-                        const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                        if (!current.includes(val)) {
-                          setEditingProduct({ ...editingProduct, sizes: [...current, val] });
-                        }
-                        setNewSizeInput('');
-                      }
-                    }
-                  }}
-                  className="flex-1 px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
                 <button
                   type="button"
-                  onClick={() => {
-                    const val = newSizeInput.trim();
-                    if (val) {
-                      const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
-                      if (!current.includes(val)) {
-                        setEditingProduct({ ...editingProduct, sizes: [...current, val] });
-                      }
-                      setNewSizeInput('');
-                    }
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition flex items-center gap-1 shrink-0"
+                  onClick={() => setEditingProduct({ ...editingProduct, hasSizes: !editingProduct.hasSizes })}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shrink-0 border ${
+                    editingProduct.hasSizes
+                      ? 'bg-rose-950/50 hover:bg-rose-900/60 border-rose-700/60 text-rose-300'
+                      : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-black shadow-md shadow-amber-500/20'
+                  }`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Size</span>
+                  {editingProduct.hasSizes ? (
+                    <>
+                      <X className="w-3.5 h-3.5" />
+                      <span>Disable Sizes</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Enable Sizes</span>
+                    </>
+                  )}
                 </button>
               </div>
 
-              {/* Active Size Chips & Interactive Availability Toggles */}
-              {Array.isArray(editingProduct.sizes) && editingProduct.sizes.length > 0 ? (
-                <div className="p-3 rounded-xl bg-[#060c12] border border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="font-semibold text-slate-300">Configured Sizes ({editingProduct.sizes.length}):</span>
-                    <span>
-                      Click toggle button to switch In Stock / Out of Stock
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {editingProduct.sizes.map((size) => {
-                      const isOOS = Array.isArray(editingProduct.outOfStockSizes) && editingProduct.outOfStockSizes.includes(size);
-                      return (
-                        <div
-                          key={size}
-                          className={`flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl border transition ${
-                            isOOS 
-                              ? 'bg-rose-950/20 border-rose-800/60 text-slate-300' 
-                              : 'bg-slate-900 border-slate-700 text-white shadow-sm'
-                          }`}
+              {/* SIZES MANAGEMENT CONTENT (Visible only when hasSizes is true) */}
+              {editingProduct.hasSizes && (
+                <div className="space-y-3 pt-3 border-t border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <label className="block font-bold text-slate-200 text-xs">
+                        {(() => {
+                          const catId = (editingProduct.category || '').toLowerCase();
+                          const catName = (categories.find(c => c.id === editingProduct.category)?.name || '').toLowerCase();
+                          const combined = catId + ' ' + catName;
+                          if (/thobe|wear|shirt|jubba|kurta|garment|cloth|dress|kurti/.test(combined)) return 'Product Sizes (e.g. 52, 54, 56, S, M, L, XL)';
+                          if (/attar|oud|dehn|perfume|fragrance|bakhoor|incense/.test(combined)) return 'Product Variants (e.g. 3ml, 6ml, 12ml, 1 Tola)';
+                          if (/skin|care|cream|lotion|serum|face|beauty|hair|scrub|mask|moistur|cosmetic/.test(combined)) return 'Product Variants (e.g. 50ml, 100ml, 200ml, 30g)';
+                          if (/food|talbina|honey|date|ajwa|dry.fruit|nuts|spice|herb|supplement|health/.test(combined)) return 'Pack / Weight Options (e.g. 250g, 500g, 1kg)';
+                          return 'Product Sizes / Variants (e.g. S, M, L, 100ml, 250g)';
+                        })()}
+                      </label>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Click on any chip to toggle it <strong>In Stock</strong> or <strong>Out of Stock</strong> (customers will see a strikethrough just like Flipkart).
+                      </p>
+                    </div>
+                    
+                    {Array.isArray(editingProduct.sizes) && editingProduct.sizes.length > 0 && (
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, outOfStockSizes: [] })}
+                          className="px-2 py-1 rounded-lg bg-emerald-950/70 text-emerald-300 border border-emerald-800/80 hover:bg-emerald-900 transition font-bold"
                         >
-                          <span className={`text-xs font-bold ${isOOS ? 'line-through decoration-rose-500 decoration-2 text-slate-400' : 'text-slate-100'}`}>
-                            {size}
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const currentOOS = Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : [];
-                              const updatedOOS = isOOS 
-                                ? currentOOS.filter(s => s !== size)
-                                : [...currentOOS, size];
-                              setEditingProduct({ ...editingProduct, outOfStockSizes: updatedOOS });
-                            }}
-                            className={`px-2 py-0.5 rounded-lg text-[9px] font-black transition border ${
-                              isOOS
-                                ? 'bg-rose-950 text-rose-300 border-rose-700 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-700'
-                                : 'bg-emerald-950 text-emerald-300 border-emerald-700 hover:bg-rose-950 hover:text-rose-300 hover:border-rose-700'
-                            }`}
-                            title={isOOS ? 'Click to mark In Stock' : 'Click to mark Out of Stock'}
-                          >
-                            {isOOS ? '🔴 Out of Stock' : '🟢 In Stock'}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newSizes = editingProduct.sizes.filter(s => s !== size);
-                              const newOOS = (editingProduct.outOfStockSizes || []).filter(s => s !== size);
-                              setEditingProduct({ ...editingProduct, sizes: newSizes, outOfStockSizes: newOOS });
-                            }}
-                            className="p-1 text-slate-500 hover:text-rose-400 rounded-lg transition"
-                            title="Remove size variation"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      );
-                    })}
+                          Mark All In Stock
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, outOfStockSizes: [...editingProduct.sizes] })}
+                          className="px-2 py-1 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800/80 hover:bg-rose-900 transition font-bold"
+                        >
+                          Mark All Out of Stock
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, sizes: [], outOfStockSizes: [] })}
+                          className="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition font-medium"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ) : (
-                <div className="p-3 rounded-xl bg-[#060c12]/60 border border-dashed border-slate-800 text-center text-slate-500 text-[11px]">
-                  No size options added yet. Click one of the 1-Click presets above or type custom sizes if this product has size variations.
+
+                  {/* Smart Category-Aware Quick Presets */}
+                  {(() => {
+                    const catId = (editingProduct.category || '').toLowerCase();
+                    const catName = (categories.find(c => c.id === editingProduct.category)?.name || '').toLowerCase();
+                    const combined = catId + ' ' + catName;
+
+                    // Detect category type
+                    const isClothing  = /thobe|thobes|wear|shirt|jubba|kurta|garment|cloth|dress|kurti/.test(combined);
+                    const isAttar     = /attar|oud|dehn|perfume|fragrance|bakhoor|incense/.test(combined);
+                    const isSkinCare  = /skin|care|cream|lotion|serum|face|beauty|hair|scrub|mask|moistur|cosmetic/.test(combined);
+                    const isFood      = /food|talbina|honey|date|ajwa|dry.fruit|nuts|spice|herb|supplement|health/.test(combined);
+                    const isOil       = /oil|essential/.test(combined) && !isAttar;
+
+                    // Build smart preset groups
+                    const presets = [];
+
+                    if (isClothing) {
+                      presets.push(
+                        { label: '+ Saudi Thobes (52–60)', sizes: ['52 (S)', '54 (M)', '56 (L)', '58 (XL)', '60 (XXL)'], color: 'amber' },
+                        { label: '+ Standard (S, M, L, XL, XXL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'], color: 'slate' },
+                        { label: '+ Kids (2Y, 4Y, 6Y, 8Y)', sizes: ['2Y', '4Y', '6Y', '8Y', '10Y', '12Y'], color: 'slate' },
+                      );
+                    } else if (isAttar) {
+                      presets.push(
+                        { label: '+ Tola (1/4, 1/2, 1 Tola)', sizes: ['3ml (1/4 Tola)', '6ml (1/2 Tola)', '12ml (1 Tola)'], color: 'amber' },
+                        { label: '+ ML Sizes (6ml, 12ml, 25ml)', sizes: ['6ml', '12ml', '25ml', '50ml', '100ml'], color: 'slate' },
+                      );
+                    } else if (isSkinCare) {
+                      presets.push(
+                        { label: '+ Volume (50ml, 100ml, 200ml)', sizes: ['30ml', '50ml', '100ml', '150ml', '200ml'], color: 'amber' },
+                        { label: '+ Weight (30g, 50g, 100g)', sizes: ['30g', '50g', '100g', '150g', '200g'], color: 'slate' },
+                        { label: '+ Pack Size (1 Pc, 2 Pc, 3 Pc)', sizes: ['1 Pc', '2 Pc', '3 Pc', '5 Pc'], color: 'slate' },
+                      );
+                    } else if (isFood) {
+                      presets.push(
+                        { label: '+ Weight (250g, 500g, 1kg)', sizes: ['250g', '500g', '1kg', '2kg'], color: 'amber' },
+                        { label: '+ Pack (1 Pkt, 2 Pkt, 3 Pkt)', sizes: ['1 Packet', '2 Packets', '3 Packets'], color: 'slate' },
+                        { label: '+ Pieces (3 Pcs, 6 Pcs, 12 Pcs)', sizes: ['3 Pcs', '6 Pcs', '12 Pcs', '24 Pcs'], color: 'slate' },
+                      );
+                    } else if (isOil) {
+                      presets.push(
+                        { label: '+ Volume (50ml, 100ml, 250ml)', sizes: ['50ml', '100ml', '200ml', '250ml', '500ml'], color: 'amber' },
+                      );
+                    } else {
+                      // Generic fallback — show all presets
+                      presets.push(
+                        { label: '+ Saudi Thobes (52–60)', sizes: ['52 (S)', '54 (M)', '56 (L)', '58 (XL)', '60 (XXL)'], color: 'amber' },
+                        { label: '+ Clothing (S, M, L, XL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'], color: 'slate' },
+                        { label: '+ Attar / Oils (3ml, 6ml, 12ml)', sizes: ['3ml (1/4 Tola)', '6ml (1/2 Tola)', '12ml (1 Tola)'], color: 'slate' },
+                        { label: '+ Volume (50ml, 100ml, 200ml)', sizes: ['50ml', '100ml', '200ml'], color: 'slate' },
+                        { label: '+ Weight (250g, 500g, 1kg)', sizes: ['250g', '500g', '1kg'], color: 'slate' },
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider block">
+                          ⚡ 1-Click Size Presets:
+                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {presets.map((preset) => (
+                            <button
+                              key={preset.label}
+                              type="button"
+                              onClick={() => {
+                                const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                                const merged = Array.from(new Set([...current, ...preset.sizes]));
+                                setEditingProduct({ ...editingProduct, sizes: merged });
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition border ${
+                                preset.color === 'amber'
+                                  ? 'bg-[#060c12] border-amber-500/40 text-amber-300 hover:bg-amber-500/10'
+                                  : 'bg-[#060c12] border-slate-700 text-slate-300 hover:border-amber-500/50'
+                              }`}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Add Custom Size Input */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type custom size (e.g. 54, 56, Free Size, 100ml)..."
+                      value={newSizeInput}
+                      onChange={(e) => setNewSizeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = newSizeInput.trim();
+                          if (val) {
+                            const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                            if (!current.includes(val)) {
+                              setEditingProduct({ ...editingProduct, sizes: [...current, val] });
+                            }
+                            setNewSizeInput('');
+                          }
+                        }
+                      }}
+                      className="flex-1 px-3.5 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = newSizeInput.trim();
+                        if (val) {
+                          const current = Array.isArray(editingProduct.sizes) ? editingProduct.sizes : [];
+                          if (!current.includes(val)) {
+                            setEditingProduct({ ...editingProduct, sizes: [...current, val] });
+                          }
+                          setNewSizeInput('');
+                        }
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition flex items-center gap-1 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Size</span>
+                    </button>
+                  </div>
+
+                  {/* Active Size Chips & Interactive Availability Toggles */}
+                  {Array.isArray(editingProduct.sizes) && editingProduct.sizes.length > 0 ? (
+                    <div className="p-3 rounded-xl bg-[#060c12] border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="font-semibold text-slate-300">Configured Sizes ({editingProduct.sizes.length}):</span>
+                        <span>
+                          Click toggle button to switch In Stock / Out of Stock
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {editingProduct.sizes.map((size) => {
+                          const isOOS = Array.isArray(editingProduct.outOfStockSizes) && editingProduct.outOfStockSizes.includes(size);
+                          return (
+                            <div
+                              key={size}
+                              className={`flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl border transition ${
+                                isOOS 
+                                  ? 'bg-rose-950/20 border-rose-800/60 text-slate-300' 
+                                  : 'bg-slate-900 border-slate-700 text-white shadow-sm'
+                              }`}
+                            >
+                              <span className={`text-xs font-bold ${isOOS ? 'line-through decoration-rose-500 decoration-2 text-slate-400' : 'text-slate-100'}`}>
+                                {size}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentOOS = Array.isArray(editingProduct.outOfStockSizes) ? editingProduct.outOfStockSizes : [];
+                                  const updatedOOS = isOOS 
+                                    ? currentOOS.filter(s => s !== size)
+                                    : [...currentOOS, size];
+                                  setEditingProduct({ ...editingProduct, outOfStockSizes: updatedOOS });
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[9px] font-black transition border ${
+                                  isOOS
+                                    ? 'bg-rose-950 text-rose-300 border-rose-700 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-700'
+                                    : 'bg-emerald-950 text-emerald-300 border-emerald-700 hover:bg-rose-950 hover:text-rose-300 hover:border-rose-700'
+                                }`}
+                                title={isOOS ? 'Click to mark In Stock' : 'Click to mark Out of Stock'}
+                              >
+                                {isOOS ? '🔴 Out of Stock' : '🟢 In Stock'}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newSizes = editingProduct.sizes.filter(s => s !== size);
+                                  const newOOS = (editingProduct.outOfStockSizes || []).filter(s => s !== size);
+                                  setEditingProduct({ ...editingProduct, sizes: newSizes, outOfStockSizes: newOOS });
+                                }}
+                                className="p-1 text-slate-500 hover:text-rose-400 rounded-lg transition"
+                                title="Remove size variation"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-[#060c12]/60 border border-dashed border-slate-800 text-center text-slate-500 text-[11px]">
+                      No size options added yet. Click one of the 1-Click presets above or type custom sizes if this product has size variations.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
