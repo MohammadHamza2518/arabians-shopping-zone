@@ -19,7 +19,6 @@ import AdminPage from './pages/AdminPage';
 import HamperBuilderPage from './pages/HamperBuilderPage';
 import ReviewsPage from './pages/ReviewsPage';
 import StoreLocatorPage from './pages/StoreLocatorPage';
-import ServerSleepScreen from './components/ServerSleepScreen';
 import { useStore } from './context/StoreContext';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
@@ -68,9 +67,6 @@ function AppContent() {
     <div className="min-h-screen flex flex-col bg-[#021812] text-slate-800 selection:bg-amber-200 selection:text-amber-900">
       <ScrollToTop />
       
-      {/* Dynamic 2-Minute Server Sleep Screen (Does NOT affect Admin) */}
-      <ServerSleepScreen />
-
       {/* Global Navigation Header */}
       <Header />
 

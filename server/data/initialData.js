@@ -15,11 +15,6 @@ export const initialData = {
     "currency": "₹",
     "freeShippingThreshold": 999,
     "standardShippingFee": 70,
-    "serverSleepMode": {
-      "enabled": true,
-      "durationSeconds": 120,
-      "title": "Server In Sleep Mode Due To High Traffic Load"
-    },
     "flashSale": {
       "enabled": true,
       "badge": "Special Sunnah Blessing Deal",
