@@ -334,13 +334,31 @@ export function StoreProvider({ children }) {
   
   let couponDiscount = 0;
   if (appliedCoupon) {
-    if (appliedCoupon.discountPercent) {
-      couponDiscount = Math.round((cartSubtotal * appliedCoupon.discountPercent) / 100);
+    if (appliedCoupon.appliesTo === 'specific' && appliedCoupon.productId) {
+      const matchingCartItem = cart.find(i => String(i.product?.id || i.id) === String(appliedCoupon.productId));
+      if (matchingCartItem) {
+        const itemPrice = Number(matchingCartItem.product?.price || matchingCartItem.price || 0);
+        const itemQty = Number(matchingCartItem.quantity || 1);
+        const itemTotal = itemPrice * itemQty;
+        if (appliedCoupon.discountPercent) {
+          couponDiscount = Math.round((itemTotal * Number(appliedCoupon.discountPercent)) / 100);
+        } else if (appliedCoupon.flatDiscount) {
+          couponDiscount = Math.min(itemTotal, Number(appliedCoupon.flatDiscount));
+        } else if (typeof appliedCoupon.discount === 'number') {
+          couponDiscount = Math.min(itemTotal, appliedCoupon.discount);
+        }
+      } else {
+        // Target product was removed from cart
+        couponDiscount = 0;
+      }
+    } else if (typeof appliedCoupon.discount === 'number') {
+      couponDiscount = Math.min(cartSubtotal, appliedCoupon.discount);
+    } else if (appliedCoupon.discountPercent) {
+      couponDiscount = Math.round((cartSubtotal * Number(appliedCoupon.discountPercent)) / 100);
     } else if (appliedCoupon.flatDiscount) {
-      couponDiscount = Math.min(cartSubtotal, appliedCoupon.flatDiscount);
-    } else if (appliedCoupon.discount) {
-      couponDiscount = appliedCoupon.discount;
+      couponDiscount = Math.min(cartSubtotal, Number(appliedCoupon.flatDiscount));
     }
+    couponDiscount = Math.min(cartSubtotal, Math.max(0, couponDiscount));
   }
 
   // Helper to compute order breakdown given paymentMode ('online' vs 'cod')

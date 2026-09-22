@@ -145,11 +145,26 @@ export default function AdminPage() {
   const [savingCoupon, setSavingCoupon] = useState(false);
   const [newCouponData, setNewCouponData] = useState({
     code: '',
+    scope: 'all', // 'all' (Har Product Par) or 'specific' (Kisi Ek Product Par)
+    productId: '',
     discountType: 'percentage',
     discountValue: '10',
-    minOrder: '499',
+    minOrder: '0',
     description: ''
   });
+
+  const openCouponModal = (initialScope = 'all', initialProductId = '') => {
+    setNewCouponData({
+      code: '',
+      scope: initialScope,
+      productId: initialProductId || (products && products[0] ? products[0].id : ''),
+      discountType: 'percentage',
+      discountValue: '10',
+      minOrder: '0',
+      description: ''
+    });
+    setIsCouponModalOpen(true);
+  };
 
   // Store settings state
   const [storeSettings, setStoreSettings] = useState({
@@ -1239,10 +1254,18 @@ export default function AdminPage() {
       showToast("Please enter a coupon code", "error");
       return;
     }
+    if (newCouponData.scope === 'specific' && !newCouponData.productId) {
+      showToast("Please select a specific product for this coupon", "error");
+      return;
+    }
     setSavingCoupon(true);
     try {
+      const selectedProd = (products || []).find(p => String(p.id) === String(newCouponData.productId));
       const payload = {
         code: newCouponData.code.trim().toUpperCase(),
+        appliesTo: newCouponData.scope, // 'all' or 'specific'
+        productId: newCouponData.scope === 'specific' ? newCouponData.productId : null,
+        productName: newCouponData.scope === 'specific' && selectedProd ? selectedProd.name : null,
         discountPercent: newCouponData.discountType === 'percentage' ? Number(newCouponData.discountValue) : 0,
         flatDiscount: newCouponData.discountType === 'flat' ? Number(newCouponData.discountValue) : 0,
         minOrder: Number(newCouponData.minOrder) || 0,
@@ -1253,13 +1276,25 @@ export default function AdminPage() {
         headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error("Failed to save coupon");
-      showToast(`Coupon ${payload.code} saved successfully!`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to save coupon");
+      }
+      showToast(`Coupon ${payload.code} created & activated successfully!`);
       setIsCouponModalOpen(false);
-      setNewCouponData({ code: '', discountType: 'percentage', discountValue: '10', minOrder: '499', description: '' });
+      setNewCouponData({
+        code: '',
+        scope: 'all',
+        productId: products && products[0] ? products[0].id : '',
+        discountType: 'percentage',
+        discountValue: '10',
+        minOrder: '0',
+        description: ''
+      });
+      refreshAll();
       fetchAdminData();
-    } catch {
-      showToast("Error creating coupon", "error");
+    } catch (err) {
+      showToast(err.message || "Error creating coupon", "error");
     } finally {
       setSavingCoupon(false);
     }
@@ -1274,6 +1309,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         showToast(`Coupon ${code} status updated!`);
+        refreshAll();
         fetchAdminData();
       }
     } catch {
@@ -1291,6 +1327,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         showToast(`Coupon ${code} deleted.`);
+        refreshAll();
         fetchAdminData();
       }
     } catch {
@@ -1299,7 +1336,7 @@ export default function AdminPage() {
   };
 
   const handleClearAllCoupons = async () => {
-    if (!window.confirm("Are you sure you want to delete ALL store-wide coupon codes? This cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to delete ALL coupons (both product-specific and store-wide)? This cannot be undone.")) return;
     try {
       const res = await fetch('/api/coupons/clear-all', { 
         method: 'POST',
@@ -1307,8 +1344,9 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
-        showToast("All store-wide coupons deleted successfully!");
+        showToast("All coupons deleted successfully!");
         setCoupons([]);
+        refreshAll();
         fetchAdminData();
       }
     } catch {
@@ -1332,8 +1370,15 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success || data.product) {
+        if (prod.couponCode) {
+          await fetch(`/api/coupons/${prod.couponCode.trim().toUpperCase()}`, {
+            method: 'DELETE',
+            headers: getAdminHeaders()
+          }).catch(() => {});
+        }
         showToast(`Coupon removed from "${prod.name}"`);
         refreshAll();
+        fetchAdminData();
       }
     } catch {
       showToast("Error removing product coupon", "error");
@@ -1786,10 +1831,7 @@ export default function AdminPage() {
 
             {activeTab === 'coupons' && (
               <button
-                onClick={() => {
-                  setNewCouponData({ code: '', discountType: 'percentage', discountValue: '10', minOrder: '499', description: '' });
-                  setIsCouponModalOpen(true);
-                }}
+                onClick={() => openCouponModal('all')}
                 className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
@@ -3090,6 +3132,9 @@ export default function AdminPage() {
       {/* ========================================================================= */}
       {activeTab === 'coupons' && (() => {
         const productCouponsList = (products || []).filter(p => p.couponCode && Number(p.couponDiscount) > 0);
+        const storeWideCoupons = (coupons || []).filter(c => c.appliesTo !== 'specific');
+        const totalCouponsCount = productCouponsList.length + storeWideCoupons.length;
+
         return (
           <div className="space-y-8">
             {/* Header */}
@@ -3098,21 +3143,21 @@ export default function AdminPage() {
                 <h3 className="font-serif font-bold text-base text-white flex items-center gap-2">
                   <span>Discounts & Coupon Studio</span>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">
-                    {productCouponsList.length} Product • {coupons.length} Store-wide
+                    {productCouponsList.length} Product • {storeWideCoupons.length} Store-wide
                   </span>
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Manage product-specific coupons and global store vouchers.
+                  Manage product-specific coupons and global store vouchers systematically.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                {coupons.length > 0 && (
+                {totalCouponsCount > 0 && (
                   <button
                     type="button"
                     onClick={handleClearAllCoupons}
                     className="px-3.5 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-700/80 text-rose-300 font-bold text-xs transition flex items-center gap-1.5"
-                    title="Delete all store-wide coupon codes"
+                    title="Delete all active coupons"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Clear All Coupons</span>
@@ -3120,15 +3165,39 @@ export default function AdminPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => {
-                    setNewCouponData({ code: '', discountType: 'percentage', discountValue: '10', minOrder: '499', description: '' });
-                    setIsCouponModalOpen(true);
-                  }}
+                  onClick={() => openCouponModal('all')}
                   className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5 shrink-0"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Create Store Voucher</span>
+                  <span>Create New Coupon</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Quick Scope Explainer */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#0c1620]/80 border border-amber-500/20 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-300 flex items-center justify-center shrink-0">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-white">Specific Product Coupons</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    Sirf us ek product par apply hota hai. Product card & product page par customer ko dikhta hai copy karne ke liye.
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0c1620]/80 border border-emerald-500/20 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-300 flex items-center justify-center shrink-0">
+                  <Ticket className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-white">Store-Wide Vouchers</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    Cart ke subtotal par chalega chahe customer koi sa bhi product buy kare.
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -3146,11 +3215,11 @@ export default function AdminPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => openProductModal()}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition flex items-center gap-1"
+                  onClick={() => openCouponModal('specific')}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 hover:bg-amber-500/25 text-amber-300 font-bold text-xs transition flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add New Product with Coupon</span>
+                  <span>Add Product Coupon</span>
                 </button>
               </div>
 
@@ -3191,7 +3260,7 @@ export default function AdminPage() {
                           className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center gap-1"
                         >
                           <Edit3 className="w-3 h-3 text-amber-400" />
-                          <span>Edit in Product</span>
+                          <span>Edit Product</span>
                         </button>
                         <button
                           type="button"
@@ -3206,33 +3275,53 @@ export default function AdminPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-8 rounded-3xl bg-[#0c1620] border border-dashed border-slate-800 text-center space-y-2">
+                <div className="p-8 rounded-3xl bg-[#0c1620] border border-dashed border-slate-800 text-center space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto">
                     <Tag className="w-6 h-6" />
                   </div>
-                  <h5 className="font-bold text-white text-sm">No Product-Specific Coupons Created Yet</h5>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto">
-                    When adding or editing any product in the Products tab, you can assign an exclusive coupon code to that specific product.
-                  </p>
+                  <div>
+                    <h5 className="font-bold text-white text-sm">No Product-Specific Coupons Created Yet</h5>
+                    <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+                      Aap kisi bhi product par exclusive coupon laga sakte hain. Customer bag me wahi product daalega toh hi discount milega.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openCouponModal('specific')}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create Product Coupon Now</span>
+                  </button>
                 </div>
               )}
             </div>
 
             {/* SECTION 2: STORE-WIDE COUPONS */}
             <div className="space-y-4 pt-4 border-t border-slate-800">
-              <div>
-                <h4 className="font-serif font-bold text-sm text-white flex items-center gap-2">
-                  <Ticket className="w-4 h-4 text-emerald-400" />
-                  <span>Store-Wide Promotional Vouchers ({coupons.length})</span>
-                </h4>
-                <p className="text-[11px] text-slate-400">
-                  Global vouchers applicable to whole order cart subtotal.
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-serif font-bold text-sm text-white flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-emerald-400" />
+                    <span>Store-Wide Promotional Vouchers ({storeWideCoupons.length})</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Global vouchers applicable to entire order cart subtotal.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openCouponModal('all')}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 text-emerald-300 font-bold text-xs transition flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Store Voucher</span>
+                </button>
               </div>
 
-              {coupons.length > 0 ? (
+              {storeWideCoupons.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {coupons.map((c) => (
+                  {storeWideCoupons.map((c) => (
                     <div key={c.code} className="bg-[#0c1620] rounded-3xl border border-slate-800 p-5 shadow-sm space-y-3 relative">
                       <div className="flex items-center justify-between">
                         <span className="font-mono font-black text-sm px-3 py-1 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30">
@@ -3276,10 +3365,18 @@ export default function AdminPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-6 rounded-3xl bg-[#0c1620]/60 border border-dashed border-slate-800 text-center">
+                <div className="p-8 rounded-3xl bg-[#0c1620]/60 border border-dashed border-slate-800 text-center space-y-3">
                   <p className="text-xs text-slate-400">
-                    No store-wide coupon codes active. All previous codes have been cleared.
+                    No store-wide vouchers active right now.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => openCouponModal('all')}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create Store-Wide Voucher</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -5554,90 +5651,282 @@ export default function AdminPage() {
   {/* ========================================================================= */}
   {isCouponModalOpen && (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#0c1620] rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-4 my-8 border border-amber-500/30 shadow-2xl text-slate-100">
+      <div className="bg-[#0c1620] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 my-8 border border-amber-500/30 shadow-2xl text-slate-100">
+        
+        {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 className="font-serif font-bold text-lg text-white">Create New Discount Voucher</h3>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+              <Ticket className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-base text-white">Create New Coupon Code</h3>
+              <p className="text-[11px] text-slate-400">Har product ke liye ya kisi specific product ke liye coupon banayein</p>
+            </div>
+          </div>
           <button
             onClick={() => setIsCouponModalOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-white"
+            className="p-1 rounded-lg text-slate-400 hover:text-white transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleCreateCoupon} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-bold text-slate-300 mb-1">Coupon Code *</label>
+        <form onSubmit={handleCreateCoupon} className="space-y-4 text-xs">
+          
+          {/* STEP 1: SCOPE SELECTOR (Har Product vs Specific Product) */}
+          <div className="space-y-1.5">
+            <label className="block font-bold text-slate-200">
+              Coupon Scope / Kis Par Apply Hoga? *
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Option A: All Products */}
+              <button
+                type="button"
+                onClick={() => setNewCouponData({ ...newCouponData, scope: 'all' })}
+                className={`p-3 rounded-2xl border text-left transition relative flex flex-col justify-between ${
+                  newCouponData.scope === 'all'
+                    ? 'bg-amber-500/15 border-amber-500 text-white shadow-md shadow-amber-500/10'
+                    : 'bg-[#070d12] border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-base">🌐</span>
+                  {newCouponData.scope === 'all' && (
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  )}
+                </div>
+                <div>
+                  <div className={`font-bold text-xs ${newCouponData.scope === 'all' ? 'text-amber-300' : 'text-slate-200'}`}>
+                    Har Product Par
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                    Store-wide: Cart ke total par discount
+                  </div>
+                </div>
+              </button>
+
+              {/* Option B: Specific Product */}
+              <button
+                type="button"
+                onClick={() => {
+                  const defaultPid = newCouponData.productId || (products && products[0] ? products[0].id : '');
+                  setNewCouponData({ ...newCouponData, scope: 'specific', productId: defaultPid });
+                }}
+                className={`p-3 rounded-2xl border text-left transition relative flex flex-col justify-between ${
+                  newCouponData.scope === 'specific'
+                    ? 'bg-amber-500/15 border-amber-500 text-white shadow-md shadow-amber-500/10'
+                    : 'bg-[#070d12] border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-base">🎯</span>
+                  {newCouponData.scope === 'specific' && (
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  )}
+                </div>
+                <div>
+                  <div className={`font-bold text-xs ${newCouponData.scope === 'specific' ? 'text-amber-300' : 'text-slate-200'}`}>
+                    Kisi Specific Product Par
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                    Sirf chune hue item par discount
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 2: PRODUCT SELECTOR (If Scope === Specific) */}
+          {newCouponData.scope === 'specific' && (
+            <div className="space-y-2 p-3.5 rounded-2xl bg-[#070d12] border border-amber-500/30">
+              <label className="block font-bold text-amber-300">
+                Target Product Select Karein *
+              </label>
+              <select
+                required
+                value={newCouponData.productId}
+                onChange={(e) => setNewCouponData({ ...newCouponData, productId: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c1620] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-xs"
+              >
+                <option value="">-- Choose Product ({products.length} available) --</option>
+                {products.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} — ₹{p.price} ({p.category || 'General'})
+                  </option>
+                ))}
+              </select>
+
+              {/* Selected Product Preview Mini Card */}
+              {(() => {
+                const sel = products.find(p => String(p.id) === String(newCouponData.productId));
+                if (!sel) return null;
+                return (
+                  <div className="flex items-center gap-2.5 pt-1">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-slate-700 shrink-0">
+                      <img src={sel.image || '/assets/logo/logo_main.png'} alt={sel.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-xs text-white truncate">{sel.name}</div>
+                      <div className="text-[10px] text-slate-400">Regular Price: <strong className="text-amber-300">₹{sel.price}</strong> • {sel.category}</div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* STEP 3: COUPON CODE INPUT & PRESET CHIPS */}
+          <div className="space-y-1.5">
+            <label className="block font-bold text-slate-300">
+              Coupon Code *
+            </label>
             <input
               type="text"
               required
-              placeholder="e.g. JUMMAH15, EIDMUBARAK"
+              placeholder="e.g. ARABIAN10, JUMMAH15, TALBINA50"
               value={newCouponData.code}
-              onChange={(e) => setNewCouponData({ ...newCouponData, code: e.target.value.toUpperCase() })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 font-mono uppercase font-black text-amber-300 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              onChange={(e) => setNewCouponData({ ...newCouponData, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '') })}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070d12] border border-slate-700 font-mono uppercase font-black text-sm text-amber-300 tracking-wider focus:outline-none focus:ring-1 focus:ring-amber-500"
             />
+            {/* Quick Suggestion Chips */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              <span className="text-[10px] text-slate-500">Quick suggestions:</span>
+              {['ARABIAN10', 'JUMMAH15', 'SPECIAL20', 'FLAT50', 'SAVE100'].map(sug => (
+                <button
+                  key={sug}
+                  type="button"
+                  onClick={() => setNewCouponData({ ...newCouponData, code: sug })}
+                  className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-300 text-[10px] font-mono font-bold transition border border-slate-700"
+                >
+                  {sug}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* STEP 4: DISCOUNT TYPE & VALUE */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-300 mb-1">Discount Type *</label>
               <select
                 value={newCouponData.discountType}
                 onChange={(e) => setNewCouponData({ ...newCouponData, discountType: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
               >
                 <option value="percentage">Percentage (%)</option>
                 <option value="flat">Flat Amount (₹)</option>
               </select>
             </div>
             <div>
-              <label className="block font-bold text-slate-300 mb-1">Discount Value *</label>
+              <label className="block font-bold text-slate-300 mb-1">
+                Discount Value {newCouponData.discountType === 'percentage' ? '(%)' : '(₹)'} *
+              </label>
               <input
                 type="number"
                 required
                 min="1"
+                max={newCouponData.discountType === 'percentage' ? '90' : '100000'}
                 value={newCouponData.discountValue}
                 onChange={(e) => setNewCouponData({ ...newCouponData, discountValue: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070d12] border border-slate-700 text-white font-mono font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
           </div>
 
+          {/* Quick value presets */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] text-slate-500">Fast presets:</span>
+            {newCouponData.discountType === 'percentage'
+              ? ['5', '10', '15', '20', '25', '50'].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setNewCouponData({ ...newCouponData, discountValue: val })}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                      newCouponData.discountValue === val
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                        : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {val}%
+                  </button>
+                ))
+              : ['50', '100', '150', '200', '500'].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setNewCouponData({ ...newCouponData, discountValue: val })}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                      newCouponData.discountValue === val
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                        : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    ₹{val}
+                  </button>
+                ))}
+          </div>
+
+          {/* STEP 5: MINIMUM ORDER VALUE */}
           <div>
-            <label className="block font-bold text-slate-300 mb-1">Minimum Order Value (₹) *</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-bold text-slate-300">Minimum Order Value (₹) *</label>
+              <span className="text-[10px] text-slate-500">₹0 = Koi limit nahi (No minimum limit)</span>
+            </div>
             <input
               type="number"
               required
               min="0"
               value={newCouponData.minOrder}
               onChange={(e) => setNewCouponData({ ...newCouponData, minOrder: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070d12] border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
             />
           </div>
 
+          {/* STEP 6: DESCRIPTION (Optional) */}
           <div>
-            <label className="block font-bold text-slate-300 mb-1">Coupon Description</label>
+            <label className="block font-bold text-slate-300 mb-1">Coupon Description (Optional)</label>
             <input
               type="text"
-              placeholder="e.g. 15% Off for Jummah Blessings"
+              placeholder={newCouponData.scope === 'specific' ? "e.g. Special 15% OFF on this product" : "e.g. 10% Off for Jummah Blessings"}
               value={newCouponData.description}
               onChange={(e) => setNewCouponData({ ...newCouponData, description: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070d12] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-xs"
             />
           </div>
 
-          <div className="flex items-center gap-2 pt-3">
+          {/* STEP 7: LIVE SUMMARY PREVIEW */}
+          {(() => {
+            const selProd = newCouponData.scope === 'specific' ? products.find(p => String(p.id) === String(newCouponData.productId)) : null;
+            const discText = newCouponData.discountType === 'percentage' ? `${newCouponData.discountValue || 0}% OFF` : `Flat ₹${newCouponData.discountValue || 0} OFF`;
+            const scopeText = newCouponData.scope === 'specific' ? (selProd ? `"${selProd.name}"` : 'Selected Product') : 'All Products (Har Product Par)';
+            const minText = Number(newCouponData.minOrder) > 0 ? `on orders above ₹${newCouponData.minOrder}` : 'with no minimum order';
+            return (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-200/90 flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-white">Summary: </span>
+                  Code <strong className="font-mono text-amber-300 uppercase">{newCouponData.code || 'COUPON'}</strong> gives{' '}
+                  <strong className="text-emerald-300">{discText}</strong> on <strong className="text-white">{scopeText}</strong> {minText}.
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 pt-2">
             <button
               type="submit"
               disabled={savingCoupon}
-              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20"
+              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black tracking-wide hover:brightness-110 transition shadow-lg shadow-amber-500/20 active:scale-[0.99]"
             >
-              {savingCoupon ? 'Saving Coupon...' : 'Create & Activate'}
+              {savingCoupon ? 'Saving Coupon...' : 'Create & Activate Coupon'}
             </button>
             <button
               type="button"
               onClick={() => setIsCouponModalOpen(false)}
-              className="px-5 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+              className="px-5 py-3.5 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
             >
               Cancel
             </button>
