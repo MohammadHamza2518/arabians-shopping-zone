@@ -30,7 +30,27 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { products, categories, addToCart, wishlist, toggleWishlist, settings, loading, showToast } = useStore();
 
-  const product = products.find((p) => p.id === id);
+  const [directProduct, setDirectProduct] = useState(null);
+  const [directLoading, setDirectLoading] = useState(false);
+
+  // Use product from store context or fall back to direct fetched product
+  const product = products.find((p) => p.id === id) || directProduct;
+
+  // Real-time safeguard: If product is not found in memory (e.g. freshly created or direct URL), fetch directly
+  useEffect(() => {
+    if (!products.find((p) => p.id === id) && id && !loading) {
+      setDirectLoading(true);
+      fetch(`/api/products/${id}?_t=${Date.now()}`, { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          if (data && !data.error && data.id) {
+            setDirectProduct(data);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setDirectLoading(false));
+    }
+  }, [id, products, loading]);
 
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
@@ -97,7 +117,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  if (loading) {
+  if (loading || directLoading) {
     return (
       <div className="max-w-xl mx-auto px-4 py-28 text-center space-y-4">
         <div className="inline-block w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>

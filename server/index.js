@@ -22,6 +22,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+app.disable('etag');
+
 // Strict Zero-Cache policy for all API endpoints to guarantee instant real-time synchronization
 app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');

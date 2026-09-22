@@ -39,7 +39,7 @@ export default function TrackPage() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch(`/api/orders/track/${encodeURIComponent(searchQuery.trim())}`, { cache: 'no-store' });
+      const res = await fetch(`/api/orders/track/${encodeURIComponent(searchQuery.trim())}?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       const resolvedOrder = data.order || (data.id ? data : null);
       if (resolvedOrder) {

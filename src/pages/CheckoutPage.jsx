@@ -79,7 +79,7 @@ export default function CheckoutPage() {
   const [availableCoupons, setAvailableCoupons] = useState([]);
 
   useEffect(() => {
-    fetch('/api/coupons')
+    fetch(`/api/coupons?_t=${Date.now()}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {

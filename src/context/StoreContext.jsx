@@ -95,18 +95,19 @@ export function StoreProvider({ children }) {
     ? new BroadcastChannel('asz_realtime_sync')
     : null;
 
-  // Load initial store data with zero cache
-  const refreshAll = async (showLoading = false, broadcast = false) => {
+  // Load store data with zero-cache guarantee and instant synchronization
+  const refreshAll = async (showLoading = false, broadcast = true) => {
     try {
       if (showLoading) setLoading(true);
+      const ts = Date.now();
       const noCache = { cache: 'no-store' };
       const [prodRes, catRes, revRes, reelRes, setRes, heroRes] = await Promise.all([
-        fetch('/api/products', noCache).then(r => r.json()).catch(() => []),
-        fetch('/api/categories', noCache).then(r => r.json()).catch(() => []),
-        fetch('/api/reviews', noCache).then(r => r.json()).catch(() => []),
-        fetch('/api/reels', noCache).then(r => r.json()).catch(() => []),
-        fetch('/api/settings', noCache).then(r => r.json()).catch(() => ({})),
-        fetch('/api/hero-slides', noCache).then(r => r.json()).catch(() => [])
+        fetch(`/api/products?_t=${ts}`, noCache).then(r => r.json()).catch(() => []),
+        fetch(`/api/categories?_t=${ts}`, noCache).then(r => r.json()).catch(() => []),
+        fetch(`/api/reviews?_t=${ts}`, noCache).then(r => r.json()).catch(() => []),
+        fetch(`/api/reels?_t=${ts}`, noCache).then(r => r.json()).catch(() => []),
+        fetch(`/api/settings?_t=${ts}`, noCache).then(r => r.json()).catch(() => ({})),
+        fetch(`/api/hero-slides?_t=${ts}`, noCache).then(r => r.json()).catch(() => [])
       ]);
       setProducts(prodRes || []);
       setCategories(catRes || []);
@@ -116,7 +117,7 @@ export function StoreProvider({ children }) {
       if (setRes && setRes.storeName) setSettings(setRes);
 
       if (broadcast && syncChannel) {
-        syncChannel.postMessage({ type: 'STORE_UPDATED', timestamp: Date.now() });
+        syncChannel.postMessage({ type: 'STORE_UPDATED', timestamp: ts });
       }
     } catch (err) {
       console.error("Failed to fetch store data:", err);
@@ -126,7 +127,8 @@ export function StoreProvider({ children }) {
   };
 
   useEffect(() => {
-    refreshAll(true);
+    // Initial fetch (no broadcast needed on mount)
+    refreshAll(true, false);
 
     // Cross-tab real-time listener: when admin or another tab changes data, update instantly
     if (syncChannel) {
@@ -143,8 +145,14 @@ export function StoreProvider({ children }) {
     };
     window.addEventListener('focus', handleFocus);
 
+    // Silent background sync every 25 seconds: storefront always stays up to date with live products & stock
+    const syncInterval = setInterval(() => {
+      refreshAll(false, false);
+    }, 25000);
+
     return () => {
       window.removeEventListener('focus', handleFocus);
+      clearInterval(syncInterval);
     };
   }, []);
 
