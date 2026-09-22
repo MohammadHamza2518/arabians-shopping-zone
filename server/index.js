@@ -1129,7 +1129,18 @@ app.post('/api/reviews/:id/helpful', rateLimiter({ windowMs: 60 * 1000, max: 15 
 });
 
 // --- 4. Reels Showcase ---
-app.get('/api/reels', (req, res) => {
+app.get('/api/reels', async (req, res) => {
+  if (isMongoConnected && mongoDb) {
+    try {
+      const doc = await mongoDb.collection('app_store').findOne({ _id: 'main_store' }, { projection: { reels: 1 } });
+      if (doc && doc.reels && doc.reels.length > 0) {
+        if (memoryStore) memoryStore.reels = doc.reels;
+        return res.json(doc.reels);
+      }
+    } catch (err) {
+      console.error("Reels cloud fetch fallback:", err.message);
+    }
+  }
   const store = getStore();
   res.json(store.reels || []);
 });

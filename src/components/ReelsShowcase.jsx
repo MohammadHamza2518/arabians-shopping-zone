@@ -25,6 +25,28 @@ function ReelCard({ reel, onSelect }) {
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [videoSrc, setVideoSrc] = useState(reel.videoUrl);
+  const [thumbSrc, setThumbSrc] = useState(reel.thumbnail);
+
+  useEffect(() => {
+    setVideoSrc(reel.videoUrl);
+    setThumbSrc(reel.thumbnail);
+    setHasError(false);
+  }, [reel.videoUrl, reel.thumbnail]);
+
+  const handleVideoError = () => {
+    if (reel.fallbackVideoUrl && videoSrc !== reel.fallbackVideoUrl) {
+      setVideoSrc(reel.fallbackVideoUrl);
+    } else {
+      setHasError(true);
+    }
+  };
+
+  const handleThumbError = () => {
+    if (reel.fallbackThumbnail && thumbSrc !== reel.fallbackThumbnail) {
+      setThumbSrc(reel.fallbackThumbnail);
+    }
+  };
 
   // Play video smoothly when in viewport (Zero-lag performance)
   useEffect(() => {
@@ -46,7 +68,7 @@ function ReelCard({ reel, onSelect }) {
 
     observer.observe(video);
     return () => observer.disconnect();
-  }, []);
+  }, [videoSrc]);
 
   const toggleSound = (e) => {
     e.stopPropagation();
@@ -77,23 +99,24 @@ function ReelCard({ reel, onSelect }) {
     >
       {/* Background HD Poster - Always rendered so zero black screen or loading flicker */}
       <img 
-        src={reel.thumbnail} 
+        src={thumbSrc} 
         alt={reel.title}
         loading="lazy"
+        onError={handleThumbError}
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
 
       {/* Background Live Running Video - Plays seamlessly on top of poster */}
-      {!hasError && reel.videoUrl && (
+      {!hasError && videoSrc && (
         <video
           ref={videoRef}
-          src={reel.videoUrl}
-          poster={reel.thumbnail}
+          src={videoSrc}
+          poster={thumbSrc}
           loop
           muted={isMuted}
           playsInline
           preload="metadata"
-          onError={() => setHasError(true)}
+          onError={handleVideoError}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
       )}
@@ -244,8 +267,10 @@ const DEFAULT_REELS = [
     title: "Sunnat Se Juda Sehat Ka Raaz — Arabian's Talbina 🌾✨",
     views: "5.2K",
     likes: "1.8K",
-    videoUrl: "/assets/reels/real_talbeena_sunnah.mp4",
-    thumbnail: "/assets/reels/real_talbeena_sunnah.jpg",
+    videoUrl: "https://files.catbox.moe/24fya0.mp4",
+    thumbnail: "https://files.catbox.moe/2mu0uv.jpg",
+    fallbackVideoUrl: "/assets/reels/real_talbeena_sunnah.mp4",
+    fallbackThumbnail: "/assets/reels/real_talbeena_sunnah.jpg",
     instagramUrl: "https://www.instagram.com/reel/DXrOeDRB9uG/",
     category: "health",
     categoryName: "Sunnah Talbeena",
@@ -262,12 +287,14 @@ export default function ReelsShowcase() {
   const [likedReels, setLikedReels] = useState(['reel-1', 'reel-2']);
   const [currentReelIndex, setCurrentReelIndex] = useState(0);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [modalVideoSrc, setModalVideoSrc] = useState(null);
   const modalVideoRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
-  // Sync index when active reel changes
+  // Sync index and video source when active reel changes
   useEffect(() => {
     if (activeReel) {
+      setModalVideoSrc(activeReel.videoUrl);
       const idx = reels.findIndex(r => r.id === activeReel.id);
       if (idx !== -1) setCurrentReelIndex(idx);
     }
@@ -465,11 +492,16 @@ export default function ReelsShowcase() {
             {/* Background High Definition Video */}
             <video
               ref={modalVideoRef}
-              src={activeReel.videoUrl}
+              src={modalVideoSrc || activeReel.videoUrl}
               autoPlay
               loop
               playsInline
               muted={modalMuted}
+              onError={() => {
+                if (activeReel.fallbackVideoUrl && modalVideoSrc !== activeReel.fallbackVideoUrl) {
+                  setModalVideoSrc(activeReel.fallbackVideoUrl);
+                }
+              }}
               className="absolute inset-0 w-full h-full object-cover"
             />
 
