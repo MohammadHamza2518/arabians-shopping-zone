@@ -143,6 +143,8 @@ export default function AdminPage() {
   // Coupon modal state
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [savingCoupon, setSavingCoupon] = useState(false);
+  const [couponProductSearch, setCouponProductSearch] = useState('');
+  const [couponProductCategory, setCouponProductCategory] = useState('all');
   const [newCouponData, setNewCouponData] = useState({
     code: '',
     scope: 'all', // 'all' (Har Product Par) or 'specific' (Kisi Ek Product Par)
@@ -154,6 +156,8 @@ export default function AdminPage() {
   });
 
   const openCouponModal = (initialScope = 'all', initialProductId = '') => {
+    setCouponProductSearch('');
+    setCouponProductCategory('all');
     setNewCouponData({
       code: '',
       scope: initialScope,
@@ -5737,44 +5741,176 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* STEP 2: PRODUCT SELECTOR (If Scope === Specific) */}
-          {newCouponData.scope === 'specific' && (
-            <div className="space-y-2 p-3.5 rounded-2xl bg-[#070d12] border border-amber-500/30">
-              <label className="block font-bold text-amber-300">
-                Target Product Select Karein *
-              </label>
-              <select
-                required
-                value={newCouponData.productId}
-                onChange={(e) => setNewCouponData({ ...newCouponData, productId: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c1620] border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-xs"
-              >
-                <option value="">-- Choose Product ({products.length} available) --</option>
-                {products.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} — ₹{p.price} ({p.category || 'General'})
-                  </option>
-                ))}
-              </select>
+          {/* STEP 2: SMART SEARCHABLE PRODUCT SELECTOR (If Scope === Specific) */}
+          {newCouponData.scope === 'specific' && (() => {
+            const availableCategories = ['all', ...Array.from(new Set((products || []).map(p => p.category).filter(Boolean)))];
+            const filteredPickerProducts = (products || []).filter(p => {
+              const matchCat = couponProductCategory === 'all' || p.category === couponProductCategory;
+              const q = couponProductSearch.trim().toLowerCase();
+              const matchSearch = !q || p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q)) || String(p.price).includes(q);
+              return matchCat && matchSearch;
+            });
+            const selectedProduct = (products || []).find(p => String(p.id) === String(newCouponData.productId));
 
-              {/* Selected Product Preview Mini Card */}
-              {(() => {
-                const sel = products.find(p => String(p.id) === String(newCouponData.productId));
-                if (!sel) return null;
-                return (
-                  <div className="flex items-center gap-2.5 pt-1">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-slate-700 shrink-0">
-                      <img src={sel.image || '/assets/logo/logo_main.png'} alt={sel.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-bold text-xs text-white truncate">{sel.name}</div>
-                      <div className="text-[10px] text-slate-400">Regular Price: <strong className="text-amber-300">₹{sel.price}</strong> • {sel.category}</div>
+            return (
+              <div className="space-y-3 p-3.5 rounded-2xl bg-[#070d12] border border-amber-500/30">
+                {/* Header & Product Counter */}
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-amber-300 text-xs">
+                    Target Product Select Karein *
+                  </label>
+                  <span className="text-[10px] text-slate-400">
+                    {products.length} Products Available
+                  </span>
+                </div>
+
+                {/* CURRENTLY SELECTED PRODUCT CARD */}
+                {selectedProduct ? (
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-amber-500/15 to-emerald-500/10 border border-amber-500/40 flex items-center justify-between gap-3 shadow-inner">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-amber-500/50 shrink-0 shadow">
+                        <img 
+                          src={selectedProduct.image || '/assets/logo/logo_main.png'} 
+                          alt={selectedProduct.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[9px] flex items-center gap-1 border border-emerald-500/30 shrink-0">
+                            <Check className="w-2.5 h-2.5" /> Selected
+                          </span>
+                          <span className="text-[10px] text-slate-400 capitalize truncate">
+                            {selectedProduct.category}
+                          </span>
+                        </div>
+                        <div className="font-bold text-xs text-white truncate mt-0.5">
+                          {selectedProduct.name}
+                        </div>
+                        <div className="text-[11px] text-amber-300 font-bold">
+                          ₹{selectedProduct.price}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                );
-              })()}
-            </div>
-          )}
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/30 text-rose-300 text-[11px] flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Neeche list se koi product select karein jisme coupon lagana hai.</span>
+                  </div>
+                )}
+
+                {/* SEARCH INPUT BAR */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search product by name or category (e.g. Cap, Talbina, Oud)..."
+                      value={couponProductSearch}
+                      onChange={(e) => setCouponProductSearch(e.target.value)}
+                      className="w-full pl-8 pr-8 py-2 rounded-xl bg-[#0c1620] border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                    {couponProductSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setCouponProductSearch('')}
+                        className="p-1 rounded text-slate-400 hover:text-white absolute right-2 top-1/2 -translate-y-1/2"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* CATEGORY FILTER CHIPS */}
+                  {availableCategories.length > 2 && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[10px]">
+                      {availableCategories.map(cat => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setCouponProductCategory(cat)}
+                          className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition capitalize border ${
+                            couponProductCategory === cat
+                              ? 'bg-amber-500/25 border-amber-500 text-amber-300'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          {cat === 'all' ? 'All Categories' : cat}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* SCROLLABLE INTERACTIVE PRODUCT LIST */}
+                  <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 border border-slate-800/80 rounded-xl p-1 bg-[#0c1620]/60">
+                    {filteredPickerProducts.length > 0 ? (
+                      filteredPickerProducts.map((p) => {
+                        const isSelected = String(p.id) === String(newCouponData.productId);
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => setNewCouponData({ ...newCouponData, productId: p.id })}
+                            className={`p-2 rounded-xl transition flex items-center justify-between gap-2.5 cursor-pointer border ${
+                              isSelected
+                                ? 'bg-amber-500/20 border-amber-500 shadow-sm ring-1 ring-amber-500/40'
+                                : 'bg-[#070d12] border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/80'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-900 border border-slate-700 shrink-0">
+                                <img 
+                                  src={p.image || '/assets/logo/logo_main.png'} 
+                                  alt={p.name} 
+                                  className="w-full h-full object-cover" 
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className={`font-bold text-xs truncate ${isSelected ? 'text-amber-200' : 'text-white'}`}>
+                                  {p.name}
+                                </div>
+                                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                  <span className="capitalize">{p.category || 'General'}</span>
+                                  <span>•</span>
+                                  <strong className="text-amber-300 font-mono">₹{p.price}</strong>
+                                  {p.couponCode && Number(p.couponDiscount) > 0 && (
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                      Coupan: {p.couponCode}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 pl-2">
+                              {isSelected ? (
+                                <div className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xs shadow">
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                </div>
+                              ) : (
+                                <div className="w-5 h-5 rounded-full border border-slate-600 hover:border-amber-400" />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="py-6 text-center text-slate-400 space-y-1">
+                        <p className="text-xs">Koi product nahi mila matching "{couponProductSearch}"</p>
+                        <button
+                          type="button"
+                          onClick={() => { setCouponProductSearch(''); setCouponProductCategory('all'); }}
+                          className="text-[11px] text-amber-400 hover:underline font-bold"
+                        >
+                          Clear Search & Filters
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* STEP 3: COUPON CODE INPUT & PRESET CHIPS */}
           <div className="space-y-1.5">
