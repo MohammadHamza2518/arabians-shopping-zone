@@ -3453,6 +3453,63 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* SECTION 0.5: SERVER ECO-SLEEP MODE (2-MINUTE DELAY SCREEN / SHIELD) */}
+            <div className={`p-5 rounded-2xl border transition-all ${
+              storeSettings.serverSleepMode?.enabled !== false
+                ? 'bg-amber-950/25 border-amber-500/60 shadow-xl shadow-amber-500/10'
+                : 'bg-[#070d12] border-slate-800'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    storeSettings.serverSleepMode?.enabled !== false
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                      : 'bg-slate-800 text-slate-400 border border-slate-700'
+                  }`}>
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-serif font-bold text-sm text-white">
+                        Server Sleep Mode (2-Minute Delay Screen)
+                      </h4>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                        storeSettings.serverSleepMode?.enabled !== false
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      }`}>
+                        {storeSettings.serverSleepMode?.enabled !== false ? '● ACTIVE (2-Min Timer On)' : '○ DISABLED (Normal)'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                      Jab yeh <span className="text-amber-400 font-semibold">ACTIVE</span> hota hai, toh public visitors ko website open hone se pehle 2 minute ka server sleep countdown dikhta hai. <span className="text-emerald-400 font-semibold">Admin Panel par iska koi asar nahi hota.</span> Jaise hi client payment kar de, yahan se <span className="text-white font-bold">OFF</span> karke niche Save Settings dabayein — instant normal ho jayega!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="shrink-0 flex items-center gap-3">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={storeSettings.serverSleepMode?.enabled !== false}
+                      onChange={(e) => {
+                        setStoreSettings(prev => ({
+                          ...prev,
+                          serverSleepMode: {
+                            ...(prev.serverSleepMode || {}),
+                            enabled: e.target.checked,
+                            durationSeconds: 120
+                          }
+                        }));
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
             
             {/* SECTION 1: FLASH SALE & COUNTDOWN TIMER */}
             <div className="p-5 rounded-2xl bg-[#070d12] border border-amber-500/30 space-y-4">
