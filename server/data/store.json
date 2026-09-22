@@ -6536,54 +6536,7 @@
   ],
   "orders": [],
   "distributors": [],
-  "coupons": [
-    {
-      "code": "HAMZA10",
-      "discountPercent": 10,
-      "flatDiscount": 0,
-      "minOrder": 299,
-      "description": "lelo bss discount hai",
-      "active": true,
-      "createdAt": "2026-09-07T22:09:55.897Z"
-    },
-    {
-      "code": "JUMMAH20",
-      "discountPercent": 10,
-      "flatDiscount": 0,
-      "minOrder": 499,
-      "description": "20% Special Jummah Discount",
-      "active": true,
-      "createdAt": "2026-09-02T23:03:17.208Z"
-    },
-    {
-      "code": "ARABIAN10",
-      "discountPercent": 10,
-      "minOrder": 499,
-      "description": "10% Off on all orders above ₹499",
-      "active": true
-    },
-    {
-      "code": "SUNNAH100",
-      "flatDiscount": 100,
-      "minOrder": 999,
-      "description": "Flat ₹100 Off on orders above ₹999",
-      "active": true
-    },
-    {
-      "code": "RAMADAN50",
-      "discountPercent": 5,
-      "minOrder": 299,
-      "description": "5% Extra Festival Discount",
-      "active": true
-    },
-    {
-      "code": "FIRSTORDER",
-      "flatDiscount": 150,
-      "minOrder": 1299,
-      "description": "Flat ₹150 Off for new shoppers",
-      "active": true
-    }
-  ],
+  "coupons": [],
   "settings": {
     "storeName": "Arabians Shopping Zone",
     "tagline": "Authentic Sunnah Foods, Royal Arabic Attire & Luxury Fragrances",

@@ -498,25 +498,46 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode, rawPaymentMode) {
     }
   }
 
-  // Authoritative Coupon validation
+  // Authoritative Coupon validation (Product-Specific & Store-Wide)
   let discount = 0;
   let validCouponCode = '';
 
   if (rawCouponCode && typeof rawCouponCode === 'string' && rawCouponCode.trim()) {
     const cleanCode = rawCouponCode.trim().toUpperCase();
-    const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === cleanCode);
 
-    if (coupon && coupon.active !== false) {
-      const minOrder = Number(coupon.minOrder) || 0;
+    // 1. Check Product-Specific Coupon on verified catalog items
+    const matchingItem = verifiedItems.find(i => {
+      const prod = catalog.find(p => p.id === i.id);
+      return prod && prod.hasCoupon !== false && prod.couponCode && prod.couponCode.trim().toUpperCase() === cleanCode;
+    });
+
+    if (matchingItem) {
+      const prod = catalog.find(p => p.id === matchingItem.id);
+      const minOrder = Number(prod.couponMinOrder) || 0;
+      const itemSubtotal = matchingItem.price * matchingItem.quantity;
       if (subtotal >= minOrder) {
-        if (coupon.discountPercent && Number(coupon.discountPercent) > 0) {
-          discount = Math.round((subtotal * Number(coupon.discountPercent)) / 100);
-        } else if (coupon.flatDiscount && Number(coupon.flatDiscount) > 0) {
-          discount = Number(coupon.flatDiscount);
+        if (prod.couponType === 'percentage' && Number(prod.couponDiscount) > 0) {
+          discount = Math.round((itemSubtotal * Number(prod.couponDiscount)) / 100);
+        } else if (Number(prod.couponDiscount) > 0) {
+          discount = Number(prod.couponDiscount);
         }
-        // Strict guard: discount cannot exceed subtotal
         discount = Math.min(subtotal, Math.max(0, discount));
-        validCouponCode = coupon.code;
+        validCouponCode = prod.couponCode.trim().toUpperCase();
+      }
+    } else {
+      // 2. Fallback to Store-wide Coupon
+      const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === cleanCode);
+      if (coupon && coupon.active !== false) {
+        const minOrder = Number(coupon.minOrder) || 0;
+        if (subtotal >= minOrder) {
+          if (coupon.discountPercent && Number(coupon.discountPercent) > 0) {
+            discount = Math.round((subtotal * Number(coupon.discountPercent)) / 100);
+          } else if (coupon.flatDiscount && Number(coupon.flatDiscount) > 0) {
+            discount = Number(coupon.flatDiscount);
+          }
+          discount = Math.min(subtotal, Math.max(0, discount));
+          validCouponCode = coupon.code;
+        }
       }
     }
   }
@@ -699,6 +720,12 @@ app.post('/api/products', requireAdminAuth, (req, res) => {
     deliveryChargeType: req.body.deliveryChargeType || (req.body.freeDelivery ? 'free' : 'default'),
     freeDelivery: Boolean(req.body.freeDelivery || req.body.deliveryChargeType === 'free'),
     customDeliveryCharge: (req.body.customDeliveryCharge !== undefined && req.body.customDeliveryCharge !== null && req.body.customDeliveryCharge !== '') ? Number(req.body.customDeliveryCharge) : null,
+    hasCoupon: req.body.hasCoupon !== undefined ? Boolean(req.body.hasCoupon) : Boolean(req.body.couponCode),
+    couponCode: (req.body.couponCode || '').trim().toUpperCase(),
+    couponType: req.body.couponType === 'percentage' ? 'percentage' : 'flat',
+    couponDiscount: req.body.couponDiscount !== undefined ? (Number(req.body.couponDiscount) || 0) : 0,
+    couponMinOrder: req.body.couponMinOrder !== undefined ? (Number(req.body.couponMinOrder) || 0) : 0,
+    couponDescription: (req.body.couponDescription || '').trim(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -759,6 +786,12 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
     deliveryChargeType: newDeliveryType,
     freeDelivery: isFreeDelivery,
     customDeliveryCharge: newCustomDelivery,
+    hasCoupon: req.body.hasCoupon !== undefined ? Boolean(req.body.hasCoupon) : (store.products[idx].hasCoupon ?? Boolean(store.products[idx].couponCode)),
+    couponCode: req.body.couponCode !== undefined ? (req.body.couponCode || '').trim().toUpperCase() : (store.products[idx].couponCode || ''),
+    couponType: req.body.couponType !== undefined ? (req.body.couponType === 'percentage' ? 'percentage' : 'flat') : (store.products[idx].couponType || 'flat'),
+    couponDiscount: req.body.couponDiscount !== undefined ? (Number(req.body.couponDiscount) || 0) : (store.products[idx].couponDiscount || 0),
+    couponMinOrder: req.body.couponMinOrder !== undefined ? (Number(req.body.couponMinOrder) || 0) : (store.products[idx].couponMinOrder || 0),
+    couponDescription: req.body.couponDescription !== undefined ? (req.body.couponDescription || '').trim() : (store.products[idx].couponDescription || ''),
     updatedAt: new Date().toISOString()
   };
 
@@ -1851,7 +1884,7 @@ app.post('/api/admin/reset-distributors', requireAdminAuth, (req, res) => {
 });
 
 // --- 7. Coupons ---
-// Returns active coupons for public; all coupons for Admin
+// Returns active coupons for public (including product-specific coupons); all store coupons for Admin
 app.get('/api/coupons', (req, res) => {
   const store = getStore();
   const token = req.headers['x-admin-token'];
@@ -1859,19 +1892,37 @@ app.get('/api/coupons', (req, res) => {
   const validPin = getValidAdminPin();
   const isAdmin = (token && verifyAdminToken(token)) || (directPin && (directPin.trim() === validPin || directPin.trim() === 'arabians786'));
 
+  // Collect active product coupons
+  const productCoupons = (store.products || [])
+    .filter(p => p.hasCoupon !== false && p.couponCode && Number(p.couponDiscount) > 0)
+    .map(p => ({
+      code: p.couponCode,
+      discountPercent: p.couponType === 'percentage' ? Number(p.couponDiscount) : 0,
+      flatDiscount: p.couponType === 'flat' ? Number(p.couponDiscount) : 0,
+      minOrder: Number(p.couponMinOrder) || 0,
+      description: p.couponDescription || (p.couponType === 'percentage' ? `${p.couponDiscount}% OFF on ${p.name}` : `Flat ₹${p.couponDiscount} OFF on ${p.name}`),
+      productId: p.id,
+      productName: p.name,
+      isProductCoupon: true,
+      active: true
+    }));
+
   if (isAdmin) {
     return res.json(store.coupons || []);
   }
 
-  // Public gets only active coupons
-  const activeCoupons = (store.coupons || []).filter(c => c.active !== false).map(c => ({
+  // Public gets active store coupons + active product coupons
+  const activeStoreCoupons = (store.coupons || []).filter(c => c.active !== false).map(c => ({
     code: c.code,
     discountPercent: c.discountPercent,
     flatDiscount: c.flatDiscount,
     minOrder: c.minOrder,
-    description: c.description
+    description: c.description,
+    isProductCoupon: false,
+    active: true
   }));
-  res.json(activeCoupons);
+
+  res.json([...productCoupons, ...activeStoreCoupons]);
 });
 
 app.post('/api/coupons', requireAdminAuth, (req, res) => {
@@ -1904,6 +1955,14 @@ app.post('/api/coupons', requireAdminAuth, (req, res) => {
   res.status(201).json(newCoupon);
 });
 
+// Admin Clear All Coupons endpoint
+app.post('/api/coupons/clear-all', requireAdminAuth, (req, res) => {
+  const store = getStore();
+  store.coupons = [];
+  saveStore(store);
+  res.json({ success: true, message: "All store coupons cleared successfully" });
+});
+
 app.delete('/api/coupons/:code', requireAdminAuth, (req, res) => {
   const store = getStore();
   const cleanCode = (req.params.code || '').trim().toUpperCase();
@@ -1932,10 +1991,56 @@ app.put('/api/coupons/:code/toggle', requireAdminAuth, (req, res) => {
 
 app.post('/api/coupons/validate', rateLimiter({ windowMs: 60 * 1000, max: 30 }), (req, res) => {
   const store = getStore();
-  const { code, cartTotal } = req.body;
+  const { code, cartTotal, items } = req.body;
   if (!code || typeof code !== 'string') return res.status(400).json({ valid: false, message: "Please enter a coupon code" });
 
-  const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === code.trim().toUpperCase());
+  const cleanCode = code.trim().toUpperCase();
+
+  // 1. Check Product-Specific Coupon
+  const prodWithCoupon = (store.products || []).find(p => p.hasCoupon !== false && p.couponCode && p.couponCode.trim().toUpperCase() === cleanCode);
+  if (prodWithCoupon) {
+    const rawItems = Array.isArray(items) ? items : [];
+    const matchingCartItem = rawItems.find(i => String(i.id || i.product?.id) === String(prodWithCoupon.id));
+
+    if (rawItems.length > 0 && !matchingCartItem) {
+      return res.status(400).json({
+        valid: false,
+        message: `Coupon "${cleanCode}" is only valid on "${prodWithCoupon.name}". Please add it to your bag!`
+      });
+    }
+
+    const itemPrice = Number(matchingCartItem ? (matchingCartItem.price || prodWithCoupon.price) : prodWithCoupon.price) || 0;
+    const itemQty = Number(matchingCartItem ? matchingCartItem.quantity : 1) || 1;
+    const itemTotal = itemPrice * itemQty;
+    const numCartTotal = Number(cartTotal) || itemTotal;
+    const minOrder = Number(prodWithCoupon.couponMinOrder) || 0;
+
+    if (numCartTotal < minOrder) {
+      return res.status(400).json({
+        valid: false,
+        message: `Minimum order amount for this coupon is ₹${minOrder}`
+      });
+    }
+
+    let discount = 0;
+    if (prodWithCoupon.couponType === 'percentage' && Number(prodWithCoupon.couponDiscount) > 0) {
+      discount = Math.round((itemTotal * Number(prodWithCoupon.couponDiscount)) / 100);
+    } else if (Number(prodWithCoupon.couponDiscount) > 0) {
+      discount = Number(prodWithCoupon.couponDiscount);
+    }
+    discount = Math.min(numCartTotal, Math.max(0, discount));
+
+    return res.json({
+      valid: true,
+      code: prodWithCoupon.couponCode.trim().toUpperCase(),
+      discount,
+      description: prodWithCoupon.couponDescription || (prodWithCoupon.couponType === 'percentage' ? `${prodWithCoupon.couponDiscount}% OFF on ${prodWithCoupon.name}` : `Flat ₹${prodWithCoupon.couponDiscount} OFF on ${prodWithCoupon.name}`),
+      productId: prodWithCoupon.id
+    });
+  }
+
+  // 2. Global Store Coupons Fallback
+  const coupon = (store.coupons || []).find(c => c.code.toUpperCase() === cleanCode);
   if (!coupon) {
     return res.status(400).json({ valid: false, message: "Invalid coupon code" });
   }

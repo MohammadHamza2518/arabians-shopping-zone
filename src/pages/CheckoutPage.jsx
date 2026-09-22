@@ -748,7 +748,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        placeholder="Enter Coupon (e.g. ARABIAN10)"
+                        placeholder="Enter Coupon (e.g. SAVE50)"
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                         className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono font-bold"
@@ -764,31 +764,36 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Quick 1-Tap Available Coupons */}
-                    {availableCoupons.length > 0 && (
-                      <div className="space-y-1.5 pt-1">
-                        <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
-                          <Ticket className="w-3 h-3 text-amber-500" />
-                          <span>Tap to Apply Active Offer:</span>
+                    {(() => {
+                      const cartProductIds = cart.map(i => String(i.product?.id || i.id));
+                      const relevantCoupons = availableCoupons.filter(c => !c.productId || cartProductIds.includes(String(c.productId)));
+                      if (relevantCoupons.length === 0) return null;
+                      return (
+                        <div className="space-y-1.5 pt-1">
+                          <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+                            <Ticket className="w-3 h-3 text-amber-500" />
+                            <span>Tap to Apply Available Coupon:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {relevantCoupons.map((c) => (
+                              <button
+                                key={c.code}
+                                type="button"
+                                onClick={() => {
+                                  setCouponInput(c.code);
+                                  handleApplyCoupon(c.code);
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-[10px] font-bold transition flex items-center gap-1 shadow-xs"
+                                title={c.description}
+                              >
+                                <span>{c.code}</span>
+                                <span className="text-emerald-700 font-semibold">({c.discountPercent ? `${c.discountPercent}% OFF` : `₹${c.flatDiscount} OFF`})</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {availableCoupons.map((c) => (
-                            <button
-                              key={c.code}
-                              type="button"
-                              onClick={() => {
-                                setCouponInput(c.code);
-                                handleApplyCoupon(c.code);
-                              }}
-                              className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-[10px] font-bold transition flex items-center gap-1"
-                              title={c.description}
-                            >
-                              <span>{c.code}</span>
-                              <span className="text-emerald-700 font-semibold">({c.discountPercent ? `${c.discountPercent}%` : `₹${c.flatDiscount}`})</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 )}
               </div>

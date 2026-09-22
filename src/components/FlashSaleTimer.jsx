@@ -43,9 +43,9 @@ export default function FlashSaleTimer() {
   }
 
   const badge = flashSale.badge || 'Special Sunnah Blessing Deal';
-  const headline = flashSale.headline || 'Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD';
+  const headline = flashSale.headline || 'Special Direct Discounts Available + Free Express Pan-India Delivery';
   const subtitle = flashSale.subtitle || 'Direct from our market studio. Sealed with tamper-proof halal guarantee.';
-  const couponCode = flashSale.couponCode || 'ARABIAN10';
+  const couponCode = (flashSale.couponCode || '').trim();
 
   const handleCopyCoupon = () => {
     navigator.clipboard.writeText(couponCode);
@@ -114,15 +114,17 @@ export default function FlashSaleTimer() {
 
             {/* Action buttons */}
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleCopyCoupon}
-                className="px-4 py-2.5 rounded-2xl bg-slate-950 text-amber-300 font-mono font-bold text-xs hover:bg-slate-900 transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
-                title="Click to copy coupon code"
-              >
-                {copiedCoupon ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-400" />}
-                <span>{copiedCoupon ? 'COPIED!' : couponCode}</span>
-              </button>
+              {couponCode ? (
+                <button
+                  type="button"
+                  onClick={handleCopyCoupon}
+                  className="px-4 py-2.5 rounded-2xl bg-slate-950 text-amber-300 font-mono font-bold text-xs hover:bg-slate-900 transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                  title="Click to copy coupon code"
+                >
+                  {copiedCoupon ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-400" />}
+                  <span>{copiedCoupon ? 'COPIED!' : couponCode}</span>
+                </button>
+              ) : null}
 
               <Link
                 to="/shop"

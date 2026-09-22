@@ -158,7 +158,7 @@ export default function AdminPage() {
     phone: "+91 72338 62626",
     callNumber: "+91 72338 62626",
     email: "arabiansshoppingzone@gmail.com",
-    announcement: "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
+    announcement: "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999!",
     freeShippingThreshold: 999,
     standardShippingFee: 70,
     onlineDiscountEnabled: true,
@@ -169,9 +169,9 @@ export default function AdminPage() {
     flashSale: {
       enabled: true,
       badge: "Special Sunnah Blessing Deal",
-      headline: "Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD",
+      headline: "Special Direct Discounts Available + Free Express Pan-India Delivery",
       subtitle: "Direct from our market studio. Sealed with tamper-proof halal guarantee.",
-      couponCode: "ARABIAN10"
+      couponCode: ""
     },
     jummahBundle: {
       enabled: true,
@@ -645,7 +645,13 @@ export default function AdminPage() {
         inStock: true,
         deliveryChargeType: 'default',
         freeDelivery: false,
-        customDeliveryCharge: ''
+        customDeliveryCharge: '',
+        hasCoupon: false,
+        couponCode: '',
+        couponType: 'flat',
+        couponDiscount: '',
+        couponMinOrder: '',
+        couponDescription: ''
       });
     } else {
       const photos = getProductPhotos(productToEdit);
@@ -660,7 +666,13 @@ export default function AdminPage() {
         inStock: productToEdit.inStock !== false,
         deliveryChargeType: productToEdit.deliveryChargeType || (productToEdit.freeDelivery ? 'free' : (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null ? 'custom' : 'default')),
         freeDelivery: Boolean(productToEdit.freeDelivery || productToEdit.deliveryChargeType === 'free'),
-        customDeliveryCharge: (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null) ? productToEdit.customDeliveryCharge : ''
+        customDeliveryCharge: (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null) ? productToEdit.customDeliveryCharge : '',
+        hasCoupon: Boolean(productToEdit.hasCoupon || (productToEdit.couponCode && Number(productToEdit.couponDiscount) > 0)),
+        couponCode: productToEdit.couponCode || '',
+        couponType: productToEdit.couponType || 'flat',
+        couponDiscount: productToEdit.couponDiscount !== undefined ? productToEdit.couponDiscount : '',
+        couponMinOrder: productToEdit.couponMinOrder !== undefined ? productToEdit.couponMinOrder : '',
+        couponDescription: productToEdit.couponDescription || ''
       });
     }
     setIsProductModalOpen(true);
@@ -711,6 +723,10 @@ export default function AdminPage() {
         ? Number(editingProduct.customDeliveryCharge)
         : null;
 
+      const hasProductCoupon = Boolean(editingProduct.hasCoupon && editingProduct.couponCode && editingProduct.couponCode.trim());
+      const cleanCoupon = hasProductCoupon ? editingProduct.couponCode.trim().toUpperCase() : '';
+      const couponDisc = hasProductCoupon ? (Number(editingProduct.couponDiscount) || 0) : 0;
+
       const payload = {
         ...editingProduct,
         image: photos[0],
@@ -728,7 +744,13 @@ export default function AdminPage() {
         inStock: editingProduct.inStock !== false,
         deliveryChargeType: isFreeDelivery ? 'free' : (editingProduct.deliveryChargeType || 'default'),
         freeDelivery: isFreeDelivery,
-        customDeliveryCharge: customCharge
+        customDeliveryCharge: customCharge,
+        hasCoupon: hasProductCoupon,
+        couponCode: cleanCoupon,
+        couponType: editingProduct.couponType === 'percentage' ? 'percentage' : 'flat',
+        couponDiscount: couponDisc,
+        couponMinOrder: hasProductCoupon ? (Number(editingProduct.couponMinOrder) || 0) : 0,
+        couponDescription: hasProductCoupon ? (editingProduct.couponDescription || '').trim() : ''
       };
 
       const res = await fetch(url, {
@@ -1275,6 +1297,48 @@ export default function AdminPage() {
     }
   };
 
+  const handleClearAllCoupons = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL store-wide coupon codes? This cannot be undone.")) return;
+    try {
+      const res = await fetch('/api/coupons/clear-all', { 
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("All store-wide coupons deleted successfully!");
+        setCoupons([]);
+        fetchAdminData();
+      }
+    } catch {
+      showToast("Error clearing coupons", "error");
+    }
+  };
+
+  const handleRemoveProductCoupon = async (prod) => {
+    if (!window.confirm(`Remove coupon from product "${prod.name}"?`)) return;
+    try {
+      const res = await fetch(`/api/products/${prod.id}`, {
+        method: 'PUT',
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          ...prod,
+          hasCoupon: false,
+          couponCode: '',
+          couponDiscount: 0,
+          couponDescription: ''
+        })
+      });
+      const data = await res.json();
+      if (data.success || data.product) {
+        showToast(`Coupon removed from "${prod.name}"`);
+        refreshAll();
+      }
+    } catch {
+      showToast("Error removing product coupon", "error");
+    }
+  };
+
   // PASSCODE LOGIN SCREEN (STANDALONE EXECUTIVE PORTAL)
   if (!isAuthenticated) {
     return (
@@ -1550,7 +1614,7 @@ export default function AdminPage() {
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
                 activeTab === 'coupons' ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'
               }`}>
-                {coupons.length}
+                {(products.filter(p => p.couponCode && Number(p.couponDiscount) > 0).length + coupons.length)}
               </span>
             </button>
 
@@ -2482,6 +2546,14 @@ export default function AdminPage() {
                     </div>
                   )}
 
+                  {/* Coupon status if product has a coupon */}
+                  {p.couponCode && Number(p.couponDiscount) > 0 && (
+                    <div className="flex items-center gap-1 text-[10px] text-amber-300 font-bold bg-amber-950/40 border border-amber-800/50 px-2 py-0.5 rounded-lg w-fit">
+                      <Tag className="w-3 h-3 text-amber-400" />
+                      <span>Coupon: {p.couponCode} ({p.couponType === 'percentage' ? `${p.couponDiscount}%` : `₹${p.couponDiscount}`} OFF)</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-1.5 pt-2 flex-wrap">
                     <button
                       onClick={() => openProductModal(p)}
@@ -3015,71 +3087,204 @@ export default function AdminPage() {
       {/* ========================================================================= */}
       {/* TAB 5: PROMO COUPONS                                                      */}
       {/* ========================================================================= */}
-      {activeTab === 'coupons' && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0c1620] p-5 rounded-3xl border border-slate-800">
-            <div>
-              <h3 className="font-serif font-bold text-base text-white">Store Discount Vouchers</h3>
-              <p className="text-xs text-slate-400">Create, toggle, and manage customer discount codes for checkout.</p>
-            </div>
-            <button
-              onClick={() => {
-                setNewCouponData({ code: '', discountType: 'percentage', discountValue: '10', minOrder: '499', description: '' });
-                setIsCouponModalOpen(true);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5 shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create New Coupon</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {coupons.map((c) => (
-              <div key={c.code} className="bg-[#0c1620] rounded-3xl border border-slate-800 p-5 shadow-sm space-y-3 relative">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-black text-sm px-3 py-1 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                    {c.code}
+      {activeTab === 'coupons' && (() => {
+        const productCouponsList = (products || []).filter(p => p.couponCode && Number(p.couponDiscount) > 0);
+        return (
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0c1620] p-5 rounded-3xl border border-slate-800">
+              <div>
+                <h3 className="font-serif font-bold text-base text-white flex items-center gap-2">
+                  <span>Discounts & Coupon Studio</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">
+                    {productCouponsList.length} Product • {coupons.length} Store-wide
                   </span>
-                  <button
-                    onClick={() => handleToggleCoupon(c.code)}
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition ${
-                      c.active !== false 
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-600/50' 
-                        : 'bg-slate-800 text-slate-400 border border-slate-700'
-                    }`}
-                  >
-                    {c.active !== false ? '● Active' : '○ Inactive'}
-                  </button>
-                </div>
-
-                <div className="text-xs text-slate-300 space-y-1">
-                  <div className="font-bold text-white text-base">
-                    {c.discountPercent ? `${c.discountPercent}% OFF Entire Order` : `Flat ₹${c.flatDiscount} OFF`}
-                  </div>
-                  <div className="text-[11px] text-slate-400">
-                    Minimum Cart Value: <strong className="text-white">₹{c.minOrder || 0}</strong>
-                  </div>
-                  <div className="text-[11px] text-amber-300/80 italic">
-                    "{c.description || 'Promotional Store Voucher'}"
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                  <span className="text-emerald-400 font-medium">Valid at Checkout</span>
-                  <button
-                    onClick={() => handleDeleteCoupon(c.code)}
-                    className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-950/40 transition"
-                    title="Delete Coupon"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Manage product-specific coupons and global store vouchers.
+                </p>
               </div>
-            ))}
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {coupons.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearAllCoupons}
+                    className="px-3.5 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-700/80 text-rose-300 font-bold text-xs transition flex items-center gap-1.5"
+                    title="Delete all store-wide coupon codes"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear All Coupons</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewCouponData({ code: '', discountType: 'percentage', discountValue: '10', minOrder: '499', description: '' });
+                    setIsCouponModalOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs hover:brightness-110 transition shadow-sm flex items-center gap-1.5 shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Store Voucher</span>
+                </button>
+              </div>
+            </div>
+
+            {/* SECTION 1: PRODUCT-SPECIFIC COUPONS */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-serif font-bold text-sm text-white flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-amber-400" />
+                    <span>Product-Specific Active Coupons ({productCouponsList.length})</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    These coupons are attached directly to individual products and apply only when that item is in the cart.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openProductModal()}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add New Product with Coupon</span>
+                </button>
+              </div>
+
+              {productCouponsList.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {productCouponsList.map((p) => (
+                    <div key={p.id} className="bg-[#0c1620] rounded-3xl border border-slate-800 p-5 shadow-sm space-y-3 relative flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-900 border border-slate-700 shrink-0">
+                            <img src={p.image || '/assets/logo/logo_main.png'} alt={p.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h5 className="font-bold text-xs text-white truncate">{p.name}</h5>
+                            <span className="text-[10px] text-slate-400 capitalize">{p.category}</span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className="font-mono font-black text-xs px-2.5 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                {p.couponCode}
+                              </span>
+                              <span className="text-[10px] font-bold text-emerald-400">
+                                {p.couponType === 'percentage' ? `${p.couponDiscount}% OFF` : `₹${p.couponDiscount} OFF`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {p.couponDescription && (
+                          <div className="text-[11px] text-amber-200/70 italic bg-[#070d12] p-2.5 rounded-xl border border-slate-800/80">
+                            "{p.couponDescription}"
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <button
+                          type="button"
+                          onClick={() => openProductModal(p)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3 h-3 text-amber-400" />
+                          <span>Edit in Product</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveProductCoupon(p)}
+                          className="p-1.5 rounded-xl text-rose-400 hover:bg-rose-950/40 transition"
+                          title="Remove coupon from this product"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 rounded-3xl bg-[#0c1620] border border-dashed border-slate-800 text-center space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto">
+                    <Tag className="w-6 h-6" />
+                  </div>
+                  <h5 className="font-bold text-white text-sm">No Product-Specific Coupons Created Yet</h5>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                    When adding or editing any product in the Products tab, you can assign an exclusive coupon code to that specific product.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 2: STORE-WIDE COUPONS */}
+            <div className="space-y-4 pt-4 border-t border-slate-800">
+              <div>
+                <h4 className="font-serif font-bold text-sm text-white flex items-center gap-2">
+                  <Ticket className="w-4 h-4 text-emerald-400" />
+                  <span>Store-Wide Promotional Vouchers ({coupons.length})</span>
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Global vouchers applicable to whole order cart subtotal.
+                </p>
+              </div>
+
+              {coupons.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {coupons.map((c) => (
+                    <div key={c.code} className="bg-[#0c1620] rounded-3xl border border-slate-800 p-5 shadow-sm space-y-3 relative">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-black text-sm px-3 py-1 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                          {c.code}
+                        </span>
+                        <button
+                          onClick={() => handleToggleCoupon(c.code)}
+                          className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition ${
+                            c.active !== false 
+                              ? 'bg-emerald-950 text-emerald-300 border border-emerald-600/50' 
+                              : 'bg-slate-800 text-slate-400 border border-slate-700'
+                          }`}
+                        >
+                          {c.active !== false ? '● Active' : '○ Inactive'}
+                        </button>
+                      </div>
+
+                      <div className="text-xs text-slate-300 space-y-1">
+                        <div className="font-bold text-white text-base">
+                          {c.discountPercent ? `${c.discountPercent}% OFF Entire Order` : `Flat ₹${c.flatDiscount} OFF`}
+                        </div>
+                        <div className="text-[11px] text-slate-400">
+                          Minimum Cart Value: <strong className="text-white">₹{c.minOrder || 0}</strong>
+                        </div>
+                        <div className="text-[11px] text-amber-300/80 italic">
+                          "{c.description || 'Promotional Store Voucher'}"
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="text-emerald-400 font-medium">Valid at Checkout</span>
+                        <button
+                          onClick={() => handleDeleteCoupon(c.code)}
+                          className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-950/40 transition"
+                          title="Delete Coupon"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 rounded-3xl bg-[#0c1620]/60 border border-dashed border-slate-800 text-center">
+                  <p className="text-xs text-slate-400">
+                    No store-wide coupon codes active. All previous codes have been cleared.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ========================================================================= */}
       {/* TAB 6: STORE & SHIPPING SETTINGS                                          */}
@@ -3203,7 +3408,7 @@ export default function AdminPage() {
                       ...storeSettings,
                       flashSale: { ...storeSettings.flashSale, couponCode: e.target.value.trim().toUpperCase() }
                     })}
-                    placeholder="e.g. ARABIAN10"
+                    placeholder="Optional (e.g. SAVE50)"
                     className="w-full px-3.5 py-2.5 rounded-2xl bg-[#0c1620] border border-slate-700 text-amber-300 font-mono font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
@@ -4192,6 +4397,202 @@ export default function AdminPage() {
                 {(editingProduct.customDeliveryCharge === '' || editingProduct.customDeliveryCharge === undefined || editingProduct.customDeliveryCharge === null) && (
                   <p className="text-[11px] text-red-400 font-semibold">⚠️ Amount zaroor fill karein save karne se pehle.</p>
                 )}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 2.9: PRODUCT-SPECIFIC PROMO COUPON */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <Tag className="w-4 h-4 text-amber-500" />
+                <span>2.9. Product-Specific Coupon Code (Optional)</span>
+              </div>
+              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                editingProduct.hasCoupon && editingProduct.couponCode && Number(editingProduct.couponDiscount) > 0
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}>
+                {editingProduct.hasCoupon && editingProduct.couponCode && Number(editingProduct.couponDiscount) > 0
+                  ? `🎟️ Active Coupon: ${editingProduct.couponCode} (${editingProduct.couponType === 'percentage' ? `${editingProduct.couponDiscount}%` : `₹${editingProduct.couponDiscount}`} OFF)`
+                  : '⚪ No Coupon Assigned'}
+              </span>
+            </div>
+
+            <p className="text-[11px] text-slate-400">
+              Customers purchasing this product can apply this coupon code at checkout for an instant discount. It will also be highlighted on the product page!
+            </p>
+
+            {/* Master Coupon Enable Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-[#060c12] border border-slate-800">
+              <div>
+                <span className="text-xs font-bold text-white block">Enable Coupon for this Product</span>
+                <span className="text-[10px] text-slate-400">Allow customers to get an extra discount on this item</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextState = !editingProduct.hasCoupon;
+                  setEditingProduct({
+                    ...editingProduct,
+                    hasCoupon: nextState,
+                    couponType: editingProduct.couponType || 'flat',
+                    couponDiscount: nextState ? (editingProduct.couponDiscount || 50) : '',
+                    couponCode: nextState ? (editingProduct.couponCode || 'SAVE50') : ''
+                  });
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                  editingProduct.hasCoupon
+                    ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                {editingProduct.hasCoupon ? '✓ Coupon Enabled' : '+ Enable Coupon'}
+              </button>
+            </div>
+
+            {editingProduct.hasCoupon && (
+              <div className="space-y-4 pt-1">
+                {/* 1-Click Quick Presets */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold text-slate-300">
+                    ⚡ 1-Click Quick Coupon Presets:
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: 'Flat ₹50 OFF', code: 'FLAT50', type: 'flat', discount: 50 },
+                      { label: 'Flat ₹100 OFF', code: 'SAVE100', type: 'flat', discount: 100 },
+                      { label: 'Flat ₹150 OFF', code: 'SAVE150', type: 'flat', discount: 150 },
+                      { label: 'Flat ₹200 OFF', code: 'ROYAL200', type: 'flat', discount: 200 },
+                      { label: '10% OFF', code: 'PROMO10', type: 'percentage', discount: 10 },
+                      { label: '15% OFF', code: 'SPECIAL15', type: 'percentage', discount: 15 },
+                      { label: '20% OFF', code: 'MEGA20', type: 'percentage', discount: 20 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.code}
+                        type="button"
+                        onClick={() => {
+                          setEditingProduct({
+                            ...editingProduct,
+                            hasCoupon: true,
+                            couponCode: preset.code,
+                            couponType: preset.type,
+                            couponDiscount: preset.discount,
+                            couponDescription: preset.type === 'percentage' 
+                              ? `${preset.discount}% OFF on ${editingProduct.name || 'this product'}`
+                              : `Flat ₹${preset.discount} OFF on ${editingProduct.name || 'this product'}`
+                          });
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition border ${
+                          editingProduct.couponCode === preset.code
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+                            : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-amber-500/50'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProduct({
+                          ...editingProduct,
+                          hasCoupon: false,
+                          couponCode: '',
+                          couponDiscount: '',
+                          couponDescription: ''
+                        });
+                      }}
+                      className="px-2 py-1 rounded-lg text-[10px] text-rose-400 hover:bg-rose-950/40 transition border border-transparent"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Coupon Code Input */}
+                  <div>
+                    <label className="block font-bold text-slate-200 mb-1 text-xs">
+                      Coupon Code *
+                    </label>
+                    <input
+                      type="text"
+                      required={editingProduct.hasCoupon}
+                      placeholder="e.g. SAVE50, EID10"
+                      value={editingProduct.couponCode || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, couponCode: e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '') })}
+                      className="w-full px-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-amber-400 font-mono text-sm font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  {/* Discount Type */}
+                  <div>
+                    <label className="block font-bold text-slate-200 mb-1 text-xs">
+                      Discount Type
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#060c12] rounded-xl border border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() => setEditingProduct({ ...editingProduct, couponType: 'flat' })}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition ${
+                          editingProduct.couponType !== 'percentage'
+                            ? 'bg-amber-500 text-slate-950 shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        Flat (₹)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingProduct({ ...editingProduct, couponType: 'percentage' })}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition ${
+                          editingProduct.couponType === 'percentage'
+                            ? 'bg-amber-500 text-slate-950 shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        Percent (%)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Discount Value */}
+                  <div>
+                    <label className="block font-bold text-slate-200 mb-1 text-xs">
+                      {editingProduct.couponType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Amount (₹) *'}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                        {editingProduct.couponType === 'percentage' ? '%' : '₹'}
+                      </span>
+                      <input
+                        type="number"
+                        required={editingProduct.hasCoupon}
+                        min="1"
+                        max={editingProduct.couponType === 'percentage' ? 90 : (Number(editingProduct.price) || 10000)}
+                        placeholder={editingProduct.couponType === 'percentage' ? '10' : '50'}
+                        value={editingProduct.couponDiscount || ''}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, couponDiscount: e.target.value })}
+                        className="w-full pl-7 pr-3 py-2.5 rounded-xl bg-[#060c12] border border-slate-700 text-white font-mono text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optional Description / Offer Note */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1 text-[11px]">
+                    Customer Offer Note (Displayed on product page)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Apply code at checkout for special discount"
+                    value={editingProduct.couponDescription || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, couponDescription: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#060c12] border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
               </div>
             )}
           </div>

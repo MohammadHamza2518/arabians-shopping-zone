@@ -201,6 +201,14 @@ export default function ProductCard({ product }) {
               ) : null}
             </div>
           )}
+
+          {/* Product Coupon Tag */}
+          {product.couponCode && Number(product.couponDiscount) > 0 && (
+            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-300/80 px-2 py-0.5 rounded-md w-fit mt-1">
+              <span className="font-mono text-slate-900">{product.couponCode}:</span>
+              <span className="text-emerald-700">{product.couponType === 'percentage' ? `${product.couponDiscount}% OFF` : `₹${product.couponDiscount} OFF`}</span>
+            </div>
+          )}
         </div>
 
         {/* Pricing & Add to Cart */}

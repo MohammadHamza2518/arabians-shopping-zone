@@ -16,15 +16,15 @@ export function StoreProvider({ children }) {
     phone: "+91 72338 62626",
     callNumber: "+91 72338 62626",
     email: "arabiansshoppingzone@gmail.com",
-    announcement: "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999 | Use Code ARABIAN10 for 10% Off!",
+    announcement: "🌙 Special Offer: Free Express Pan-India Delivery on orders above ₹999!",
     freeShippingThreshold: 999,
     standardShippingFee: 70,
     flashSale: {
       enabled: true,
       badge: "Special Sunnah Blessing Deal",
-      headline: "Flat 10% Off On Orders Above ₹999 + Free Express Pan-India COD",
+      headline: "Special Direct Discounts Available + Free Express Pan-India Delivery",
       subtitle: "Direct from our market studio. Sealed with tamper-proof halal guarantee.",
-      couponCode: "ARABIAN10"
+      couponCode: ""
     },
     jummahBundle: {
       enabled: true,
@@ -400,7 +400,7 @@ export function StoreProvider({ children }) {
       const res = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, cartTotal: cartSubtotal })
+        body: JSON.stringify({ code, cartTotal: cartSubtotal, items: cart })
       });
       const data = await res.json();
       if (!res.ok || !data.valid) {

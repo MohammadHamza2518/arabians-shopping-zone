@@ -45,7 +45,7 @@ export default function Header() {
 
   const ANNOUNCEMENTS = [
     { text: "🌙 Free Delivery on ₹999+", highlight: "Pan-India COD" },
-    { text: "✨ Flat 10% Off Orders", highlight: "Code: ARABIAN10" },
+    { text: "✨ Direct Savings Available", highlight: "Special Product Offers" },
     { text: "🛡️ 100% Halal Certified", highlight: "Verified Quality" }
   ];
 

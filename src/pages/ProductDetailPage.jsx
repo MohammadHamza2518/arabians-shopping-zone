@@ -17,7 +17,9 @@ import {
   ArrowLeft,
   ChevronRight,
   Ruler,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Tag
 } from 'lucide-react';
 import SmartSizeFinderModal from '../components/SmartSizeFinderModal';
 import PersonalizationStudio from '../components/PersonalizationStudio';
@@ -26,7 +28,7 @@ import { getProductOrderWhatsAppUrl, getRestockInquiryWhatsAppUrl } from '../uti
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, categories, addToCart, wishlist, toggleWishlist, settings, loading } = useStore();
+  const { products, categories, addToCart, wishlist, toggleWishlist, settings, loading, showToast } = useStore();
 
   const product = products.find((p) => p.id === id);
 
@@ -38,6 +40,7 @@ export default function ProductDetailPage() {
   const [isSizeFinderOpen, setIsSizeFinderOpen] = useState(false);
   const [detailImgClass, setDetailImgClass] = useState('object-cover object-top');
   const [hasDetailImgError, setHasDetailImgError] = useState(false);
+  const [copiedCoupon, setCopiedCoupon] = useState(false);
 
   // Stock and Flipkart-Style Size Availability
   const totalSizes = Array.isArray(product?.sizes) ? product.sizes.length : 0;
@@ -338,6 +341,45 @@ export default function ProductDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Product-Specific Promo Coupon Banner */}
+          {product.couponCode && Number(product.couponDiscount) > 0 && (
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
+                    <Tag className="w-3 h-3 text-slate-950" />
+                    <span>Special Coupon</span>
+                  </span>
+                  <span className="font-mono font-black text-amber-950 text-xs px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300">
+                    {product.couponCode}
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-slate-900">
+                  Save {product.couponType === 'percentage' ? `${product.couponDiscount}% OFF` : `Extra ₹${product.couponDiscount} OFF`} on this product!
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {product.couponDescription || 'Apply this promo code at checkout to claim your discount.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(product.couponCode);
+                  setCopiedCoupon(true);
+                  if (typeof showToast === 'function') {
+                    showToast(`Coupon "${product.couponCode}" copied! Apply at checkout.`);
+                  }
+                  setTimeout(() => setCopiedCoupon(false), 2500);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm shrink-0 active:scale-95 cursor-pointer"
+              >
+                {copiedCoupon ? <Check className="w-4 h-4 text-slate-950" /> : <Copy className="w-4 h-4 text-slate-950" />}
+                <span>{copiedCoupon ? 'Code Copied!' : `Copy: ${product.couponCode}`}</span>
+              </button>
+            </div>
+          )}
 
           {/* Size or Specification Selector (Flipkart Style) */}
           {product.sizes && product.sizes.length > 0 && (

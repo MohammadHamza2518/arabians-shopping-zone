@@ -255,7 +255,7 @@ export default function CartDrawer() {
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Enter Coupon Code (e.g. ARABIAN10)"
+                      placeholder="Enter Coupon Code (e.g. SAVE50)"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 uppercase tracking-wider"
@@ -268,6 +268,30 @@ export default function CartDrawer() {
                       {couponLoading ? '...' : 'Apply'}
                     </button>
                   </div>
+                  {/* Quick 1-Tap Product Coupon in Drawer */}
+                  {(() => {
+                    const itemsWithCoupon = cart.filter(i => (i.couponCode || i.product?.couponCode) && (Number(i.couponDiscount) > 0 || Number(i.product?.couponDiscount) > 0));
+                    if (itemsWithCoupon.length === 0) return null;
+                    const uniqueCoupons = Array.from(new Set(itemsWithCoupon.map(i => (i.couponCode || i.product?.couponCode).trim().toUpperCase())));
+                    return (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <span className="text-[10px] text-slate-500 font-medium">Available item coupon:</span>
+                        {uniqueCoupons.map(code => (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => {
+                              setCouponInput(code);
+                              applyCoupon(code);
+                            }}
+                            className="px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold text-[10px] transition cursor-pointer"
+                          >
+                            Tap to Apply: {code}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   {couponError && (
                     <p className="text-[11px] text-rose-600 font-medium">{couponError}</p>
                   )}
