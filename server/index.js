@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import https from 'https';
 import { initialData } from './data/initialData.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -2433,5 +2434,24 @@ if (fs.existsSync(distDir)) {
 
 app.listen(PORT, () => {
   console.log(`Arabians Shopping Zone Backend & Web App running on port ${PORT}`);
+
+  // Automated Keep-Alive Self-Ping (Render Free Tier 15-minute sleep protection)
+  const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || 'https://arabians-shopping-zone.onrender.com/api/health';
+  const PING_INTERVAL = 8 * 60 * 1000; // Har 8 minute mein ping karega
+
+  setInterval(() => {
+    try {
+      https.get(KEEP_ALIVE_URL, (res) => {
+        res.on('data', () => {});
+        res.on('end', () => {
+          console.log(`[Keep-Alive] Self-ping successful (${res.statusCode}) at ${new Date().toISOString()}`);
+        });
+      }).on('error', (err) => {
+        console.warn(`[Keep-Alive] Warning: Self-ping error: ${err.message}`);
+      });
+    } catch (e) {
+      console.warn(`[Keep-Alive] Timer error: ${e.message}`);
+    }
+  }, PING_INTERVAL);
 });
 
