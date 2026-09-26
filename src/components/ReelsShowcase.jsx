@@ -197,8 +197,10 @@ const DEFAULT_REELS = [
     title: "Viral Amama Sharif Tying Tutorial 👑",
     views: "20M",
     likes: "180.7K",
-    videoUrl: "/assets/reels/real_amama_tutorial.mp4",
+    videoUrl: "https://files.catbox.moe/touhkb.mp4",
     thumbnail: "/assets/reels/real_amama_tutorial.jpg",
+    fallbackVideoUrl: "/assets/reels/real_amama_tutorial.mp4",
+    fallbackThumbnail: "/assets/reels/real_amama_tutorial.jpg",
     instagramUrl: "https://www.instagram.com/reel/DVVt2k7ERwZ/",
     category: "wearing",
     categoryName: "Attire & Caps",
@@ -211,8 +213,10 @@ const DEFAULT_REELS = [
     title: "Special Designer Cap for 12 Rabi-ul-Awal 👑✨",
     views: "2.8M",
     likes: "142.5K",
-    videoUrl: "/assets/reels/real_viral_28m.mp4",
+    videoUrl: "https://files.catbox.moe/dfk5d4.mp4",
     thumbnail: "/assets/reels/real_viral_28m.jpg",
+    fallbackVideoUrl: "/assets/reels/real_viral_28m.mp4",
+    fallbackThumbnail: "/assets/reels/real_viral_28m.jpg",
     instagramUrl: "https://www.instagram.com/reel/DNvW2rM0kQV/",
     category: "wearing",
     categoryName: "Caps & Attire",
@@ -225,8 +229,10 @@ const DEFAULT_REELS = [
     title: "BIG QURAAN SET 16 inch 😍 | GIFT & WEDDING ❤️",
     views: "1.1M",
     likes: "92.4K",
-    videoUrl: "/assets/reels/real_quran_set.mp4",
+    videoUrl: "https://files.catbox.moe/lkv2fk.mp4",
     thumbnail: "/assets/reels/real_quran_set.jpg",
+    fallbackVideoUrl: "/assets/reels/real_quran_set.mp4",
+    fallbackThumbnail: "/assets/reels/real_quran_set.jpg",
     instagramUrl: "https://www.instagram.com/reel/DI6jN-5hW82/",
     category: "wedding",
     categoryName: "Wedding Gifts",
@@ -239,8 +245,10 @@ const DEFAULT_REELS = [
     title: "SYRIAN QUBBA AVAILABLE AT ARABIANS 🛍️",
     views: "354K",
     likes: "18.8K",
-    videoUrl: "/assets/reels/real_syrian_qubba.mp4",
+    videoUrl: "https://files.catbox.moe/wu3aam.mp4",
     thumbnail: "/assets/reels/real_syrian_qubba.jpg",
+    fallbackVideoUrl: "/assets/reels/real_syrian_qubba.mp4",
+    fallbackThumbnail: "/assets/reels/real_syrian_qubba.jpg",
     instagramUrl: "https://www.instagram.com/reel/DSC5bawjdBm/",
     category: "wearing",
     categoryName: "Royal Bisht",
@@ -253,8 +261,10 @@ const DEFAULT_REELS = [
     title: "Arabian's Mosaic Aroma Lamp & Bakhoor Burner ✨",
     views: "3.9K",
     likes: "1.5K",
-    videoUrl: "/assets/reels/real_aroma_lamp.mp4",
+    videoUrl: "https://files.catbox.moe/0dlo2a.mp4",
     thumbnail: "/assets/reels/real_aroma_lamp.jpg",
+    fallbackVideoUrl: "/assets/reels/real_aroma_lamp.mp4",
+    fallbackThumbnail: "/assets/reels/real_aroma_lamp.jpg",
     instagramUrl: "https://www.instagram.com/reel/Dcnx6dJKfJM/",
     category: "fragrance",
     categoryName: "Aroma & Bakhoor",
@@ -279,6 +289,7 @@ const DEFAULT_REELS = [
     productPrice: "₹349"
   }
 ];
+
 
 export default function ReelsShowcase() {
   const { reels: storeReels, products, setSelectedProduct, activeReel, setActiveReel, settings } = useStore();
