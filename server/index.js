@@ -2423,6 +2423,13 @@ app.get('/api/debug-assets', (req, res) => {
 // Serve production build if exists
 const distDir = path.join(rootDir, 'dist');
 if (fs.existsSync(distDir)) {
+  // Automatic direct URL redirects to HashRouter equivalents
+  app.get('/admin', (req, res) => res.redirect('/#/admin'));
+  app.get('/admin/*', (req, res) => res.redirect(`/#${req.originalUrl}`));
+  app.get('/shop', (req, res) => res.redirect('/#/shop'));
+  app.get('/track', (req, res) => res.redirect('/#/track'));
+  app.get('/reviews', (req, res) => res.redirect('/#/reviews'));
+
   app.use(express.static(distDir));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/assets')) {
@@ -2436,7 +2443,7 @@ app.listen(PORT, () => {
   console.log(`Arabians Shopping Zone Backend & Web App running on port ${PORT}`);
 
   // Automated Keep-Alive Self-Ping (Render Free Tier 15-minute sleep protection)
-  const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || 'https://arabians-shopping-zone.onrender.com/api/health';
+  const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || 'https://arabiansshoppingzone.shop/api/health';
   const PING_INTERVAL = 8 * 60 * 1000; // Har 8 minute mein ping karega
 
   setInterval(() => {
