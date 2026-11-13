@@ -41,9 +41,9 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Serve uploaded files statically
-app.use('/uploads', express.static(uploadsDir));
-app.use('/assets', express.static(path.join(rootDir, 'public', 'assets')));
-app.use('/assets', express.static(path.join(rootDir, 'dist', 'assets')));
+app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
+app.use('/assets', express.static(path.join(rootDir, 'public', 'assets'), { maxAge: '7d' }));
+app.use('/assets', express.static(path.join(rootDir, 'dist', 'assets'), { maxAge: '7d' }));
 
 // Storage file path (local disk backup)
 const storePath = path.join(__dirname, 'data', 'store.json');
@@ -157,7 +157,7 @@ function loadLocalStore() {
 memoryStore = loadLocalStore();
 
 async function initMongoDB() {
-  const uri = process.env.MONGODB_URI || process.env.NONGODB_URI;
+  const uri = process.env.MONGODB_URI || process.env.NONGODB_URI || 'mongodb+srv://mohammadhamza2518_db_user:H6t7ji6iIQOoO4ME@cluster0.xfjp4y5.mongodb.net/arabians_shopping_zone?retryWrites=true&w=majority&appName=Cluster0';
   if (!uri || !uri.trim()) {
     console.log("ℹ️  MONGODB_URI not detected. Running in Local JSON Persistence mode.");
     return;
@@ -2430,7 +2430,14 @@ if (fs.existsSync(distDir)) {
   app.get('/track', (req, res) => res.redirect('/#/track'));
   app.get('/reviews', (req, res) => res.redirect('/#/reviews'));
 
-  app.use(express.static(distDir));
+  app.use(express.static(distDir, {
+    maxAge: '1d',
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    }
+  }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/assets')) {
       return next();
