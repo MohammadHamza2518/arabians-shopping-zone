@@ -53,7 +53,8 @@ import {
   Image as ImageIcon,
   CreditCard,
   ShieldCheck,
-  Ticket
+  Ticket,
+  Banknote
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { searchProducts } from '../utils/searchEngine';
@@ -101,6 +102,7 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [trackingInputs, setTrackingInputs] = useState({});
   const [activeInvoiceOrder, setActiveInvoiceOrder] = useState(null);
+  const [selectedOrderImage, setSelectedOrderImage] = useState(null);
 
   // Shipmozo Delivery Integration State
   const [pushingMozoId, setPushingMozoId] = useState(null);
@@ -667,6 +669,7 @@ export default function AdminPage() {
         deliveryChargeType: 'default',
         freeDelivery: false,
         customDeliveryCharge: '',
+        paymentOption: 'both',
         hasCoupon: false,
         couponCode: '',
         couponType: 'flat',
@@ -690,6 +693,7 @@ export default function AdminPage() {
         deliveryChargeType: productToEdit.deliveryChargeType || (productToEdit.freeDelivery ? 'free' : (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null ? 'custom' : 'default')),
         freeDelivery: Boolean(productToEdit.freeDelivery || productToEdit.deliveryChargeType === 'free'),
         customDeliveryCharge: (productToEdit.customDeliveryCharge !== undefined && productToEdit.customDeliveryCharge !== null) ? productToEdit.customDeliveryCharge : '',
+        paymentOption: productToEdit.paymentOption || productToEdit.paymentMode || 'both',
         hasCoupon: Boolean(productToEdit.hasCoupon || (productToEdit.couponCode && Number(productToEdit.couponDiscount) > 0)),
         couponCode: productToEdit.couponCode || '',
         couponType: productToEdit.couponType || 'flat',
@@ -769,6 +773,8 @@ export default function AdminPage() {
         deliveryChargeType: isFreeDelivery ? 'free' : (editingProduct.deliveryChargeType || 'default'),
         freeDelivery: isFreeDelivery,
         customDeliveryCharge: customCharge,
+        paymentOption: editingProduct.paymentOption || 'both',
+        paymentMode: editingProduct.paymentOption || 'both',
         hasCoupon: hasProductCoupon,
         couponCode: cleanCoupon,
         couponType: editingProduct.couponType === 'percentage' ? 'percentage' : 'flat',
@@ -2083,8 +2089,26 @@ export default function AdminPage() {
                               {o.paymentMode || o.paymentMethod || 'COD'}
                             </span>
                           </div>
-                          <div className="text-slate-400 text-[11px] mt-0.5">
-                            {o.items ? o.items.length : 0} item(s) • Total: <strong className="text-emerald-400">₹{o.total}</strong>
+                          <div className="text-slate-400 text-[11px] mt-1 flex flex-wrap items-center gap-2">
+                            <span>{o.items ? o.items.length : 0} item(s) • Total: <strong className="text-emerald-400">₹{o.total}</strong></span>
+                            {o.items && o.items.length > 0 && (
+                              <div className="flex items-center -space-x-1.5 overflow-hidden">
+                                {o.items.slice(0, 4).map((it, iIdx) => {
+                                  const catItem = products.find(p => p.id === it.id || p.id === it.productId);
+                                  const img = it.image || catItem?.image || '/assets/logo/logo_main.png';
+                                  return (
+                                    <img 
+                                      key={iIdx} 
+                                      src={img} 
+                                      alt={it.name} 
+                                      className="w-5 h-5 rounded-full object-cover border border-slate-700 bg-slate-900" 
+                                      title={`${it.name} (Qty: ${it.quantity})`}
+                                      onError={(e) => { e.target.src = '/assets/logo/logo_main.png'; }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -2396,54 +2420,110 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Items Breakdown */}
-                    <div className="space-y-2 bg-[#081018] p-4 rounded-2xl border border-slate-800/80">
-                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block">
-                        Items Ordered ({ord.items ? ord.items.length : 0}):
-                      </span>
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        {ord.items && ord.items.map((it, idx) => (
-                          <div key={idx} className="py-1.5 border-b border-slate-800/60 last:border-0 text-slate-300">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <span className="font-semibold text-white">{it.name}</span>
-                                {it.selectedSize && (
-                                  <span className="text-[10px] text-amber-400 ml-1.5">({it.selectedSize})</span>
-                                )}
-                                <span className="text-slate-400 ml-1">× {it.quantity}</span>
-                              </div>
-                              <span className="font-mono text-slate-200">₹{it.price * it.quantity}</span>
-                            </div>
-                            {it.customization && (
-                              <div className="mt-1.5 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] text-amber-200 space-y-0.5">
-                                <div className="font-bold text-amber-400 flex items-center gap-1">
-                                  <span>👑 Personalized Keepsake Order:</span>
+                    {/* Items Breakdown with Photo & Quantities */}
+                    <div className="space-y-2.5 bg-[#081018] p-4 rounded-2xl border border-slate-800/80">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block">
+                          Items to Pack ({ord.items ? ord.items.length : 0}):
+                        </span>
+                        <span className="text-[10px] font-mono text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                          Total Units: {ord.items ? ord.items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0) : 0}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1 divide-y divide-slate-800/60">
+                        {ord.items && ord.items.map((it, idx) => {
+                          const catItem = products.find(p => p.id === it.id || p.id === it.productId);
+                          const itemImg = it.image || catItem?.image || '/assets/logo/logo_main.png';
+
+                          return (
+                            <div key={idx} className="pt-2 first:pt-0 pb-1 flex items-start gap-3 text-slate-300">
+                              {/* Product Thumbnail (Click to zoom) */}
+                              <div 
+                                onClick={() => setSelectedOrderImage(itemImg)}
+                                className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#04080d] border border-slate-700/80 p-1 shrink-0 cursor-pointer group hover:border-amber-400 transition"
+                                title="Click to view full image"
+                              >
+                                <img 
+                                  src={itemImg} 
+                                  alt={it.name} 
+                                  className="w-full h-full object-contain group-hover:scale-105 transition"
+                                  onError={(e) => { e.target.src = '/assets/logo/logo_main.png'; }}
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white">
+                                  <Eye className="w-3.5 h-3.5 text-amber-300" />
                                 </div>
-                                {it.customization.shareLaterOnWhatsApp ? (
-                                  <div className="text-emerald-300 font-semibold">Customer will provide custom details on WhatsApp</div>
-                                ) : it.customization.isWedding ? (
-                                  <div className="space-y-0.5">
-                                    <div className="text-white font-semibold">
-                                      Dulha: <span className="text-amber-300">{it.customization.groomName || '-'}</span> &nbsp;|&nbsp; Dulhan: <span className="text-amber-300">{it.customization.brideName || '-'}</span>
+                              </div>
+
+                              {/* Product Details & Quantity */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="space-y-1">
+                                    <h5 className="font-bold text-white text-xs leading-snug line-clamp-2" title={it.name}>
+                                      {it.name}
+                                    </h5>
+                                    
+                                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                      {/* Highlighted Prominent Quantity Badge */}
+                                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/50 text-[11px] font-black tracking-wide flex items-center gap-1">
+                                        <span>QTY:</span>
+                                        <span className="text-white text-xs">{it.quantity}</span>
+                                      </span>
+
+                                      {/* Size Badge */}
+                                      {it.selectedSize && (
+                                        <span className="px-2 py-0.5 rounded-md bg-sky-950 text-sky-300 border border-sky-700/60 text-[10px] font-bold">
+                                          Size: {it.selectedSize}
+                                        </span>
+                                      )}
+
+                                      {/* Rate */}
+                                      <span className="text-[11px] text-slate-400 font-mono">
+                                        ₹{it.price} each
+                                      </span>
                                     </div>
-                                    {it.customization.eventDate && (
-                                      <div className="text-slate-300">Date: {it.customization.eventDate} {it.customization.cityVenue ? `• ${it.customization.cityVenue}` : ''}</div>
+                                  </div>
+
+                                  {/* Line Item Total */}
+                                  <div className="text-right shrink-0">
+                                    <span className="font-mono font-bold text-xs sm:text-sm text-emerald-400">
+                                      ₹{it.price * it.quantity}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {it.customization && (
+                                  <div className="mt-1.5 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] text-amber-200 space-y-0.5">
+                                    <div className="font-bold text-amber-400 flex items-center gap-1">
+                                      <span>👑 Personalized Keepsake Order:</span>
+                                    </div>
+                                    {it.customization.shareLaterOnWhatsApp ? (
+                                      <div className="text-emerald-300 font-semibold">Customer will provide custom details on WhatsApp</div>
+                                    ) : it.customization.isWedding ? (
+                                      <div className="space-y-0.5">
+                                        <div className="text-white font-semibold">
+                                          Dulha: <span className="text-amber-300">{it.customization.groomName || '-'}</span> &nbsp;|&nbsp; Dulhan: <span className="text-amber-300">{it.customization.brideName || '-'}</span>
+                                        </div>
+                                        {it.customization.eventDate && (
+                                          <div className="text-slate-300">Date: {it.customization.eventDate} {it.customization.cityVenue ? `• ${it.customization.cityVenue}` : ''}</div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="text-white font-semibold">
+                                        Text: <span className="text-amber-300">{it.customization.customText}</span>
+                                      </div>
+                                    )}
+                                    {it.customization.specialNotes && (
+                                      <div className="text-amber-400/80 italic text-[10px]">
+                                        Note: "{it.customization.specialNotes}"
+                                      </div>
                                     )}
                                   </div>
-                                ) : (
-                                  <div className="text-white font-semibold">
-                                    Text: <span className="text-amber-300">{it.customization.customText}</span>
-                                  </div>
-                                )}
-                                {it.customization.specialNotes && (
-                                  <div className="text-amber-400/80 italic text-[10px]">
-                                    Note: "{it.customization.specialNotes}"
-                                  </div>
                                 )}
                               </div>
-                            )}
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}
                       </div>
 
                       <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-sm font-black">
@@ -2548,6 +2628,15 @@ export default function AdminPage() {
                       ) : p.deliveryChargeType === 'custom' && p.customDeliveryCharge !== undefined && p.customDeliveryCharge !== null ? (
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700">
                           🚚 ₹{p.customDeliveryCharge}
+                        </span>
+                      ) : null}
+                      {p.paymentOption === 'online' ? (
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-700">
+                          💳 Online Only
+                        </span>
+                      ) : p.paymentOption === 'cod' ? (
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700">
+                          💵 COD Only
                         </span>
                       ) : null}
                       {p.badge && (
@@ -4554,6 +4643,110 @@ export default function AdminPage() {
             )}
           </div>
 
+          {/* SECTION 2.85: PAYMENT METHODS ALLOWED (COD / ONLINE / BOTH) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
+                <CreditCard className="w-4 h-4 text-amber-500" />
+                <span>2.85. Payment Methods Allowed (COD / Online / Both)</span>
+              </div>
+              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                (editingProduct.paymentOption || 'both') === 'online'
+                  ? 'bg-sky-950 text-sky-300 border-sky-700'
+                  : (editingProduct.paymentOption || 'both') === 'cod'
+                  ? 'bg-amber-950 text-amber-300 border-amber-700'
+                  : 'bg-emerald-950 text-emerald-300 border-emerald-700'
+              }`}>
+                {(editingProduct.paymentOption || 'both') === 'online'
+                  ? '💳 Online Payment Only'
+                  : (editingProduct.paymentOption || 'both') === 'cod'
+                  ? '💵 Cash on Delivery Only'
+                  : '🟢 Both (COD + Online Allowed)'}
+              </span>
+            </div>
+
+            <p className="text-[11px] text-slate-400">
+              Chunein ki customer is product ko kaise khareed sakta hai: Cash on Delivery, Online Payment (UPI/Cards), ya dono options khule rakhne hain.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+              {/* Option 1: Both COD + Online (Default) */}
+              <button
+                type="button"
+                onClick={() => setEditingProduct({ ...editingProduct, paymentOption: 'both' })}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  (editingProduct.paymentOption || 'both') === 'both'
+                    ? 'bg-emerald-950/60 border-emerald-500 text-emerald-200 shadow-sm'
+                    : 'bg-[#060c12] border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-emerald-400">🟢 Both (COD + Online)</span>
+                  <input
+                    type="radio"
+                    name="productPaymentOption"
+                    checked={(editingProduct.paymentOption || 'both') === 'both'}
+                    onChange={() => setEditingProduct({ ...editingProduct, paymentOption: 'both' })}
+                    className="accent-emerald-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Recommended. Customer checkout par chahe COD chune ya Online UPI/Cards se pay kare.
+                </p>
+              </button>
+
+              {/* Option 2: Online Payment Only (Prepaid) */}
+              <button
+                type="button"
+                onClick={() => setEditingProduct({ ...editingProduct, paymentOption: 'online' })}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  editingProduct.paymentOption === 'online'
+                    ? 'bg-sky-950/60 border-sky-500 text-sky-200 shadow-sm'
+                    : 'bg-[#060c12] border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-sky-400">💳 Online Payment Only</span>
+                  <input
+                    type="radio"
+                    name="productPaymentOption"
+                    checked={editingProduct.paymentOption === 'online'}
+                    onChange={() => setEditingProduct({ ...editingProduct, paymentOption: 'online' })}
+                    className="accent-sky-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Sirf Prepaid. Customer ko Razorpay online payment karna padega. COD option band rahega.
+                </p>
+              </button>
+
+              {/* Option 3: COD Only */}
+              <button
+                type="button"
+                onClick={() => setEditingProduct({ ...editingProduct, paymentOption: 'cod' })}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  editingProduct.paymentOption === 'cod'
+                    ? 'bg-amber-950/60 border-amber-500 text-amber-200 shadow-sm'
+                    : 'bg-[#060c12] border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-amber-400">💵 COD Only</span>
+                  <input
+                    type="radio"
+                    name="productPaymentOption"
+                    checked={editingProduct.paymentOption === 'cod'}
+                    onChange={() => setEditingProduct({ ...editingProduct, paymentOption: 'cod' })}
+                    className="accent-amber-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Sirf Cash on Delivery. Online payment gateway bypass ho jayega.
+                </p>
+              </button>
+            </div>
+          </div>
+
           {/* SECTION 2.9: PRODUCT-SPECIFIC PROMO COUPON */}
           <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -6217,26 +6410,41 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {activeInvoiceOrder.items && activeInvoiceOrder.items.map((it, idx) => (
-                <tr key={idx}>
-                  <td className="p-3 font-medium text-slate-900">
-                    <div>{it.name} {it.selectedSize ? `(${it.selectedSize})` : ''}</div>
-                    {it.customization && (
-                      <div className="text-[11px] text-amber-950 bg-amber-50 p-1.5 rounded mt-1 border border-amber-200">
-                        <strong className="text-amber-900">👑 Custom Personalization:</strong>{' '}
-                        {it.customization.shareLaterOnWhatsApp 
-                          ? 'Customer will provide custom details via WhatsApp'
-                          : it.customization.isWedding 
-                            ? `Dulha: ${it.customization.groomName || '-'} ❤️ Dulhan: ${it.customization.brideName || '-'}${it.customization.eventDate ? ` | Date: ${it.customization.eventDate}` : ''}${it.customization.cityVenue ? ` | Venue: ${it.customization.cityVenue}` : ''}${it.customization.specialNotes ? ` | Note: ${it.customization.specialNotes}` : ''}`
-                            : `${it.customization.customText}${it.customization.specialNotes ? ` | Note: ${it.customization.specialNotes}` : ''}`}
+              {activeInvoiceOrder.items && activeInvoiceOrder.items.map((it, idx) => {
+                const catItem = products.find(p => p.id === it.id || p.id === it.productId);
+                const itemImg = it.image || catItem?.image || '/assets/logo/logo_main.png';
+
+                return (
+                  <tr key={idx}>
+                    <td className="p-3 font-medium text-slate-900">
+                      <div className="flex items-center gap-2.5">
+                        <img 
+                          src={itemImg} 
+                          alt={it.name}
+                          className="w-10 h-10 rounded-lg object-contain bg-slate-50 border border-slate-200 shrink-0"
+                          onError={(e) => { e.target.src = '/assets/logo/logo_main.png'; }}
+                        />
+                        <div>
+                          <div className="font-bold text-slate-900">{it.name} {it.selectedSize ? `(${it.selectedSize})` : ''}</div>
+                          {it.customization && (
+                            <div className="text-[11px] text-amber-950 bg-amber-50 p-1.5 rounded mt-1 border border-amber-200">
+                              <strong className="text-amber-900">👑 Custom Personalization:</strong>{' '}
+                              {it.customization.shareLaterOnWhatsApp 
+                                ? 'Customer will provide custom details via WhatsApp'
+                                : it.customization.isWedding 
+                                  ? `Dulha: ${it.customization.groomName || '-'} ❤️ Dulhan: ${it.customization.brideName || '-'}${it.customization.eventDate ? ` | Date: ${it.customization.eventDate}` : ''}${it.customization.cityVenue ? ` | Venue: ${it.customization.cityVenue}` : ''}${it.customization.specialNotes ? ` | Note: ${it.customization.specialNotes}` : ''}`
+                                  : `${it.customization.customText}${it.customization.specialNotes ? ` | Note: ${it.customization.specialNotes}` : ''}`}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </td>
-                  <td className="p-3 text-center">{it.quantity}</td>
-                  <td className="p-3 text-right font-mono">₹{it.price}</td>
-                  <td className="p-3 text-right font-mono font-bold">₹{it.price * it.quantity}</td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-3 text-center font-bold text-slate-900">{it.quantity}</td>
+                    <td className="p-3 text-right font-mono">₹{it.price}</td>
+                    <td className="p-3 text-right font-mono font-bold">₹{it.price * it.quantity}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -6407,6 +6615,54 @@ export default function AdminPage() {
           </button>
         </div>
 
+      </div>
+    </div>
+  )}
+
+  {/* ========================================================================= */}
+  {/* MODAL 6: HIGH-RES PRODUCT IMAGE LIGHTBOX ZOOM MODAL                       */}
+  {/* ========================================================================= */}
+  {selectedOrderImage && (
+    <div 
+      onClick={() => setSelectedOrderImage(null)}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md cursor-pointer animate-fadeIn"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()} 
+        className="relative max-w-lg w-full bg-[#0b1520] rounded-3xl p-5 border border-amber-500/40 shadow-2xl space-y-4 cursor-default"
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+            <Eye className="w-4 h-4 text-amber-500" />
+            <span>Order Item Image Inspection</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedOrderImage(null)}
+            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="w-full aspect-square rounded-2xl overflow-hidden bg-[#04080d] border border-slate-800 flex items-center justify-center p-3">
+          <img 
+            src={selectedOrderImage} 
+            alt="Enlarged order product preview" 
+            className="w-full h-full object-contain"
+            onError={(e) => { e.target.src = '/assets/logo/logo_main.png'; }}
+          />
+        </div>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setSelectedOrderImage(null)}
+            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-sm"
+          >
+            Close Preview
+          </button>
+        </div>
       </div>
     </div>
   )}

@@ -87,6 +87,17 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
+        {/* Payment Restriction Badge */}
+        {product.paymentOption === 'online' ? (
+          <div className="absolute top-2.5 right-11 bg-sky-800/95 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow-sm z-10 flex items-center gap-1 backdrop-blur-xs">
+            <span>💳 Online Only</span>
+          </div>
+        ) : product.paymentOption === 'cod' ? (
+          <div className="absolute top-2.5 right-11 bg-amber-800/95 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow-sm z-10 flex items-center gap-1 backdrop-blur-xs">
+            <span>💵 COD Only</span>
+          </div>
+        ) : null}
+
         {/* Wishlist Button */}
         <button
           type="button"

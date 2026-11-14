@@ -582,7 +582,13 @@ export default function ProductDetailPage() {
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
               <span>⚡ Express Pan-India Dispatch</span>
-              <span>🛡️ Cash on Delivery Available</span>
+              <span>
+                {product.paymentOption === 'online' 
+                  ? '💳 Prepaid Online Only (No COD)' 
+                  : product.paymentOption === 'cod' 
+                  ? '💵 Cash on Delivery Only' 
+                  : '🛡️ Cash on Delivery Available'}
+              </span>
               <span>🔄 Free Replacement Guarantee</span>
             </div>
           </div>

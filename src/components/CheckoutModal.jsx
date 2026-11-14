@@ -34,6 +34,27 @@ export default function CheckoutModal() {
   const [paymentMethod, setPaymentMethod] = useState('ONLINE'); // 'ONLINE', 'COD', 'WHATSAPP'
   const [submitting, setSubmitting] = useState(false);
 
+  // Cart-level payment restrictions
+  const onlineOnlyItem = cart.find(i => {
+    const p = i.product || i;
+    return (p.paymentOption || p.paymentMode) === 'online';
+  });
+  const codOnlyItem = cart.find(i => {
+    const p = i.product || i;
+    return (p.paymentOption || p.paymentMode) === 'cod';
+  });
+
+  const isCodBlocked = Boolean(onlineOnlyItem);
+  const isOnlineBlocked = Boolean(codOnlyItem);
+
+  useEffect(() => {
+    if (isCodBlocked && paymentMethod === 'COD') {
+      setPaymentMethod('ONLINE');
+    } else if (isOnlineBlocked && paymentMethod === 'ONLINE') {
+      setPaymentMethod('COD');
+    }
+  }, [isCodBlocked, isOnlineBlocked, paymentMethod]);
+
   const [customer, setCustomer] = useState({
     name: '',
     phone: '',
@@ -375,11 +396,13 @@ export default function CheckoutModal() {
                   
                   {/* Online Payment (Razorpay) */}
                   <div
-                    onClick={() => setPaymentMethod('ONLINE')}
-                    className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      paymentMethod === 'ONLINE'
-                        ? 'border-emerald-600 bg-emerald-50/70 shadow-sm'
-                        : 'border-slate-200 hover:border-emerald-400 bg-white'
+                    onClick={() => !isOnlineBlocked && setPaymentMethod('ONLINE')}
+                    className={`p-3.5 rounded-2xl border-2 transition-all ${
+                      isOnlineBlocked
+                        ? 'border-slate-200 bg-slate-100/70 opacity-60 cursor-not-allowed'
+                        : paymentMethod === 'ONLINE'
+                        ? 'border-emerald-600 bg-emerald-50/70 shadow-sm cursor-pointer'
+                        : 'border-slate-200 hover:border-emerald-400 bg-white cursor-pointer'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
@@ -387,30 +410,39 @@ export default function CheckoutModal() {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        checked={paymentMethod === 'ONLINE'}
-                        onChange={() => setPaymentMethod('ONLINE')}
+                        disabled={isOnlineBlocked}
+                        checked={paymentMethod === 'ONLINE' && !isOnlineBlocked}
+                        onChange={() => !isOnlineBlocked && setPaymentMethod('ONLINE')}
                         className="text-emerald-600 focus:ring-emerald-500"
                       />
                     </div>
                     <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1">
                       <span>Pay Online</span>
-                      {onlineBreakdown.onlineDiscount > 0 && (
+                      {isOnlineBlocked ? (
+                        <span className="text-[9px] bg-rose-100 text-rose-800 px-1 py-0.2 rounded font-bold">
+                          Unavailable
+                        </span>
+                      ) : onlineBreakdown.onlineDiscount > 0 ? (
                         <span className="text-[9px] bg-emerald-200 text-emerald-950 px-1 py-0.2 rounded font-black">
                           SAVE ₹{onlineBreakdown.onlineDiscount}
                         </span>
-                      )}
+                      ) : null}
                     </div>
                     <div className="text-emerald-800 font-bold font-mono text-xs mt-0.5">₹{onlineBreakdown.total}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">UPI, Cards, NetBanking</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {isOnlineBlocked ? `"${codOnlyItem?.product?.name || 'Item'}" is COD only` : 'UPI, Cards, NetBanking'}
+                    </div>
                   </div>
 
                   {/* COD */}
                   <div
-                    onClick={() => setPaymentMethod('COD')}
-                    className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      paymentMethod === 'COD'
-                        ? 'border-amber-600 bg-amber-50/70 shadow-sm'
-                        : 'border-slate-200 hover:border-amber-400 bg-white'
+                    onClick={() => !isCodBlocked && setPaymentMethod('COD')}
+                    className={`p-3.5 rounded-2xl border-2 transition-all ${
+                      isCodBlocked
+                        ? 'border-slate-200 bg-slate-100/70 opacity-60 cursor-not-allowed'
+                        : paymentMethod === 'COD'
+                        ? 'border-amber-600 bg-amber-50/70 shadow-sm cursor-pointer'
+                        : 'border-slate-200 hover:border-amber-400 bg-white cursor-pointer'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
@@ -418,21 +450,28 @@ export default function CheckoutModal() {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        checked={paymentMethod === 'COD'}
-                        onChange={() => setPaymentMethod('COD')}
+                        disabled={isCodBlocked}
+                        checked={paymentMethod === 'COD' && !isCodBlocked}
+                        onChange={() => !isCodBlocked && setPaymentMethod('COD')}
                         className="text-amber-600 focus:ring-amber-500"
                       />
                     </div>
                     <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1">
                       <span>Cash On Delivery</span>
-                      {codBreakdown.codFee > 0 && (
+                      {isCodBlocked ? (
+                        <span className="text-[9px] bg-rose-100 text-rose-800 px-1 py-0.2 rounded font-bold">
+                          Unavailable
+                        </span>
+                      ) : codBreakdown.codFee > 0 ? (
                         <span className="text-[9px] bg-amber-200 text-amber-950 px-1 py-0.2 rounded font-bold">
                           +₹{codBreakdown.codFee}
                         </span>
-                      )}
+                      ) : null}
                     </div>
                     <div className="text-slate-800 font-bold font-mono text-xs mt-0.5">₹{codBreakdown.total}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">Pay at your doorstep</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {isCodBlocked ? `"${onlineOnlyItem?.product?.name || 'Item'}" requires Online Pay` : 'Pay at your doorstep'}
+                    </div>
                   </div>
 
                   {/* WhatsApp Direct */}

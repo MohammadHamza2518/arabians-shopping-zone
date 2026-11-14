@@ -432,7 +432,13 @@ export default function ProductModal() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Cash on Delivery verified</span>
+                  <span>
+                    {product.paymentOption === 'online' 
+                      ? 'Prepaid Online Only' 
+                      : product.paymentOption === 'cod' 
+                      ? 'Cash on Delivery Only' 
+                      : 'Cash on Delivery verified'}
+                  </span>
                 </div>
               </div>
 

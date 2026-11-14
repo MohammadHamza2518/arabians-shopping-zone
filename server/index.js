@@ -390,6 +390,10 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode, rawPaymentMode) {
     return { error: "Cart exceeds maximum allowed limit (50 items)." };
   }
 
+  const paymentMode = String(rawPaymentMode || 'COD').trim();
+  const isOnline = paymentMode.toLowerCase() === 'online' || paymentMode.toLowerCase().includes('razorpay');
+  const isCod = paymentMode.toLowerCase() === 'cod';
+
   const verifiedItems = [];
   let subtotal = 0;
 
@@ -452,6 +456,15 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode, rawPaymentMode) {
     const itemTotal = verifiedPrice * quantity;
     subtotal += itemTotal;
 
+    // Enforce Product-Specific Payment Mode Allowed (COD, Online, Both)
+    const prodPaymentOption = String(product.paymentOption || product.paymentMode || 'both').toLowerCase();
+    if (prodPaymentOption === 'online' && isCod) {
+      return { error: `Product "${product.name}" is only available for Online Payment (Prepaid). Cash on Delivery is not available for this item.` };
+    }
+    if (prodPaymentOption === 'cod' && isOnline) {
+      return { error: `Product "${product.name}" is only available for Cash on Delivery (COD). Online Payment is not accepted for this item.` };
+    }
+
     const isFree = Boolean(product.freeDelivery || product.deliveryChargeType === 'free');
     const customCharge = (product.customDeliveryCharge !== undefined && product.customDeliveryCharge !== null && product.deliveryChargeType === 'custom')
       ? Number(product.customDeliveryCharge)
@@ -468,7 +481,8 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode, rawPaymentMode) {
       customization: raw.customization || null,
       freeDelivery: isFree,
       deliveryChargeType: product.deliveryChargeType || (isFree ? 'free' : 'default'),
-      customDeliveryCharge: customCharge
+      customDeliveryCharge: customCharge,
+      paymentOption: prodPaymentOption
     });
   }
 
@@ -562,10 +576,6 @@ function verifyAndCalculateOrder(rawItems, rawCouponCode, rawPaymentMode) {
   }
 
   // Authoritative Payment Mode Pricing: Online Discount vs COD Pricing
-  const paymentMode = String(rawPaymentMode || 'COD').trim();
-  const isOnline = paymentMode.toLowerCase() === 'online' || paymentMode.toLowerCase().includes('razorpay');
-  const isCod = paymentMode.toLowerCase() === 'cod';
-
   let onlineDiscount = 0;
   let codFee = 0;
 
@@ -740,6 +750,8 @@ app.post('/api/products', requireAdminAuth, (req, res) => {
     deliveryChargeType: req.body.deliveryChargeType || (req.body.freeDelivery ? 'free' : 'default'),
     freeDelivery: Boolean(req.body.freeDelivery || req.body.deliveryChargeType === 'free'),
     customDeliveryCharge: (req.body.customDeliveryCharge !== undefined && req.body.customDeliveryCharge !== null && req.body.customDeliveryCharge !== '') ? Number(req.body.customDeliveryCharge) : null,
+    paymentOption: String(req.body.paymentOption || req.body.paymentMode || 'both').toLowerCase(),
+    paymentMode: String(req.body.paymentOption || req.body.paymentMode || 'both').toLowerCase(),
     hasCoupon: req.body.hasCoupon !== undefined ? Boolean(req.body.hasCoupon) : Boolean(req.body.couponCode),
     couponCode: (req.body.couponCode || '').trim().toUpperCase(),
     couponType: req.body.couponType === 'percentage' ? 'percentage' : 'flat',
@@ -787,6 +799,8 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
   const newCustomDelivery = req.body.customDeliveryCharge !== undefined 
     ? (req.body.customDeliveryCharge === null || req.body.customDeliveryCharge === '' ? null : Number(req.body.customDeliveryCharge)) 
     : (currentProd.customDeliveryCharge ?? null);
+  const incomingPaymentOpt = req.body.paymentOption !== undefined ? req.body.paymentOption : req.body.paymentMode;
+  const newPaymentOption = incomingPaymentOpt !== undefined ? String(incomingPaymentOpt).toLowerCase() : (currentProd.paymentOption || currentProd.paymentMode || 'both');
 
   store.products[idx] = {
     ...store.products[idx],
@@ -807,6 +821,8 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
     deliveryChargeType: newDeliveryType,
     freeDelivery: isFreeDelivery,
     customDeliveryCharge: newCustomDelivery,
+    paymentOption: newPaymentOption,
+    paymentMode: newPaymentOption,
     hasCoupon: req.body.hasCoupon !== undefined ? Boolean(req.body.hasCoupon) : (store.products[idx].hasCoupon ?? Boolean(store.products[idx].couponCode)),
     couponCode: req.body.couponCode !== undefined ? (req.body.couponCode || '').trim().toUpperCase() : (store.products[idx].couponCode || ''),
     couponType: req.body.couponType !== undefined ? (req.body.couponType === 'percentage' ? 'percentage' : 'flat') : (store.products[idx].couponType || 'flat'),
